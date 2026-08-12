@@ -12,3 +12,6 @@ server/prisma/*.db
 # logs & OS
 *.log
 .DS_Store
+evidence_checklist.md
+lab1_checklist.md
+PROJECT_STRUCTURE.md
