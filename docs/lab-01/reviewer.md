@@ -10,7 +10,7 @@
 |----|--------|------------------|
 | [#5](https://github.com/jiraphat-j/toktickit/pull/5) | feature/1-project-foundation | Approved |
 | [#6](https://github.com/jiraphat-j/toktickit/pull/6) | feature/2-health-check | Approved |
-|    | feature/3-category-seed |  |
+| [#7](https://github.com/jiraphat-j/toktickit/pull/7) | feature/3-category-seed | Approved |
 |    | feature/4-category-list |  |
 
 ### Reviewer comments & responses (PR I authored)
@@ -27,13 +27,20 @@
 * **How I responded:**  
   "ขอบคุณครับ! ให้ผม merge เลยไหม"
 
+#### PR #7 (`feature/3-category-seed`)
+* **Reviewer comment I received:**  
+  "โดยรวมโครงสร้างของ Category model, migration และ seed ตรงตาม requirement ของ Issue 3คับ ดีมากคับ"
+* **How I responded:**  
+  "ขอบคุณครับ"
+
 ---
 
 ## Pull Requests I reviewed for my partner
 | PR | Branch | My verdict |
 |----|--------|------------|
-| #5 | feature/1-project-foundation | Approved |
+| [#5](https://github.com/thanapornboont-star/toktickit/pull/5) | feature/1-project-foundation | Approved |
 | [#6](https://github.com/thanapornboont-star/toktickit/pull/6) | feature/2-health-check | Approved |
+| [#7](https://github.com/thanapornboont-star/toktickit/pull/7) | feature/3-category-seed | Approved |
 
 ### My comments & partner's responses (PR I reviewed)
 
@@ -50,3 +57,9 @@
 * **Partner's response:**  
   "ขอบคุณคับ เดี๋ยวแก้ไขคับ"  
   *(หลังแก้ไขเสร็จ)*: "แก้ไขเรียบร้อยแล้วคับ ช่วยตรวจให้อีกทีแล้วapprove ให้หน่อยคับ"
+
+#### PR #7 (`feature/3-category-seed`)
+* **My comment:**  
+  "เช็คตาม acceptance criteria ของ Issue 3 ครบแล้วครับ Category model, migration, และ seed script (upsert) ถูกต้องตรงสเปคทั้งหมดผ่านครับ เยี่ยมครับ สวยครับ"
+* **Partner's response:**  
+  "เริ่ดคับ"
