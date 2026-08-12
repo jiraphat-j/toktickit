@@ -21,15 +21,11 @@ export async function checkSystem(): Promise<SystemStatus> {
     throw new Error("Failed to connect to API health check");
   }
 
-  let categories: Category[] = [];
-  try {
-    const catRes = await fetch(`${API_URL}/api/categories`);
-    if (catRes.ok) {
-      categories = await catRes.json();
-    }
-  } catch {
-    // Categories endpoint is implemented in Issue 4
+  const catRes = await fetch(`${API_URL}/api/categories`);
+  if (!catRes.ok) {
+    throw new Error("Failed to fetch IT request categories");
   }
+  const categories: Category[] = await catRes.json();
 
   return { online: true, categories };
 }
