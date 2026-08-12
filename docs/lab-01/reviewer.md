@@ -64,7 +64,7 @@
 
 #### PR #6 (`feature/2-health-check`)
 * **My comment:**  
-  "เช็คตาม acceptance criteria ของ Issue 2 ส่วนใหญ่ครบแล้วครับ 👍 (health endpoint คืนค่าถูกต้อง, checkSystem() เรียก API จริง, มี Supertest ผ่าน) 2 จุดที่อยากให้พิจารณาก่อน merge: 1. checkSystem() ใน api.ts ยังไม่ครอบ fetch() ด้วย try/catch — ถ้า backendปิดสนิท (connection refused) จะโยน error ดิบของ browser แทนข้อความที่อ่านง่าย ลองเพิ่ม try/catch แล้ว throw ข้อความที่กำหนดไว้แทนได้ไหม? 2. tests.md บอกว่า UI-02/UI-03 (Online/Offline display) ยัง Pending สำหรับ Issue 4 — อยากเช็คว่านี่ตั้งใจ defer จริง เพราะ App.tsx ดูเหมือนมีโค้ดแสดงผล success/error state พร้อมอยู่แล้ว นอกนั้นโอเคหมดครับ ai_use.md กับ reviewer.md ทำได้ดีมาก"  
+  "เช็คตาม acceptance criteria ของ Issue 2 ส่วนใหญ่ครบแล้วครับ  (health endpoint คืนค่าถูกต้อง, checkSystem() เรียก API จริง, มี Supertest ผ่าน) 2 จุดที่อยากให้พิจารณาก่อน merge: 1. checkSystem() ใน api.ts ยังไม่ครอบ fetch() ด้วย try/catch — ถ้า backendปิดสนิท (connection refused) จะโยน error ดิบของ browser แทนข้อความที่อ่านง่าย ลองเพิ่ม try/catch แล้ว throw ข้อความที่กำหนดไว้แทนได้ไหม? 2. tests.md บอกว่า UI-02/UI-03 (Online/Offline display) ยัง Pending สำหรับ Issue 4 — อยากเช็คว่านี่ตั้งใจ defer จริง เพราะ App.tsx ดูเหมือนมีโค้ดแสดงผล success/error state พร้อมอยู่แล้ว นอกนั้นโอเคหมดครับ ai_use.md กับ reviewer.md ทำได้ดีมาก"  
   *(หลังเพื่อนแก้ไข)*: "เรียบร้อยดีแล้วครับ ไปกันต่อออ!"
 * **Partner's response:**  
   "ขอบคุณคับ เดี๋ยวแก้ไขคับ"  
