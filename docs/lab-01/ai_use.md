@@ -7,7 +7,7 @@
 |---|---------------------|----------------------------|
 | 1 | ให้ช่วยทำ Lab 1 Issue 1 (feature/1-project-foundation) โดยยึด checklist และ PROJECT_STRUCTURE.md เป็นหลัก ให้ตรวจสถานะ repo ก่อนสรุปแผน | ตรวจสอบไฟล์ในโปรเจกต์ ยืนยัน PostgreSQL provider ใน `schema.prisma` และสร้าง `implementation_plan.md` สรุปขั้นตอนงาน Foundation |
 | 2 | อนุมัติแผนและให้เริ่มดำเนินการ พร้อมบันทึกประวัติ prompt ลงใน `docs/lab-01/ai_use.md` ตั้งแต่ต้นแชท | อัปเดต `README.md` ติดตั้ง dependencies ของ client/server รันการทดสอบ Vitest/Supertest |
-| 3 | *(Reserved for Issue 2 — Health Check)* | |
+| 3 | ดำเนินการ Issue 2 (API Health Check) เพิ่ม endpoint `GET /api/health` และปรับปรุง React UI แสดงสถานะ Online/Offline พร้อมบันทึกใน `ai_use.md` | อัปเดต `server/src/app.ts` ส่งคืน HTTP 200 ปรับแต่ง `api.ts` และ `App.tsx` เพื่อเช็คสถานะ API และรัน Supertest `health.test.ts` ผ่านเรียบร้อย |
 | 4 | *(Reserved for Issue 3 — Category Schema & Seed)* | |
 | 5 | *(Reserved for Issue 4 — Category List UI & API)* | |
 | 6 | *(Reserved for Release & Test Verification)* | |
