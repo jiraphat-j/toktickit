@@ -14,4 +14,16 @@ All test files live under `server/tests/lab-01/` and `client/tests/lab-01/`.
 
 ## Passing Terminal Output Log
 
-*(Will be updated with full green test suite output upon final release merge to main)*
+### Server (npm test in server/)
+✓ tests/lab-01/categories.test.ts (1)
+✓ tests/lab-01/health.test.ts (1)
+Test Files  2 passed (2)
+     Tests  2 passed (2)
+
+### Client (npm test in client/)
+✓ tests/lab-01/App.test.tsx (3)
+  ✓ renders the TokTickIT heading
+  ✓ shows Online and the seeded categories on success
+  ✓ shows an Offline error message when the API is unavailable
+Test Files  1 passed (1)
+     Tests  3 passed (3)
