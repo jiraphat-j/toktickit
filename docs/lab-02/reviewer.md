@@ -13,7 +13,7 @@
 | **PR #21 (Issue #12)** | `docs: Lab 2 engineering contract and test plan` | [#21](https://github.com/jiraphat-j/toktickit/pull/21) | "จากที่ดูค่อนข้างครบถ้วนค่ะ" | ตรวจสอบความถูกต้องของ contract ทั้ง 4 ไฟล์ | **Approved & Merged** by @thanapornboont-star |
 | **PR #22 (Issue #13)** | `feat: Development Requester schema, seed, and context API` | [#22](https://github.com/jiraphat-j/toktickit/pull/22) | "ตรวจแล้วค่ะ โครงสร้าง schema, migration, seed และ API โดยรวมครบถ้วน และ seed ใช้ upsert ทำให้รันซ้ำได้โดยไม่เกิดข้อมูลซ้ำ LGTM" | "ค้าบขอบคุณครับ" ยืนยันผลการทดสอบ API-01, API-02, API-03 | **Approved & Merged** by @thanapornboont-star |
 | **PR #23 (Issue #14)** | `feat: Ticket schema, ticket number, and Create Ticket API` | [#23](https://github.com/jiraphat-j/toktickit/pull/23) | "ตรวจแล้วค่ะ โดยรวม schema, validation, ticket number, requester binding และ idempotency ทำได้ครบ แนะนำเพิ่ม test กรณี concurrent requests ที่ใช้ Idempotency-Key เดียวกัน เพื่อยืนยันว่าไม่เกิด ticket ซ้ำค่า" | เพิ่ม test กรณี concurrent identical idempotency key ใน commit `10da627` และป้องกัน race condition | **Approved & Merged** by @thanapornboont-star |
-| **PR #4 (Issue #NN)** | `feat: Attachment upload, download, and soft removal API` | [PR Link] | - | - | Planned |
+| **PR #24 (Issue #15)** | `feat: Attachment upload, download, and soft removal API` | [#24](https://github.com/jiraphat-j/toktickit/pull/24) | "โดยรวม Attachment model, upload/download, soft removal, file size/type validation, จำกัด 5 active attachments และ ownership isolation ทำได้ครบค่ะ" | "ขอบคุณครับ" ยืนยันผลการทดสอบ API-11 ถึง API-15 ผ่านครบ 100% | **Approved & Merged** by @thanapornboont-star |
 | **PR #5 (Issue #NN)** | `feat: Zen Green shell and Development Requester selector UI` | [PR Link] | - | - | Planned |
 | **PR #6 (Issue #NN)** | `feat: Create Ticket UI and validation` | [PR Link] | - | - | Planned |
 | **PR #7 (Issue #NN)** | `feat: My Tickets API and UI` | [PR Link] | - | - | Planned |
@@ -29,6 +29,7 @@
 |:---:|---|:---:|---|---|:---:|
 | **PR #21 (Issue #11)** | `feat: define Lab 2 engineering contract and test plan` | [Partner PR #21](https://github.com/thanapornboont-star/toktickit/pull/21) | "ดีแล้วครับแต่อย่าลืมในส่วนของ ai_use.md, reviewer.md ด้วยนะครับ ถ้าเสร็จแล้วบอกครับ เดี๋ยวผมจะทำการ approveและ merge ให้" | เพิ่มไฟล์ `docs/lab-02/ai-use.md` และ `docs/lab-02/reviewer.md` ใน commit `3a6bc93` | **Approved & Merged** by @jiraphat-j |
 | **PR #27 (Issue #13)** | `feat: implement Ticket schema, atomic ticket number, and Create Ticket API` | [Partner PR #27](https://github.com/thanapornboont-star/toktickit/pull/27) | "ตรวจ final code แล้วครับ เหลือจุดเดียวที่อยากให้เช็ก: requestedPriority ใน schema มี default เป็น MEDIUM แต่ API ตอนนี้บังคับให้ client ต้องส่งค่า ถ้า requirement ต้องการใช้ default ควรปรับ validation ให้ไม่บังคับ field นี้ครับ นอกนั้นโดยรวมโอเคครับ" | ปรับ validation ให้ `requestedPriority` เป็น optional โดย default เป็น `MEDIUM` ใน commit `841f25b` | **Approved & Merged** by @jiraphat-j |
+| **PR #28 (Issue #14)** | `feat: implement attachment upload, download, and soft removal API` | [Partner PR #28](https://github.com/thanapornboont-star/toktickit/pull/28) | "ตรวจโค้ด Attachment APIs และ Test suite โดยรวมทำได้ดีและถูกต้องตาม spec มากครับ: Storage & Validation: มีการจัดเก็บไฟล์ด้วย UUID (Opaque filename) ในโฟลเดอร์ uploads และจำกัดขนาดไม่เกิน 5 MB (413) รวมถึงกรองประเภทไฟล์ (415) ได้ถูกต้อง Soft-removal & Slot Freeing: การทำ soft-removal มีการเก็บเหตุผล (reason), timestamp และปลดล็อคโควตา active attachment (AC-15) พร้อมทั้ง block การ download ด้วย 404 ได้ถูกต้องตาม BR-22 Ownership Isolation: มีการตรวจ ownership อย่างรัดกุม คืนค่า 404 สำหรับ unowned ticket/attachment" | "ขอบคุณค่า" | **Approved & Merged** by @jiraphat-j |
 
 ---
 
@@ -74,6 +75,19 @@
 
 ---
 
+### Issue #15 — Attachment Upload, Download, and Soft Removal API
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/24](https://github.com/jiraphat-j/toktickit/pull/24)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:** *"โดยรวม Attachment model, upload/download, soft removal, file size/type validation, จำกัด 5 active attachments และ ownership isolation ทำได้ครบค่ะ"*
+  - **Author Reply:** *"ขอบคุณครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `4e03915` into `lab2-staging` by @thanapornboont-star
+  - **Branch Deleted:** `feature/15-attachments-api`
+
+---
+
 ### Partner Review: Issue #11 — Lab 2 Engineering Contract and Test Plan (Partner Repo)
 - **PR:** [https://github.com/thanapornboont-star/toktickit/pull/21](https://github.com/thanapornboont-star/toktickit/pull/21)
 - **Author:** @thanapornboont-star
@@ -99,3 +113,15 @@
   - **Partner Follow-up:** *"แก้ไข validation ใน server/src/routes/tickets.ts ให้ requestedPriority เป็น optional โดยมีค่าเริ่มต้น (default) เป็น MEDIUM ตาม schema และเพิ่ม automated test รองรับเรียบร้อยแล้วใน commit ล่าสุด ขอบคุณสำหรับคำแนะนำคับ"*
   - **My Approval:** Approved by @jiraphat-j (*"เรียบร้อยแล้วครับ"*)
   - **Merge Action:** Merged by @jiraphat-j into partner `lab2-staging`
+
+---
+
+### Partner Review: Issue #14 — Attachment Upload, Download, and Soft Removal API (Partner Repo)
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/28](https://github.com/thanapornboont-star/toktickit/pull/28)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Activity:**
+  - **My Comment:** *"ตรวจโค้ด Attachment APIs และ Test suite โดยรวมทำได้ดีและถูกต้องตาม spec มากครับ: Storage & Validation: มีการจัดเก็บไฟล์ด้วย UUID (Opaque filename) ในโฟลเดอร์ uploads และจำกัดขนาดไม่เกิน 5 MB (413) รวมถึงกรองประเภทไฟล์ (415) ได้ถูกต้อง Soft-removal & Slot Freeing: การทำ soft-removal มีการเก็บเหตุผล (reason), timestamp และปลดล็อคโควตา active attachment (AC-15) พร้อมทั้ง block การ download ด้วย 404 ได้ถูกต้องตาม BR-22 Ownership Isolation: มีการตรวจ ownership อย่างรัดกุม คืนค่า 404 สำหรับ unowned ticket/attachment"*
+  - **Partner Reply:** *"ขอบคุณค่า"*
+  - **My Approval:** Approved by @jiraphat-j
+  - **Merge Action:** Merged commit `a876d76` into partner `lab2-staging` by @jiraphat-j

@@ -14,6 +14,7 @@
 | **2** | Issue 1 Contract Generation | "ขอใหม่ตั้งแต่ Step 1: อย่าลืมพวกชื่อและรายละเอียดทั้งหมดด้วยทำทีละ step รอผมเสร็จก่อน -> เรียบร้อย issue 1 : #12" | ให้ Agent สร้าง branch `feature/12-lab2-contract` และจัดทำเอกสาร Contract ทั้ง 4 ชุด (`specification.md`, `api-spec.md`, `ui-spec.md`, `tests.md`) ให้ครอบคลุม AC-01 ถึง AC-36 ตรวจสอบความสอดคล้องของ Business Rules ทุกข้อ |
 | **3** | Issue 2 Schema & Context API | "ไป issue 2 กันเลย -> Implement Development Requester schema, seed, and context API" | นำหลักการ TDD มาใช้ โดยให้ Agent เขียน failing API tests ก่อน (`API-01, API-02, API-03`), เพิ่ม Prisma Model `DevRequester`/`Category`/`RelatedSystem`, สร้าง Idempotent seed script, และทำ middleware กรอง header `X-Dev-Requester-Id` อย่างเข้มงวด |
 | **4** | Issue 3 Ticket Creation & Idempotency | "ต่อไป #14 issue 3 เริ่มได้เลย -> Implement Ticket schema, ticket number, and Create Ticket API" | ให้ Agent สร้าง Ticket Model, ทำ atomic sequence generator (`TKT-YYYY-XXXXXX`), ทำ `POST /api/tickets` พร้อม Idempotency 24 ชม. และเมื่อ Reviewer แนะนำเพิ่ม test concurrent duplicate request ผมได้สั่ง Agent เพิ่ม test และ handle race condition ใน DB |
+| **5** | Issue 4 Attachment API & Soft Removal | "#15 issue4 ต่อเลย -> Implement Attachment upload, download, and soft removal API" | ให้ Agent ติดตั้ง Multer จัดเก็บไฟล์ด้วย opaque UUID name, บังคับ limit ขนาด 5 MB (413), ประเภทไฟล์ (415), จำกัดสูงสุด 5 active files ต่อ ticket, ทำ soft-removal พร้อมเก็บ reason (min 3 chars) และป้องกันการ download ไฟล์ที่ลบแล้ว (404) |
 
 ---
 
