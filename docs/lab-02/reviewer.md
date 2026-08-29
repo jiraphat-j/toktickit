@@ -12,7 +12,7 @@
 |:---:|---|:---:|---|---|:---:|
 | **PR #21 (Issue #12)** | `docs: Lab 2 engineering contract and test plan` | [#21](https://github.com/jiraphat-j/toktickit/pull/21) | "จากที่ดูค่อนข้างครบถ้วนค่ะ" | ตรวจสอบความถูกต้องของ contract ทั้ง 4 ไฟล์ | **Approved & Merged** by @thanapornboont-star |
 | **PR #22 (Issue #13)** | `feat: Development Requester schema, seed, and context API` | [#22](https://github.com/jiraphat-j/toktickit/pull/22) | "ตรวจแล้วค่ะ โครงสร้าง schema, migration, seed และ API โดยรวมครบถ้วน และ seed ใช้ upsert ทำให้รันซ้ำได้โดยไม่เกิดข้อมูลซ้ำ LGTM" | "ค้าบขอบคุณครับ" ยืนยันผลการทดสอบ API-01, API-02, API-03 | **Approved & Merged** by @thanapornboont-star |
-| **PR #3 (Issue #NN)** | `feat: Ticket schema, ticket number, and Create Ticket API` | [PR Link] | - | - | Planned |
+| **PR #23 (Issue #14)** | `feat: Ticket schema, ticket number, and Create Ticket API` | [#23](https://github.com/jiraphat-j/toktickit/pull/23) | "ตรวจแล้วค่ะ โดยรวม schema, validation, ticket number, requester binding และ idempotency ทำได้ครบ แนะนำเพิ่ม test กรณี concurrent requests ที่ใช้ Idempotency-Key เดียวกัน เพื่อยืนยันว่าไม่เกิด ticket ซ้ำค่า" | เพิ่ม test กรณี concurrent identical idempotency key ใน commit `10da627` และป้องกัน race condition | **Approved & Merged** by @thanapornboont-star |
 | **PR #4 (Issue #NN)** | `feat: Attachment upload, download, and soft removal API` | [PR Link] | - | - | Planned |
 | **PR #5 (Issue #NN)** | `feat: Zen Green shell and Development Requester selector UI` | [PR Link] | - | - | Planned |
 | **PR #6 (Issue #NN)** | `feat: Create Ticket UI and validation` | [PR Link] | - | - | Planned |
@@ -28,6 +28,7 @@
 | Partner PR | Title / Feature | Partner PR Link | My Comments Given | Partner Response & Fixes | Status |
 |:---:|---|:---:|---|---|:---:|
 | **PR #21 (Issue #11)** | `feat: define Lab 2 engineering contract and test plan` | [Partner PR #21](https://github.com/thanapornboont-star/toktickit/pull/21) | "ดีแล้วครับแต่อย่าลืมในส่วนของ ai_use.md, reviewer.md ด้วยนะครับ ถ้าเสร็จแล้วบอกครับ เดี๋ยวผมจะทำการ approveและ merge ให้" | เพิ่มไฟล์ `docs/lab-02/ai-use.md` และ `docs/lab-02/reviewer.md` ใน commit `3a6bc93` | **Approved & Merged** by @jiraphat-j |
+| **PR #27 (Issue #13)** | `feat: implement Ticket schema, atomic ticket number, and Create Ticket API` | [Partner PR #27](https://github.com/thanapornboont-star/toktickit/pull/27) | "ตรวจ final code แล้วครับ เหลือจุดเดียวที่อยากให้เช็ก: requestedPriority ใน schema มี default เป็น MEDIUM แต่ API ตอนนี้บังคับให้ client ต้องส่งค่า ถ้า requirement ต้องการใช้ default ควรปรับ validation ให้ไม่บังคับ field นี้ครับ นอกนั้นโดยรวมโอเคครับ" | ปรับ validation ให้ `requestedPriority` เป็น optional โดย default เป็น `MEDIUM` ใน commit `841f25b` | **Approved & Merged** by @jiraphat-j |
 
 ---
 
@@ -59,6 +60,20 @@
 
 ---
 
+### Issue #14 — Ticket Schema, Ticket Number, and Create Ticket API
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/23](https://github.com/jiraphat-j/toktickit/pull/23)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:** *"ตรวจแล้วค่ะ โดยรวม schema, validation, ticket number, requester binding และ idempotency ทำได้ครบ แนะนำเพิ่ม test กรณี concurrent requests ที่ใช้ Idempotency-Key เดียวกัน เพื่อยืนยันว่าไม่เกิด ticket ซ้ำค่า"*
+  - **Author Action & Commit:** Added concurrent identical idempotency test and graceful race-condition handling in commit [`10da627`](https://github.com/jiraphat-j/toktickit/commit/10da627)
+  - **Author Reply:** *"เพิ่ม test สำหรับกรณี concurrent requests ที่ใช้ Idempotency-Key เดียวกันพร้อมกันเรียบร้อยแล้วใน commit 10da627 และเพิ่ม error handling ป้องกัน race condition เพื่อยืนยันว่าจะได้ Ticket เดิมและไม่เกิด ticket ซ้ำอย่างแน่นอนครับ ขอบคุณสำหรับคำแนะนำครับ รบกวนตรวจทานและ Approve / Merge ได้เลยครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star (*"Approve แล้วคับ"*)
+  - **Merge Action:** Merged commit `10da627` into `lab2-staging` by @thanapornboont-star
+  - **Branch Deleted:** `feature/14-create-ticket-api`
+
+---
+
 ### Partner Review: Issue #11 — Lab 2 Engineering Contract and Test Plan (Partner Repo)
 - **PR:** [https://github.com/thanapornboont-star/toktickit/pull/21](https://github.com/thanapornboont-star/toktickit/pull/21)
 - **Author:** @thanapornboont-star
@@ -70,3 +85,17 @@
   - **Partner Follow-up:** *"เพิ่มไฟล์ docs/lab-02/ai-use.md และ docs/lab-02/reviewer.md ใน commit ล่าสุดเรียบร้อยแล้ว รบกวนตรวจทานและ Approve / Merge ได้เลยค่ะ"*
   - **My Reply & Approval:** *"ได้ครับ"* ➔ Approved with comment *"เรียบร้อยแล้วครับ"*
   - **Merge Action:** Merged commit `07d1568` into `lab2-staging` by @jiraphat-j
+
+---
+
+### Partner Review: Issue #13 — Ticket Schema, Ticket Number, and Create Ticket API (Partner Repo)
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/27](https://github.com/thanapornboont-star/toktickit/pull/27)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Activity:**
+  - **My Comment:** *"ตรวจ final code แล้วครับ เหลือจุดเดียวที่อยากให้เช็ก: requestedPriority ใน schema มี default เป็น MEDIUM แต่ API ตอนนี้บังคับให้ client ต้องส่งค่า ถ้า requirement ต้องการใช้ default ควรปรับ validation ให้ไม่บังคับ field นี้ครับ นอกนั้นโดยรวมโอเคครับ"*
+  - **Partner Reply:** *"ขอเวลาในการตรวจสอบสักครู่นะคับ"*
+  - **Partner Fix:** Modified validation in `tickets.ts` and added automated test in commit `841f25b`
+  - **Partner Follow-up:** *"แก้ไข validation ใน server/src/routes/tickets.ts ให้ requestedPriority เป็น optional โดยมีค่าเริ่มต้น (default) เป็น MEDIUM ตาม schema และเพิ่ม automated test รองรับเรียบร้อยแล้วใน commit ล่าสุด ขอบคุณสำหรับคำแนะนำคับ"*
+  - **My Approval:** Approved by @jiraphat-j (*"เรียบร้อยแล้วครับ"*)
+  - **Merge Action:** Merged by @jiraphat-j into partner `lab2-staging`
