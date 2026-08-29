@@ -11,7 +11,7 @@
 | Issue / PR | Title / Feature | PR Link | Reviewer Comments | Author Responses / Action | Status |
 |:---:|---|:---:|---|---|:---:|
 | **PR #21 (Issue #12)** | `docs: Lab 2 engineering contract and test plan` | [#21](https://github.com/jiraphat-j/toktickit/pull/21) | "จากที่ดูค่อนข้างครบถ้วนค่ะ" | ตรวจสอบความถูกต้องของ contract ทั้ง 4 ไฟล์ | **Approved & Merged** by @thanapornboont-star |
-| **PR #2 (Issue #NN)** | `feat: Development Requester schema, seed, and context API` | [PR Link] | - | - | Planned |
+| **PR #22 (Issue #13)** | `feat: Development Requester schema, seed, and context API` | [#22](https://github.com/jiraphat-j/toktickit/pull/22) | "ตรวจแล้วค่ะ โครงสร้าง schema, migration, seed และ API โดยรวมครบถ้วน และ seed ใช้ upsert ทำให้รันซ้ำได้โดยไม่เกิดข้อมูลซ้ำ LGTM" | "ค้าบขอบคุณครับ" ยืนยันผลการทดสอบ API-01, API-02, API-03 | **Approved & Merged** by @thanapornboont-star |
 | **PR #3 (Issue #NN)** | `feat: Ticket schema, ticket number, and Create Ticket API` | [PR Link] | - | - | Planned |
 | **PR #4 (Issue #NN)** | `feat: Attachment upload, download, and soft removal API` | [PR Link] | - | - | Planned |
 | **PR #5 (Issue #NN)** | `feat: Zen Green shell and Development Requester selector UI` | [PR Link] | - | - | Planned |
@@ -42,6 +42,20 @@
   - **Review Decision:** Approved by @thanapornboont-star
   - **Merge Action:** Merged commit `4cfc3b9` by @thanapornboont-star
   - **Branch Deleted:** `feature/12-lab2-contract`
+
+---
+
+### Issue #13 — Development Requester Schema, Seed, and Context API
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/22](https://github.com/jiraphat-j/toktickit/pull/22)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:** *"ตรวจแล้วค่ะ โครงสร้าง schema, migration, seed และ API โดยรวมครบถ้วน และ seed ใช้ upsert ทำให้รันซ้ำได้โดยไม่เกิดข้อมูลซ้ำ LGTM"*
+  - **Reviewer Follow-up:** *"ขออนุญาต approve ให้เลยนะคะ"*
+  - **Author Reply:** *"ค้าบขอบคุณครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `e085863` into `lab2-staging` by @thanapornboont-star
+  - **Branch Deleted:** `feature/13-dev-requester-context`
 
 ---
 
