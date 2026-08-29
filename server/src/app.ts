@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import crypto from "crypto";
 import { getPrisma } from "./prisma.js";
 
 export const app = express();
@@ -76,6 +77,29 @@ export async function requireDevRequester(
 }
 
 // ---------------------------------------------------------------------------
+// Helpers: Ticket Number Generator & Idempotency Fingerprint
+// ---------------------------------------------------------------------------
+export async function generateTicketNumber(): Promise<string> {
+  const prisma = getPrisma();
+  await prisma.$executeRawUnsafe(`CREATE SEQUENCE IF NOT EXISTS ticket_sequence START 1;`);
+  const result = await prisma.$queryRawUnsafe<{ nextval: bigint }[]>(`SELECT nextval('ticket_sequence');`);
+  const seqNum = Number(result[0].nextval);
+  const year = new Date().getFullYear();
+  return `TKT-${year}-${String(seqNum).padStart(6, "0")}`;
+}
+
+export function computeRequestFingerprint(payload: Record<string, any>): string {
+  const normalized = {
+    categoryId: Number(payload.categoryId),
+    relatedSystemId: Number(payload.relatedSystemId),
+    summary: typeof payload.summary === "string" ? payload.summary.trim() : "",
+    description: typeof payload.description === "string" ? payload.description.trim() : "",
+    requestedPriority: String(payload.requestedPriority || "").trim(),
+  };
+  return crypto.createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
+}
+
+// ---------------------------------------------------------------------------
 // Health Check (Lab 1)
 // ---------------------------------------------------------------------------
 app.get("/api/health", (_req: Request, res: Response) => {
@@ -85,8 +109,6 @@ app.get("/api/health", (_req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // Reference Data APIs (Lab 2 Issue 2)
 // ---------------------------------------------------------------------------
-
-// GET /api/dev-requesters — returns active requesters in id asc order
 app.get("/api/dev-requesters", async (_req: Request, res: Response) => {
   try {
     const requesters = await getPrisma().devRequester.findMany({
@@ -110,7 +132,6 @@ app.get("/api/dev-requesters", async (_req: Request, res: Response) => {
   }
 });
 
-// GET /api/categories — returns active categories in id asc order
 app.get("/api/categories", async (_req: Request, res: Response) => {
   try {
     const categories = await getPrisma().category.findMany({
@@ -132,7 +153,6 @@ app.get("/api/categories", async (_req: Request, res: Response) => {
   }
 });
 
-// GET /api/related-systems — returns active related systems in name asc order
 app.get("/api/related-systems", async (_req: Request, res: Response) => {
   try {
     const systems = await getPrisma().relatedSystem.findMany({
@@ -155,8 +175,183 @@ app.get("/api/related-systems", async (_req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// Ticket Scoped Route Placeholder for Context Middleware (Issue 2)
-// (Will be fully expanded in Issue 3 & Issue 7)
+// Ticket Creation API (Lab 2 Issue 3)
+// ---------------------------------------------------------------------------
+app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: Response) => {
+  const prisma = getPrisma();
+  const requester = req.devRequester!;
+  const { categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
+
+  const details: { field: string; message: string }[] = [];
+
+  // Summary validation (5–150 chars after trim)
+  const trimmedSummary = typeof summary === "string" ? summary.trim() : "";
+  if (!trimmedSummary || trimmedSummary.length < 5 || trimmedSummary.length > 150) {
+    details.push({
+      field: "summary",
+      message: "Summary is required and must be between 5 and 150 characters.",
+    });
+  }
+
+  // Description validation (10–2000 chars after trim, no whitespace-only)
+  const trimmedDescription = typeof description === "string" ? description.trim() : "";
+  if (!trimmedDescription || trimmedDescription.length < 10 || trimmedDescription.length > 2000) {
+    details.push({
+      field: "description",
+      message: "Description is required and must be between 10 and 2000 characters.",
+    });
+  }
+
+  // Priority validation
+  const validPriorities = ["LOW", "MEDIUM", "HIGH"];
+  if (!requestedPriority || !validPriorities.includes(requestedPriority)) {
+    details.push({
+      field: "requestedPriority",
+      message: "Requested Priority must be one of: LOW, MEDIUM, HIGH.",
+    });
+  }
+
+  // Category & RelatedSystem existence and active validation
+  let categoryRecord = null;
+  if (typeof categoryId === "number" && categoryId > 0) {
+    categoryRecord = await prisma.category.findFirst({
+      where: { id: categoryId, isActive: true },
+    });
+  }
+  if (!categoryRecord) {
+    details.push({
+      field: "categoryId",
+      message: "Category is invalid or inactive.",
+    });
+  }
+
+  let systemRecord = null;
+  if (typeof relatedSystemId === "number" && relatedSystemId > 0) {
+    systemRecord = await prisma.relatedSystem.findFirst({
+      where: { id: relatedSystemId, isActive: true },
+    });
+  }
+  if (!systemRecord) {
+    details.push({
+      field: "relatedSystemId",
+      message: "Related System is invalid or inactive.",
+    });
+  }
+
+  if (details.length > 0) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid ticket input data.",
+        details,
+      },
+    });
+    return;
+  }
+
+  // Idempotency check
+  const idempotencyKey = req.headers["idempotency-key"];
+  let fingerprint = "";
+
+  if (typeof idempotencyKey === "string" && idempotencyKey.trim().length > 0) {
+    fingerprint = computeRequestFingerprint(req.body);
+    const existingRequest = await prisma.ticketCreationRequest.findUnique({
+      where: { id: idempotencyKey },
+      include: {
+        ticket: {
+          include: {
+            category: { select: { id: true, name: true } },
+            relatedSystem: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    if (existingRequest && existingRequest.expiresAt > new Date()) {
+      if (
+        existingRequest.requestFingerprint === fingerprint &&
+        existingRequest.requesterId === requester.id
+      ) {
+        res.status(201).json(existingRequest.ticket);
+        return;
+      } else {
+        res.status(409).json({
+          error: {
+            code: "CONFLICT",
+            message: "Idempotency key reused with different request payload.",
+          },
+        });
+        return;
+      }
+    }
+  }
+
+  try {
+    const ticketNumber = await generateTicketNumber();
+    const newTicket = await prisma.ticket.create({
+      data: {
+        ticketNumber,
+        requesterId: requester.id,
+        categoryId: categoryRecord!.id,
+        relatedSystemId: systemRecord!.id,
+        summary: trimmedSummary,
+        description: trimmedDescription,
+        requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH",
+        currentStatus: "NEW",
+      },
+      include: {
+        category: { select: { id: true, name: true } },
+        relatedSystem: { select: { id: true, name: true } },
+      },
+    });
+
+    if (typeof idempotencyKey === "string" && idempotencyKey.trim().length > 0) {
+      try {
+        await prisma.ticketCreationRequest.create({
+          data: {
+            id: idempotencyKey,
+            requesterId: requester.id,
+            requestFingerprint: fingerprint,
+            ticketId: newTicket.id,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          },
+        });
+      } catch (idempErr: any) {
+        // Handle concurrent insertion race condition gracefully
+        if (idempErr.code === "P2002") {
+          const existing = await prisma.ticketCreationRequest.findUnique({
+            where: { id: idempotencyKey },
+            include: {
+              ticket: {
+                include: {
+                  category: { select: { id: true, name: true } },
+                  relatedSystem: { select: { id: true, name: true } },
+                },
+              },
+            },
+          });
+          if (existing) {
+            res.status(201).json(existing.ticket);
+            return;
+          }
+        }
+        throw idempErr;
+      }
+    }
+
+    res.status(201).json(newTicket);
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create support ticket.",
+      },
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Ticket Scoped Route Placeholder for My Tickets (Issue 7)
 // ---------------------------------------------------------------------------
 app.get("/api/tickets", requireDevRequester, (req: RequesterRequest, res: Response) => {
   res.status(200).json({

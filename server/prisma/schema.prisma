@@ -11,15 +11,30 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Lab 2 Reference Models
+// Enums
+// ---------------------------------------------------------------------------
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TicketStatus {
+  NEW
+}
+
+// ---------------------------------------------------------------------------
+// Lab 2 Models
 // ---------------------------------------------------------------------------
 model DevRequester {
-  id        Int      @id @default(autoincrement())
-  fullName  String
-  email     String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id                     Int                     @id @default(autoincrement())
+  fullName               String
+  email                  String                  @unique
+  isActive               Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @default(now()) @updatedAt
+  tickets                Ticket[]
+  ticketCreationRequests TicketCreationRequest[]
 
   @@index([isActive])
 }
@@ -30,6 +45,7 @@ model Category {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  tickets   Ticket[]
 
   @@index([isActive])
 }
@@ -40,6 +56,45 @@ model RelatedSystem {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  tickets   Ticket[]
 
   @@index([isActive])
+}
+
+model Ticket {
+  id                Int                    @id @default(autoincrement())
+  ticketNumber      String                 @unique
+  requesterId       Int
+  requester         DevRequester           @relation(fields: [requesterId], references: [id])
+  categoryId        Int
+  category          Category               @relation(fields: [categoryId], references: [id])
+  relatedSystemId   Int
+  relatedSystem     RelatedSystem          @relation(fields: [relatedSystemId], references: [id])
+  summary           String
+  description       String
+  requestedPriority Priority
+  itPriority        Priority?
+  currentStatus     TicketStatus           @default(NEW)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @default(now()) @updatedAt
+  creationRequest   TicketCreationRequest?
+
+  @@index([requesterId, createdAt])
+  @@index([requesterId, updatedAt])
+  @@index([currentStatus])
+  @@index([categoryId])
+  @@index([createdAt])
+}
+
+model TicketCreationRequest {
+  id                 String       @id // value from Idempotency-Key
+  requesterId        Int
+  requester          DevRequester @relation(fields: [requesterId], references: [id])
+  requestFingerprint String
+  ticketId           Int          @unique
+  ticket             Ticket       @relation(fields: [ticketId], references: [id])
+  createdAt          DateTime     @default(now())
+  expiresAt          DateTime
+
+  @@index([expiresAt])
 }
