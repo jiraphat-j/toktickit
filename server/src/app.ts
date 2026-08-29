@@ -306,15 +306,37 @@ app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res:
     });
 
     if (typeof idempotencyKey === "string" && idempotencyKey.trim().length > 0) {
-      await prisma.ticketCreationRequest.create({
-        data: {
-          id: idempotencyKey,
-          requesterId: requester.id,
-          requestFingerprint: fingerprint,
-          ticketId: newTicket.id,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        },
-      });
+      try {
+        await prisma.ticketCreationRequest.create({
+          data: {
+            id: idempotencyKey,
+            requesterId: requester.id,
+            requestFingerprint: fingerprint,
+            ticketId: newTicket.id,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          },
+        });
+      } catch (idempErr: any) {
+        // Handle concurrent insertion race condition gracefully
+        if (idempErr.code === "P2002") {
+          const existing = await prisma.ticketCreationRequest.findUnique({
+            where: { id: idempotencyKey },
+            include: {
+              ticket: {
+                include: {
+                  category: { select: { id: true, name: true } },
+                  relatedSystem: { select: { id: true, name: true } },
+                },
+              },
+            },
+          });
+          if (existing) {
+            res.status(201).json(existing.ticket);
+            return;
+          }
+        }
+        throw idempErr;
+      }
     }
 
     res.status(201).json(newTicket);

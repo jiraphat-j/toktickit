@@ -210,7 +210,7 @@ describe("Create Ticket API (Issue 3)", () => {
     expect(res2.body.error.code).toBe("CONFLICT");
   });
 
-  it("API-06 (AC-36): concurrent ticket creations generate distinct unique ticket numbers", async () => {
+  it("API-06 (AC-36): concurrent ticket creations with distinct keys generate distinct unique ticket numbers", async () => {
     const createReq = (index: number) =>
       request(app)
         .post("/api/tickets")
@@ -227,5 +227,35 @@ describe("Create Ticket API (Issue 3)", () => {
     expect(resA.status).toBe(201);
     expect(resB.status).toBe(201);
     expect(resA.body.ticketNumber).not.toBe(resB.body.ticketNumber);
+  });
+
+  // Peer Review Enhancement Test: Concurrent identical Idempotency-Key
+  it("API-06: concurrent requests with the SAME Idempotency-Key create exactly 1 ticket without duplicates", async () => {
+    const concurrentKey = "c8f93e21-4567-4890-a1b2-c3d4e5f67890";
+    const payload = {
+      categoryId: 2,
+      relatedSystemId: 1, // Campus Wi-Fi
+      summary: "Concurrent identical idempotency submit",
+      description: "Testing concurrent duplicate requests with identical payload and idempotency key.",
+      requestedPriority: "MEDIUM",
+    };
+
+    const [resA, resB] = await Promise.all([
+      request(app)
+        .post("/api/tickets")
+        .set("X-Dev-Requester-Id", validRequesterId)
+        .set("Idempotency-Key", concurrentKey)
+        .send(payload),
+      request(app)
+        .post("/api/tickets")
+        .set("X-Dev-Requester-Id", validRequesterId)
+        .set("Idempotency-Key", concurrentKey)
+        .send(payload),
+    ]);
+
+    expect(resA.status).toBe(201);
+    expect(resB.status).toBe(201);
+    expect(resA.body.id).toBe(resB.body.id);
+    expect(resA.body.ticketNumber).toBe(resB.body.ticketNumber);
   });
 });
