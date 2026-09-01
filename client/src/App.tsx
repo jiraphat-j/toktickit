@@ -10,6 +10,7 @@ import {
 } from "./api.js";
 import { AppHeader } from "./components/AppHeader.js";
 import { RequesterSelector } from "./components/RequesterSelector.js";
+import { CreateTicket } from "./components/CreateTicket.js";
 
 export default function App() {
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
@@ -147,14 +148,11 @@ export default function App() {
             )}
 
             {activeTab === "create-ticket" && (
-              <div>
-                <h2 style={{ fontSize: "1.4rem", marginBottom: "1.5rem", fontWeight: 700 }}>Create Ticket</h2>
-                <div className="zen-card" style={{ textAlign: "center", padding: "3rem 1.5rem", color: "var(--color-text-muted)" }}>
-                  <p style={{ fontSize: "1.1rem", margin: 0 }}>
-                    Create Ticket form will be loaded in Issue 6 (Create Ticket UI and validation).
-                  </p>
-                </div>
-              </div>
+              <CreateTicket
+                currentRequester={currentRequester}
+                onSuccessViewTickets={() => setActiveTab("my-tickets")}
+                onCancel={() => setActiveTab("my-tickets")}
+              />
             )}
           </main>
         </div>

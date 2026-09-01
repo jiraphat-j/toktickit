@@ -35,9 +35,9 @@
 | **API-15** | API | AC-34 | `POST`/`GET`/`PATCH` attachments for ticket owned by another requester | Returns `404 Not Found` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
 | **UI-01** | UI | AC-24, AC-25, AC-26, AC-30 | Requester Selector loading, rendering active list, empty, safe error, keyboard focus | Renders appropriate state based on API response; supports keyboard navigation | `client/tests/lab-02/RequesterSelector.test.tsx` | **Pass** |
 | **UI-02** | UI | AC-31, AC-35 | Requester context persistence & reload | Selected ID saved to `sessionStorage` and restored on reload; Change Requester clears view | `client/tests/lab-02/RequesterSelector.test.tsx` | **Pass** |
-| **UI-03** | UI | AC-02, AC-03 | Create Ticket form client validation | Inline error messages displayed below invalid inputs | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
-| **UI-04** | UI | AC-04, AC-06 | Create Ticket busy submission and failure handling | Submit disabled while loading; server error preserves form inputs | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
-| **UI-05** | UI | AC-01, AC-07 | Create Ticket success view | Displays generated Ticket Number & action buttons | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
+| **UI-03** | UI | AC-02, AC-03 | Create Ticket form client validation | Inline error messages displayed below invalid inputs; file validation | `client/tests/lab-02/CreateTicket.test.tsx` | **Pass** |
+| **UI-04** | UI | AC-04, AC-06 | Create Ticket busy submission and failure handling | Submit disabled while loading; server error preserves form inputs | `client/tests/lab-02/CreateTicket.test.tsx` | **Pass** |
+| **UI-05** | UI | AC-01, AC-07 | Create Ticket success view | Displays generated Ticket Number & action buttons; partial attachment retry | `client/tests/lab-02/CreateTicket.test.tsx` | **Pass** |
 | **UI-06** | UI | AC-16, AC-17, AC-18 | My Tickets query controls & pagination | Updates query params, triggers refetch, displays pagination | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | **UI-07** | UI | AC-19, AC-20 | My Tickets distinct Empty vs No-Results states | Shows correct empty message or clear filters button | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | **UI-08** | UI | AC-21 | Ticket Detail read-only display | All ticket header fields render read-only; no comment/workflow | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
@@ -58,9 +58,9 @@
 | **AC-05** | Duplicate idempotency key returns existing ticket (no duplicate) | `API-06` |
 | **AC-06** | Unreachable backend preserves form input values with error banner | `UI-04` |
 | **AC-07** | Ticket created but attachment fails leaves ticket intact with retry | `UI-05` |
-| **AC-08** | JPG/PNG/WEBP/PDF < 5MB uploads successfully | `API-11`, `E2E-01` |
-| **AC-09** | Unsupported file type is rejected | `API-12` |
-| **AC-10** | Attachment > 5MB is rejected | `API-12` |
+| **AC-08** | JPG/PNG/WEBP/PDF < 5MB uploads successfully | `API-11`, `UI-03`, `E2E-01` |
+| **AC-09** | Unsupported file type is rejected | `API-12`, `UI-03` |
+| **AC-10** | Attachment > 5MB is rejected | `API-12`, `UI-03` |
 | **AC-11** | 6th active attachment is blocked with limit message | `API-11` |
 | **AC-12** | Active attachment can be downloaded | `API-13`, `E2E-01` |
 | **AC-13** | Soft removal requires non-empty reason (min 3 chars) | `API-14`, `UI-09` |
@@ -78,10 +78,10 @@
 | **AC-25** | Zero active requesters shows empty state | `UI-01` |
 | **AC-26** | Requester API failure shows safe retry UI | `UI-01` |
 | **AC-27** | Inactive requester rejected with 400 | `API-02` |
-| **AC-28** | Mobile viewport (<768px) stacks vertically without horizontal scroll | `UI-01`, `E2E-02` |
-| **AC-29** | Tablet viewport (768–991px) uses two-column layout | `E2E-02` |
-| **AC-30** | Keyboard tab order and focus indicators are visible | `UI-01`, `E2E-02` |
-| **AC-31** | Only active reference data and active requesters are shown | `API-01`, `API-03`, `UI-01`, `UI-02` |
+| **AC-28** | Mobile viewport (<768px) stacks vertically without horizontal scroll | `UI-01`, `UI-03`, `E2E-02` |
+| **AC-29** | Tablet viewport (768–991px) uses two-column layout | `UI-03`, `E2E-02` |
+| **AC-30** | Keyboard tab order and focus indicators are visible | `UI-01`, `UI-03`, `E2E-02` |
+| **AC-31** | Only active reference data and active requesters are shown | `API-01`, `API-03`, `UI-01`, `UI-02`, `UI-03` |
 | **AC-32** | Removed attachment download returns 404 | `API-13`, `API-14` |
 | **AC-33** | Invalid query parameters return 400 | `API-09` |
 | **AC-34** | Unowned attachment operations return 404 | `API-15` |
@@ -105,17 +105,29 @@ npm run test:e2e
 
 ---
 
-## 5. Execution Results Summary (Issue 5 Progress)
+## 5. Execution Results Summary (Issue 6 Progress)
 
 - **Client Tests (`npm --prefix client test`):**
   - `tests/lab-01/App.test.tsx`: 3 tests passing (100%)
   - `tests/lab-02/RequesterSelector.test.tsx` (UI-01, UI-02): 8 tests passing (100%)
-    - UI-01 (AC-24): shows loading indicator while active requesters are being fetched (PASS)
-    - UI-01 (AC-24, AC-31): renders active requesters dropdown and testing disclaimer (PASS)
-    - UI-01: blocks submission and shows validation error if no requester is chosen (PASS)
-    - UI-01 (AC-25): displays empty state message when zero active requesters exist (PASS)
-    - UI-01 (AC-26): displays safe error state with retry button when API fails (PASS)
-    - UI-01 (AC-30): supports keyboard navigation, visible focus, and submission via keyboard (PASS)
-    - UI-02 (AC-31, AC-35): persists selected requester in sessionStorage and displays app shell (PASS)
-    - UI-02 (BR-06): Change Requester action clears context and returns to selector screen (PASS)
-  - **Total Client:** 11 passed (11)
+  - `tests/lab-02/CreateTicket.test.tsx` (UI-03, UI-04, UI-05): 10 tests passing (100%)
+    - UI-03: renders active reference data and read-only requester identity (AC-31, BR-10) (PASS)
+    - UI-03 (AC-02): displays inline error for empty summary and blocks submission (PASS)
+    - UI-03 (AC-02): displays inline error when summary is less than 5 characters (PASS)
+    - UI-03 (AC-03): displays inline error when description is less than 10 characters (PASS)
+    - UI-03: displays inline errors when category or related system is not selected (PASS)
+    - UI-03 (AC-09, AC-10): rejects unsupported file types and oversized files (PASS)
+    - UI-04 (AC-04): disables submit button and shows busy indicator during submission (PASS)
+    - UI-04 (AC-06): preserves entered field values and displays error when backend fails (PASS)
+    - UI-05 (AC-01): submits ticket and renders success card with official Ticket Number (PASS)
+    - UI-05 (AC-07): handles partial success when ticket creates but attachment fails (PASS)
+  - **Total Client:** 21 passed (21)
+
+- **Server Tests (`npm --prefix server test`):**
+  - `tests/lab-01/health.test.ts`: 1 test passing (100%)
+  - `tests/lab-01/categories.test.ts`: 1 test passing (100%)
+  - `tests/lab-02/reference-data.api.test.ts`: 2 tests passing (100%)
+  - `tests/lab-02/dev-requesters.api.test.ts`: 4 tests passing (100%)
+  - `tests/lab-02/create-ticket.api.test.ts`: 8 tests passing (100%)
+  - `tests/lab-02/attachments.api.test.ts`: 7 tests passing (100%)
+  - **Total Server:** 23 passed (23)
