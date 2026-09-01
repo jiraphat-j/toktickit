@@ -114,6 +114,22 @@
 
 ---
 
+### Issue #17 — Create Ticket UI and validation
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/26](https://github.com/jiraphat-j/toktickit/pull/26)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:** *"ตรวจ PR แล้วครับ โดยรวม Create Ticket UI, form validation, loading/busy state และ error handling ทำได้ครบและสอดคล้องกับ spec ค่ะ มีการเชื่อมต่อ API และส่ง requester/idempotency headers ได้ถูกต้อง รวมถึงรองรับ attachment validation ด้วยค่ะ"*
+  - **Author Reply:**
+    > *"> ตรวจ PR แล้วครับ โดยรวม Create Ticket UI, form validation, loading/busy state และ error handling ทำได้ครบและสอดคล้องกับ spec ค่ะ มีการเชื่อมต่อ API และส่ง requester/idempotency headers ได้ถูกต้อง รวมถึงรองรับ attachment validation ด้วยค่ะ  
+    >   
+    > ขอบคุณครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `0fa4b7c` into `lab2-staging` by @thanapornboont-star
+  - **Branch Deleted:** `feature/17-create-ticket-ui`
+
+---
+
 ### Partner Review: Issue #11 — Lab 2 Engineering Contract and Test Plan (Partner Repo)
 - **PR:** [https://github.com/thanapornboont-star/toktickit/pull/21](https://github.com/thanapornboont-star/toktickit/pull/21)
 - **Author:** @thanapornboont-star
@@ -162,3 +178,23 @@
   - **My Comment & Approval:** *"ตรวจเช็ค PR #29 เรียบร้อยแล้วครับ ภาพรวมการทำงานของฟีเจอร์ Requester Selector และ App Shell ทำงานได้ถูกต้อง ครอบคลุมทั้ง Loading state, Error + Retry, Session persistence และ Revalidation ตามเงื่อนไขของ Lab 2 แล้วครับ"*
   - **Partner Reply:** *"ขอบคุณค่ะ"*
   - **Merge Action:** Merged commit `cd8d12c` into partner `lab2-staging` by @jiraphat-j
+
+---
+
+### Partner Review: Issue #16 — Create Ticket UI, form validation, and attachment upload (Partner Repo)
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/30](https://github.com/thanapornboont-star/toktickit/pull/30)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Activity:**
+  - **My Review Comment:**
+    > *"ตรวจเช็ค PR #30 เรียบร้อยครับ  
+    > รอบนี้โค้ดจัด Format ได้สะอาดมาก การทำ Form Validation, Real-time Character Counter, การเก็บค่าฟอร์มเดิมไว้เวลามี Error, และ Busy State ทำออกมาได้สมบูรณ์และถูกต้องตาม Spec ทุกจุดเลยครับ  
+    > มีเพียงข้อปรับปรุงเล็กน้อยเกี่ยวกับ CSS และเอกสารที่อยากรบกวนให้ช่วย Commit เพิ่มเติมก่อน Approve & Merge ครับ:  
+    > 1. CSS Classes ที่ขาดหายใน `client/src/App.css`  
+    >    - ใน `CreateTicket.tsx` มีการเรียกใช้ `.zen-card`, `.zen-field-readonly`, `.text-primary-green`, `.success-header`, `.success-icon` แต่ใน `App.css` ยังไม่มีการประกาศคลาสเหล่านี้ ทำให้กล่องการ์ดและสีพื้นหลังของช่อง Read-only  อาจยังไม่แสดงผลครับ"*
+  - **Partner Response:** *"รับทราบเดี๋ยวรีบแก้ไขให้ค่ะ"*
+  - **Partner Fix Commit:** Committed `3616863` (`fix: add missing Zen Green CSS utility classes and update reviewer record (#16)`)
+  - **Partner Follow-up Reply:** *"เพิ่ม CSS Classes ที่เกี่ยวข้องทั้งหมด (.zen-card, .zen-field-readonly, .text-primary-green, .success-header, .success-icon, .success-card, .ticket-confirmation-details) ใน client/src/App.css เรียบร้อยแล้วใน commit ล่าสุด ขอบคุณมากค่ะ"*
+  - **My Approval:** Approved by @jiraphat-j
+  - **Merge Action:** Merged commit `3616863` into partner `lab2-staging` by @jiraphat-j
+
