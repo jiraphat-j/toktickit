@@ -146,7 +146,7 @@ describe("Create Ticket API (Issue 3)", () => {
 
   // API-06 (AC-05, BR-14, AC-36): Idempotency & Concurrency
   it("API-06: duplicate request with same Idempotency-Key returns existing ticket without duplicating", async () => {
-    const idempotencyKey = "d290f1ee-6c54-4b01-90e6-d701748f0851";
+    const idempotencyKey = crypto.randomUUID();
     const payload = {
       categoryId: 1,
       relatedSystemId: 3, // Email
@@ -176,7 +176,7 @@ describe("Create Ticket API (Issue 3)", () => {
   });
 
   it("API-06: reusing Idempotency-Key with different payload returns 409 Conflict", async () => {
-    const idempotencyKey = "a1b2c3d4-e5f6-4a5b-8c9d-0123456789ab";
+    const idempotencyKey = crypto.randomUUID();
     const payload1 = {
       categoryId: 1,
       relatedSystemId: 1,
