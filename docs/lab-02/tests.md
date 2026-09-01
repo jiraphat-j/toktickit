@@ -14,27 +14,27 @@
 
 ---
 
-## 2. Planned Tests Table
+## 2. Planned & Executed Tests Table
 
 | Test ID | Level | AC / BR | Scenario / What It Tests | Expected Result | Automated Test File | Status |
 |:---:|:---:|:---:|---|---|---|:---:|
-| **API-01** | API | AC-24, AC-31 | `GET /api/dev-requesters` | Returns only active requesters in `id asc` order | `server/tests/lab-02/dev-requesters.api.test.ts` | Planned |
-| **API-02** | API | AC-27 | Request with inactive or missing `X-Dev-Requester-Id` | Returns `400 Bad Request` | `server/tests/lab-02/dev-requesters.api.test.ts` | Planned |
-| **API-03** | API | AC-31 | `GET /api/categories` and `GET /api/related-systems` | Returns active reference records only | `server/tests/lab-02/reference-data.api.test.ts` | Planned |
-| **API-04** | API | AC-01, BR-01 | `POST /api/tickets` with valid payload | Creates ticket, generates `TKT-YYYY-XXXXXX`, status `NEW`, returns `201` | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-05** | API | AC-02, AC-03 | `POST /api/tickets` with missing summary or description > 2000 chars | Returns `400 Bad Request` with field error details | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
-| **API-06** | API | AC-05, BR-14 | `POST /api/tickets` with duplicate `Idempotency-Key` | Repeated identical payload returns existing ticket; different payload returns `409` | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
+| **API-01** | API | AC-24, AC-31 | `GET /api/dev-requesters` | Returns only active requesters in `id asc` order | `server/tests/lab-02/dev-requesters.api.test.ts` | **Pass** |
+| **API-02** | API | AC-27 | Request with inactive or missing `X-Dev-Requester-Id` | Returns `400 Bad Request` | `server/tests/lab-02/dev-requesters.api.test.ts` | **Pass** |
+| **API-03** | API | AC-31 | `GET /api/categories` and `GET /api/related-systems` | Returns active reference records only | `server/tests/lab-02/reference-data.api.test.ts` | **Pass** |
+| **API-04** | API | AC-01, BR-01 | `POST /api/tickets` with valid payload | Creates ticket, generates `TKT-YYYY-XXXXXX`, status `NEW`, returns `201` | `server/tests/lab-02/create-ticket.api.test.ts` | **Pass** |
+| **API-05** | API | AC-02, AC-03 | `POST /api/tickets` with missing summary or description > 2000 chars | Returns `400 Bad Request` with field error details | `server/tests/lab-02/create-ticket.api.test.ts` | **Pass** |
+| **API-06** | API | AC-05, BR-14 | `POST /api/tickets` with duplicate `Idempotency-Key` | Repeated identical payload returns existing ticket; different payload returns `409` | `server/tests/lab-02/create-ticket.api.test.ts` | **Pass** |
 | **API-07** | API | AC-16, AC-17, AC-26 | `GET /api/tickets` search, filter, and sort | Returns filtered/sorted paginated items matching criteria | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | **API-08** | API | AC-22, AC-23 | `GET /api/tickets` cross-requester ownership | Requester B cannot see Requester A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | **API-09** | API | AC-33 | `GET /api/tickets` with invalid query parameters | Returns `400 Bad Request` | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | **API-10** | API | AC-21, AC-22 | `GET /api/tickets/:id` owned vs unowned | Owned ticket returns `200`; unowned ticket returns `404 Not Found` | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
-| **API-11** | API | AC-08, AC-11 | `POST /api/tickets/:id/attachments` valid upload & 5-item limit | Valid upload returns `201`; 6th active upload returns `400` | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-12** | API | AC-09, AC-10 | `POST /api/tickets/:id/attachments` invalid file type or > 5MB | Invalid type returns `415`; oversized returns `413` | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-13** | API | AC-12, AC-32 | `GET /api/attachments/:id/download` | Active file downloads `200`; removed file returns `404` | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-14** | API | AC-13, AC-14, AC-15 | `PATCH /api/attachments/:id/remove` | Soft-removes with reason, frees active slot, metadata retained | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **API-15** | API | AC-34 | `POST`/`GET`/`PATCH` attachments for ticket owned by another requester | Returns `404 Not Found` | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| **UI-01** | UI | AC-24, AC-25, AC-26 | Requester Selector loading, rendering active list, empty, safe error | Renders appropriate state based on API response | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
-| **UI-02** | UI | AC-31, AC-35 | Requester context persistence & reload | Selected ID saved to `sessionStorage` and restored on reload | `client/tests/lab-02/RequesterSelector.test.tsx` | Planned |
+| **API-11** | API | AC-08, AC-11 | `POST /api/tickets/:id/attachments` valid upload & 5-item limit | Valid upload returns `201`; 6th active upload returns `400` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
+| **API-12** | API | AC-09, AC-10 | `POST /api/tickets/:id/attachments` invalid file type or > 5MB | Invalid type returns `415`; oversized returns `413` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
+| **API-13** | API | AC-12, AC-32 | `GET /api/attachments/:id/download` | Active file downloads `200`; removed file returns `404` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
+| **API-14** | API | AC-13, AC-14, AC-15 | `PATCH /api/attachments/:id/remove` | Soft-removes with reason, frees active slot, metadata retained | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
+| **API-15** | API | AC-34 | `POST`/`GET`/`PATCH` attachments for ticket owned by another requester | Returns `404 Not Found` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
+| **UI-01** | UI | AC-24, AC-25, AC-26, AC-30 | Requester Selector loading, rendering active list, empty, safe error, keyboard focus | Renders appropriate state based on API response; supports keyboard navigation | `client/tests/lab-02/RequesterSelector.test.tsx` | **Pass** |
+| **UI-02** | UI | AC-31, AC-35 | Requester context persistence & reload | Selected ID saved to `sessionStorage` and restored on reload; Change Requester clears view | `client/tests/lab-02/RequesterSelector.test.tsx` | **Pass** |
 | **UI-03** | UI | AC-02, AC-03 | Create Ticket form client validation | Inline error messages displayed below invalid inputs | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | **UI-04** | UI | AC-04, AC-06 | Create Ticket busy submission and failure handling | Submit disabled while loading; server error preserves form inputs | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | **UI-05** | UI | AC-01, AC-07 | Create Ticket success view | Displays generated Ticket Number & action buttons | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
@@ -49,7 +49,7 @@
 
 ## 3. Acceptance Criteria Traceability Matrix (AC-01 to AC-36)
 
-| AC ID | Description | Covered By Planned Tests |
+| AC ID | Description | Covered By Planned & Executed Tests |
 |:---:|---|---|
 | **AC-01** | Valid ticket creation returns official Ticket Number | `API-04`, `UI-05`, `E2E-01` |
 | **AC-02** | Empty summary triggers inline error and blocks API | `API-05`, `UI-03` |
@@ -78,10 +78,10 @@
 | **AC-25** | Zero active requesters shows empty state | `UI-01` |
 | **AC-26** | Requester API failure shows safe retry UI | `UI-01` |
 | **AC-27** | Inactive requester rejected with 400 | `API-02` |
-| **AC-28** | Mobile viewport (<768px) stacks vertically without horizontal scroll | `E2E-02` |
+| **AC-28** | Mobile viewport (<768px) stacks vertically without horizontal scroll | `UI-01`, `E2E-02` |
 | **AC-29** | Tablet viewport (768–991px) uses two-column layout | `E2E-02` |
-| **AC-30** | Keyboard tab order and focus indicators are visible | `E2E-02` |
-| **AC-31** | Only active reference data and active requesters are shown | `API-01`, `API-03`, `UI-02` |
+| **AC-30** | Keyboard tab order and focus indicators are visible | `UI-01`, `E2E-02` |
+| **AC-31** | Only active reference data and active requesters are shown | `API-01`, `API-03`, `UI-01`, `UI-02` |
 | **AC-32** | Removed attachment download returns 404 | `API-13`, `API-14` |
 | **AC-33** | Invalid query parameters return 400 | `API-09` |
 | **AC-34** | Unowned attachment operations return 404 | `API-15` |
@@ -105,6 +105,17 @@ npm run test:e2e
 
 ---
 
-## 5. Final Results
+## 5. Execution Results Summary (Issue 5 Progress)
 
-*(This section will be updated with actual test execution counts and status once all issues are implemented on `lab2-staging` and merged to `main`)*
+- **Client Tests (`npm --prefix client test`):**
+  - `tests/lab-01/App.test.tsx`: 3 tests passing (100%)
+  - `tests/lab-02/RequesterSelector.test.tsx` (UI-01, UI-02): 8 tests passing (100%)
+    - UI-01 (AC-24): shows loading indicator while active requesters are being fetched (PASS)
+    - UI-01 (AC-24, AC-31): renders active requesters dropdown and testing disclaimer (PASS)
+    - UI-01: blocks submission and shows validation error if no requester is chosen (PASS)
+    - UI-01 (AC-25): displays empty state message when zero active requesters exist (PASS)
+    - UI-01 (AC-26): displays safe error state with retry button when API fails (PASS)
+    - UI-01 (AC-30): supports keyboard navigation, visible focus, and submission via keyboard (PASS)
+    - UI-02 (AC-31, AC-35): persists selected requester in sessionStorage and displays app shell (PASS)
+    - UI-02 (BR-06): Change Requester action clears context and returns to selector screen (PASS)
+  - **Total Client:** 11 passed (11)
