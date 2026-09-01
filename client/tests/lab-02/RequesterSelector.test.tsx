@@ -108,6 +108,42 @@ describe("Development Requester Selector UI & Shell (Issue 5)", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
+  // UI-01 (AC-30): Keyboard navigation and focus accessibility
+  it("UI-01 (AC-30): supports keyboard navigation, visible focus, and submission via keyboard", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockRequesters,
+    } as Response);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("combobox")).toBeInTheDocument();
+    });
+
+    const dropdown = screen.getByRole("combobox");
+    const continueBtn = screen.getByRole("button", { name: /continue/i });
+
+    // Focus combobox and select via keyboard
+    dropdown.focus();
+    expect(dropdown).toHaveFocus();
+
+    await user.selectOptions(dropdown, "2");
+
+    // Tab to continue button
+    await user.tab();
+    expect(continueBtn).toHaveFocus();
+
+    // Submit using Enter key on form / button
+    await user.keyboard("{Enter}");
+
+    // Should transition to shell
+    await waitFor(() => {
+      expect(screen.getByText("Suda Sukjai")).toBeInTheDocument();
+    });
+  });
+
   // UI-02: Selection flow, persistence, and shell display
   it("UI-02 (AC-31, AC-35): persists selected requester in sessionStorage and displays app shell", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({

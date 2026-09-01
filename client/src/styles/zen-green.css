@@ -32,16 +32,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* App Header */
+/* ---------------------------------------------------------------------------
+   App Header & Shell
+--------------------------------------------------------------------------- */
 .zen-header {
   background-color: var(--color-primary-green);
   color: #FFFFFF;
   padding: 0 1.5rem;
-  height: 60px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.zen-header-brand-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .zen-brand {
@@ -69,6 +77,8 @@ body {
   border-radius: var(--radius-sm);
   transition: all 0.15s ease-in-out;
   cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .zen-nav-item:hover {
@@ -111,7 +121,9 @@ body {
   font-size: 0.8rem;
 }
 
-/* Cards */
+/* ---------------------------------------------------------------------------
+   Cards
+--------------------------------------------------------------------------- */
 .zen-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-field-border);
@@ -120,7 +132,9 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Buttons */
+/* ---------------------------------------------------------------------------
+   Buttons
+--------------------------------------------------------------------------- */
 .zen-btn-primary {
   background-color: var(--color-primary-green);
   color: #FFFFFF;
@@ -179,7 +193,9 @@ body {
   border-color: #FFFFFF;
 }
 
-/* Form Controls */
+/* ---------------------------------------------------------------------------
+   Form Controls
+--------------------------------------------------------------------------- */
 .zen-label {
   display: block;
   font-size: 0.9rem;
@@ -205,12 +221,6 @@ body {
   box-sizing: border-box;
 }
 
-.zen-select:focus, .zen-input:focus {
-  outline: none;
-  border-color: var(--color-secondary-green);
-  box-shadow: 0 0 0 3px rgba(11, 122, 70, 0.15);
-}
-
 .zen-select.is-invalid, .zen-input.is-invalid {
   border-color: var(--color-error);
 }
@@ -221,7 +231,9 @@ body {
   margin-top: 0.35rem;
 }
 
-/* Alerts and Notices */
+/* ---------------------------------------------------------------------------
+   Alerts and Notices
+--------------------------------------------------------------------------- */
 .zen-notice-box {
   background-color: #F0F7FF;
   border: 1px solid #C7E0FE;
@@ -252,4 +264,103 @@ body {
   text-align: center;
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility: Keyboard Focus Rings (:focus-visible) (AC-30)
+--------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 3px solid var(--color-secondary-green) !important;
+  outline-offset: 2px !important;
+}
+
+.zen-header :focus-visible {
+  outline: 3px solid #FFFFFF !important;
+  outline-offset: 2px !important;
+}
+
+.zen-btn-primary:focus-visible {
+  outline: 3px solid #004D25 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(11, 122, 70, 0.3);
+}
+
+.zen-btn-outline-light:focus-visible {
+  outline: 3px solid #FFFFFF !important;
+  outline-offset: 2px !important;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.zen-nav-item:focus-visible {
+  outline: 2px solid #FFFFFF !important;
+  outline-offset: 1px !important;
+  background-color: var(--color-secondary-green);
+}
+
+.zen-select:focus-visible, .zen-input:focus-visible {
+  outline: 3px solid var(--color-secondary-green) !important;
+  outline-offset: 1px !important;
+  border-color: var(--color-secondary-green);
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive Design & Overflow Prevention (AC-28)
+--------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .zen-header {
+    height: auto;
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .zen-header-brand-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .zen-nav {
+    gap: 0.5rem;
+  }
+
+  .zen-profile-area {
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 0.5rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .zen-header-brand-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .zen-nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .zen-user-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .zen-user-badge span {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zen-btn-outline-light {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
 }

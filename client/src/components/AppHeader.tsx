@@ -23,18 +23,24 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="zen-header">
-      <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
-        <a href="#home" className="zen-brand" onClick={(e) => { e.preventDefault(); onTabChange("my-tickets"); }}>
+      <div className="zen-header-brand-nav">
+        <a
+          href="#home"
+          className="zen-brand"
+          onClick={(e) => {
+            e.preventDefault();
+            onTabChange("my-tickets");
+          }}
+        >
           <span style={{ fontSize: "1.4rem" }}>🟢</span>
           <span>TokTickIT</span>
         </a>
 
-        <nav className="zen-nav">
+        <nav className="zen-nav" aria-label="Main Navigation">
           <button
             type="button"
             className={`zen-nav-item ${activeTab === "my-tickets" ? "active" : ""}`}
             onClick={() => onTabChange("my-tickets")}
-            style={{ background: "none", border: "none" }}
           >
             My Tickets
           </button>
@@ -42,7 +48,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             type="button"
             className={`zen-nav-item ${activeTab === "create-ticket" ? "active" : ""}`}
             onClick={() => onTabChange("create-ticket")}
-            style={{ background: "none", border: "none" }}
           >
             Create Ticket
           </button>
