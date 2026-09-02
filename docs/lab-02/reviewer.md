@@ -17,7 +17,7 @@
 | **PR #25 (Issue #16)** | `feat: Zen Green shell and Development Requester selector UI` | [#25](https://github.com/jiraphat-j/toktickit/pull/25) | "โดยรวม PR นี้ทำ Selector, sessionStorage revalidation, error/retry state และ Zen Green shell ได้ดี ตรง scope หลัก รบกวนแก้ 1. เพิ่ม responsive CSS สำหรับ header/nav/requester profile บน mobile/tablet 2. เพิ่ม :focus-visible สำหรับ nav และปุ่มทุกประเภท พร้อมเพิ่ม keyboard/focus test 3. อัปเดต docs/lab-02/tests.md ให้ UI-01/UI-02 ชี้ไปที่ RequesterSelector.test.tsx และเปลี่ยนสถานะเป็น Pass พร้อมผลรันทดสอบจริง" | ปรับ Responsive Media Queries (AC-28), เพิ่ม `:focus-visible` และ Keyboard Navigation Test (AC-30), และอัปเดต `tests.md` ใน commit `e1dffaa` | **Approved & Merged** by @thanapornboont-star |
 | **PR #26 (Issue #17)** | `feat: Create Ticket UI and validation` | [#26](https://github.com/jiraphat-j/toktickit/pull/26) | "ตรวจ PR แล้วครับ โดยรวม Create Ticket UI, form validation, loading/busy state และ error handling ทำได้ครบและสอดคล้องกับ spec ค่ะ มีการเชื่อมต่อ API และส่ง requester/idempotency headers ได้ถูกต้อง รวมถึงรองรับ attachment validation ด้วยค่ะ" | ยืนยันการเชื่อมต่อ API, error handling และ attachment validation | **Approved & Merged** by @thanapornboont-star |
 | **PR #27 (Issue #18)** | `feat: My Tickets API and UI` | [#27](https://github.com/jiraphat-j/toktickit/pull/27) | "ตรวจ PR แล้วครับ โดยรวม My Tickets API, search, filtering, pagination, ownership isolation และ responsive UI ทำได้ดีค่ะ แต่ช่วยตรวจใน MyTickets.tsx ตอนนี้ UI มี sorting สำหรับ Ticket Number และ Created Date แต่ยังไม่มี Last Updated ทั้งที่ API/spec รองรับการ sort ด้วย updatedAt ด้วยรบกวนเพิ่ม column/header หรือ UI action สำหรับ sorting by Last Updated ให้ครบตาม requirement และTest coverage ยังไม่ครอบคลุม currentStatus filter และ updatedAt sorting..." | เพิ่มคอลัมน์/sorting สำหรับ `updatedAt` ใน UI และเพิ่ม automated tests สำหรับ `currentStatus` filter และ `updatedAt` sorting ใน commit `4c0bcb9` | **Approved & Merged** by @thanapornboont-star |
-| **PR #8 (Issue #19)** | `feat: Ticket Detail and Attachment UI` | [PR Link] | - | - | Planned |
+| **PR #28 (Issue #19)** | `feat: Ticket Detail and Attachment UI` | [#28](https://github.com/jiraphat-j/toktickit/pull/28) | "ถูกต้องครบถ้วนค่ะ คาดว่าตอนนี้ยังไม่มีปัญหาค่ะ" | "ขอบคุณมากครับ" ยืนยันผลการทดสอบ API-10, UI-08, UI-09 ผ่านครบ 100% | **Approved & Merged** by @thanapornboont-star |
 | **PR #9 (Issue #20)** | `test: E2E, visual QA, documentation, and release readiness` | [PR Link] | - | - | Planned |
 | **Release PR** | `release: merge lab2-staging to main` | [PR Link] | - | - | Planned |
 
@@ -34,6 +34,7 @@
 | **PR #29 (Issue #15)** | `feat: implement Zen Green shell and Development Requester selector UI` | [Partner PR #29](https://github.com/thanapornboont-star/toktickit/pull/29) | "ตรวจเช็ค PR #29 เรียบร้อยแล้วครับ ภาพรวมการทำงานของฟีเจอร์ Requester Selector และ App Shell ทำงานได้ถูกต้อง ครอบคลุมทั้ง Loading state, Error + Retry, Session persistence และ Revalidation ตามเงื่อนไขของ Lab 2 แล้วครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 | **PR #30 (Issue #16)** | `feat: implement Create Ticket UI, form validation, and attachment upload` | [Partner PR #30](https://github.com/thanapornboont-star/toktickit/pull/30) | "ตรวจเช็ค PR #30 เรียบร้อยครับ... มีเพียงข้อปรับปรุงเล็กน้อยเกี่ยวกับ CSS และเอกสารที่อยากรบกวนให้ช่วย Commit เพิ่มเติม... CSS Classes ที่ขาดหายใน App.css (.zen-card, .zen-field-readonly, .text-primary-green, ...)" | เพิ่ม CSS Classes ที่เกี่ยวข้องทั้งหมดใน `client/src/App.css` ใน commit `3616863` | **Approved & Merged** by @jiraphat-j |
 | **PR #31 (Issue #17)** | `feat: implement My Tickets API, query controls, sorting, pagination, and UI` | [Partner PR #31](https://github.com/thanapornboont-star/toktickit/pull/31) | "ตรวจ PR ให้แล้วนะ โค้ดส่วนใหญ่ทำมาโอเคเลย ทั้ง backend API ที่ทำพวก search, filter, pagination แล้วก็หน้า UI MyTickets... มีจุดตกหล่นเรื่องเอกสารกับสไตล์นิดหน่อย: 1. ใน tests.md เทสต์ API-06 กับ API-07 ยังเป็น Planned 2. ใน reviewer.md ช่อง status PR #31 ยังเว้นว่าง 3. ใน MyTickets.tsx ปุ่ม View ใช้ btn-outline-primary แนะนำเปลี่ยนเป็นโทน Zen Green" | แก้ไขสถานะเทสต์ใน `tests.md` และปรับสีปุ่มใน `MyTickets.tsx` ใน commit `4113623` | **Approved & Merged** by @jiraphat-j |
+| **PR #32 (Issue #18)** | `feat: implement Ticket Detail and Attachment UI` | [Partner PR #32](https://github.com/thanapornboont-star/toktickit/pull/32) | "ตรวจโค้ด PR #32 เรียบร้อยแล้วครับ ตัวฟังก์ชันทำได้ครบถ้วนมาก ทั้งการเช็ค ownership 404, การแยกตาราง active/removed attachment, การจำกัด 5 ไฟล์ และ modal บังคับกรอกเหตุผลลบ 5 ตัวอักษรขึ้นไป เทสต์ใน tests.md ก็อัปเดตครบถ้วนครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 
 ---
 
@@ -159,6 +160,21 @@
 
 ---
 
+### Issue #19 — Ticket Detail and Attachment UI
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/28](https://github.com/jiraphat-j/toktickit/pull/28)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:**
+    > *"ถูกต้องครบถ้วนค่ะ คาดว่าตอนนี้ยังไม่มีปัญหาค่ะ"*
+  - **Author Reply:**
+    > *"ขอบคุณมากครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `83ab250` into `lab2-staging` by @thanapornboont-star
+  - **Branch Deleted:** `feature/19-ticket-detail`
+
+---
+
 ### Partner Review: Issue #11 — Lab 2 Engineering Contract and Test Plan (Partner Repo)
 - **PR:** [https://github.com/thanapornboont-star/toktickit/pull/21](https://github.com/thanapornboont-star/toktickit/pull/21)
 - **Author:** @thanapornboont-star
@@ -267,5 +283,20 @@
     > *"ตรวจ commit ล่าสุดแล้ว แก้ไขเรื่องสถานะเทสต์ใน tests.md และปรับสีปุ่มใน MyTickets.tsx ครบถ้วนแล้วครับ โค้ดโดยรวมและการทำงานถูกต้องตาม spec ทั้งหมด เดี๋ยวทำการ merge เข้าให้ครับ"*  
     ➔ Approved by @jiraphat-j
   - **Merge Action:** Merged commit `3ed1737` into partner `lab2-staging` by @jiraphat-j
+
+---
+
+### Partner Review: Issue #18 — Ticket Detail and Attachment UI (Partner Repo)
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/32](https://github.com/thanapornboont-star/toktickit/pull/32)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Activity:**
+  - **My Review Comment:**
+    > *"ตรวจโค้ด PR #32 เรียบร้อยแล้วครับ ตัวฟังก์ชันทำได้ครบถ้วนมาก ทั้งการเช็ค ownership 404, การแยกตาราง active/removed attachment, การจำกัด 5 ไฟล์ และ modal บังคับกรอกเหตุผลลบ 5 ตัวอักษรขึ้นไป เทสต์ใน tests.md ก็อัปเดตครบถ้วนครับ"*
+  - **Partner Response:**
+    > *"ขอบคุณค่ะ"*
+  - **My Follow-up & Approval:** Approved by @jiraphat-j
+  - **Merge Action:** Merged commit `5bb490b` into partner `lab2-staging` by @jiraphat-j
+
 
 
