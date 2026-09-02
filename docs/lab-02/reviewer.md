@@ -28,6 +28,7 @@
 | Partner PR | Title / Feature | Partner PR Link | My Comments Given | Partner Response & Fixes | Status |
 |:---:|---|:---:|---|---|:---:|
 | **PR #21 (Issue #11)** | `feat: define Lab 2 engineering contract and test plan` | [Partner PR #21](https://github.com/thanapornboont-star/toktickit/pull/21) | "ดีแล้วครับแต่อย่าลืมในส่วนของ ai_use.md, reviewer.md ด้วยนะครับ ถ้าเสร็จแล้วบอกครับ เดี๋ยวผมจะทำการ approveและ merge ให้" | เพิ่มไฟล์ `docs/lab-02/ai-use.md` และ `docs/lab-02/reviewer.md` ใน commit `3a6bc93` | **Approved & Merged** by @jiraphat-j |
+| **PR #26 (Issue #12)** | `feat: implement Development Requester schema, seed, and context API` | [Partner PR #26](https://github.com/thanapornboont-star/toktickit/pull/26) | "ตรวจ final diff แล้วครับ จุด implementation หลักโอเคแล้ว เหลือ `docs/lab-02/tests.md` ที่ `API-03` มีรายการซ้ำกัน รบกวนเช็ก/จัดให้ test ID ไม่ซ้ำกันครับ แล้วผมจะ review ต่อครับ" | แก้ไขจัดเรียง Test ID ใน `docs/lab-02/tests.md` ไม่ให้ซ้ำกัน และอัปเดต Traceability Matrix ใน commit `cc9ef98` | **Approved & Merged** by @jiraphat-j |
 | **PR #27 (Issue #13)** | `feat: implement Ticket schema, atomic ticket number, and Create Ticket API` | [Partner PR #27](https://github.com/thanapornboont-star/toktickit/pull/27) | "ตรวจ final code แล้วครับ เหลือจุดเดียวที่อยากให้เช็ก: requestedPriority ใน schema มี default เป็น MEDIUM แต่ API ตอนนี้บังคับให้ client ต้องส่งค่า ถ้า requirement ต้องการใช้ default ควรปรับ validation ให้ไม่บังคับ field นี้ครับ นอกนั้นโดยรวมโอเคครับ" | ปรับ validation ให้ `requestedPriority` เป็น optional โดย default เป็น `MEDIUM` ใน commit `841f25b` | **Approved & Merged** by @jiraphat-j |
 | **PR #28 (Issue #14)** | `feat: implement attachment upload, download, and soft removal API` | [Partner PR #28](https://github.com/thanapornboont-star/toktickit/pull/28) | "ตรวจโค้ด Attachment APIs และ Test suite โดยรวมทำได้ดีและถูกต้องตาม spec มากครับ: Storage & Validation: มีการจัดเก็บไฟล์ด้วย UUID (Opaque filename) ในโฟลเดอร์ uploads และจำกัดขนาดไม่เกิน 5 MB (413) รวมถึงกรองประเภทไฟล์ (415) ได้ถูกต้อง Soft-removal & Slot Freeing: การทำ soft-removal มีการเก็บเหตุผล (reason), timestamp และปลดล็อคโควตา active attachment (AC-15) พร้อมทั้ง block การ download ด้วย 404 ได้ถูกต้องตาม BR-22 Ownership Isolation: มีการตรวจ ownership อย่างรัดกุม คืนค่า 404 สำหรับ unowned ticket/attachment" | "ขอบคุณค่า" | **Approved & Merged** by @jiraphat-j |
 | **PR #29 (Issue #15)** | `feat: implement Zen Green shell and Development Requester selector UI` | [Partner PR #29](https://github.com/thanapornboont-star/toktickit/pull/29) | "ตรวจเช็ค PR #29 เรียบร้อยแล้วครับ ภาพรวมการทำงานของฟีเจอร์ Requester Selector และ App Shell ทำงานได้ถูกต้อง ครอบคลุมทั้ง Loading state, Error + Retry, Session persistence และ Revalidation ตามเงื่อนไขของ Lab 2 แล้วครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
@@ -169,6 +170,23 @@
   - **Partner Follow-up:** *"เพิ่มไฟล์ docs/lab-02/ai-use.md และ docs/lab-02/reviewer.md ใน commit ล่าสุดเรียบร้อยแล้ว รบกวนตรวจทานและ Approve / Merge ได้เลยค่ะ"*
   - **My Reply & Approval:** *"ได้ครับ"* ➔ Approved with comment *"เรียบร้อยแล้วครับ"*
   - **Merge Action:** Merged commit `07d1568` into `lab2-staging` by @jiraphat-j
+
+---
+
+### Partner Review: Issue #12 — Development Requester schema, seed, and context API (Partner Repo)
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/26](https://github.com/thanapornboont-star/toktickit/pull/26)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Activity:**
+  - **My Review Comment:**
+    > *"ตรวจ final diff แล้วครับ จุด implementation หลักโอเคแล้ว เหลือ `docs/lab-02/tests.md` ที่ `API-03` มีรายการซ้ำกัน รบกวนเช็ก/จัดให้ test ID ไม่ซ้ำกันครับ แล้วผมจะ review ต่อครับ"*
+  - **Partner Reply:**
+    > *"แก้ไขจัดเรียง Test ID ใน docs/lab-02/tests.md ใหม่ตั้งแต่ API-01 ถึง API-12 ไม่ให้มีรายการซ้ำกัน และอัปเดต Traceability Matrix ให้สอดคล้องกันเรียบร้อยแล้วใน commit ล่าสุดแล้วค่ะ ช่วยเช็คอีกทีนะคะ"*
+  - **Partner Fix Commit:** Committed `cc9ef98` (`fix: resolve duplicate test ID in tests.md and update traceability (#12)`)
+  - **My Follow-up & Approval:**
+    > *"เรียบร้อยครับ ผมจะทำการ merge ให้เลยนะครับ"*  
+    ➔ Approved by @jiraphat-j
+  - **Merge Action:** Merged commit `cc9ef98` into partner `lab2-staging` by @jiraphat-j
 
 ---
 
