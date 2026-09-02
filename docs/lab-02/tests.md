@@ -42,8 +42,8 @@
 | **UI-07** | UI | AC-19, AC-20 | My Tickets distinct Empty vs No-Results states | Shows correct empty message or clear filters button | `client/tests/lab-02/MyTickets.test.tsx` | **Pass** |
 | **UI-08** | UI | AC-21 | Ticket Detail read-only display | All ticket header fields render read-only; no comment/workflow | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | **Pass** |
 | **UI-09** | UI | AC-13, AC-14 | Attachment section soft-remove modal | Modal prompts for reason (min 3 chars) before disabling download | `client/tests/lab-02/AttachmentSection.test.tsx` | **Pass** |
-| **E2E-01**| E2E| AC-01, AC-16, AC-21, AC-12, AC-14 | Complete Requester Ticketing Flow | Full browser journey: Select ➔ Create ➔ My Tickets ➔ Detail ➔ Remove | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
-| **E2E-02**| E2E| AC-28, AC-29, AC-30 | Responsive & Keyboard Accessibility | Desktop, tablet, mobile layouts render with zero horizontal scroll | `e2e/lab-02/responsive-a11y.spec.ts` | Planned |
+| **E2E-01**| E2E| AC-01, AC-16, AC-21, AC-12, AC-14 | Complete Requester Ticketing Flow | Full browser journey: Select ➔ Create ➔ My Tickets ➔ Detail ➔ Remove | `e2e/lab-02/requester-ticket-flow.spec.ts` | **Pass** |
+| **E2E-02**| E2E| AC-28, AC-29, AC-30 | Responsive & Keyboard Accessibility | Desktop, tablet, mobile layouts render with zero horizontal scroll | `e2e/lab-02/responsive-a11y.spec.ts` | **Pass** |
 
 ---
 
@@ -152,3 +152,21 @@ npm run test:e2e
     - API-10 (AC-27): rejects request without X-Dev-Requester-Id header with 400 (PASS)
     - API-10 (AC-27): rejects request with inactive requester ID with 400 (PASS)
   - **Total Server:** 43 passed (43 across 8 files)
+
+- **Playwright End-to-End Tests (`npx playwright test`):**
+  - `e2e/lab-02/requester-ticket-flow.spec.ts` (E2E-01): 1 test passing (100%)
+    - E2E-01 (AC-01, AC-16, AC-21, AC-12, AC-14): full browser journey: select requester -> create ticket with attachment -> my tickets -> ticket detail -> soft remove attachment (PASS)
+  - `e2e/lab-02/responsive-a11y.spec.ts` (E2E-02): 4 tests passing (100%)
+    - E2E-02 (AC-28): Desktop Viewport (1280x800) renders full table with zero horizontal overflow (PASS)
+    - E2E-02 (AC-28): Tablet Viewport (768x1024) maintains zero horizontal overflow (PASS)
+    - E2E-02 (AC-28, AC-29): Mobile Viewport (375x667) renders stacked layout with zero horizontal overflow (PASS)
+    - E2E-02 (AC-30): Keyboard Navigation & Focus supports Tab cycling with visible focus rings (PASS)
+  - `e2e/lab-02/visual-qa-screenshots.spec.ts`: 1 test passing (100%)
+    - Captures all 11 required visual QA screenshots across `create-ticket`, `my-tickets`, and `ticket-detail` (PASS)
+  - **Total E2E:** 6 passed (6 across 3 files)
+
+- **Grand Total Automated Tests:**
+  - **86 passed / 86 total tests (100% Pass Rate across 17 test files)**
+  - Server API & Integration: 43 tests
+  - Client Components & Unit: 37 tests
+  - Browser E2E & Visual QA: 6 tests
