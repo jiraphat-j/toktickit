@@ -889,3 +889,106 @@ body {
     font-size: 0.8rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Issue 8: Ticket Detail, Attachments & Modal Dialog Styles
+--------------------------------------------------------------------------- */
+.zen-btn-danger {
+  background-color: #DC2626;
+  color: #FFFFFF;
+  border: 1px solid #DC2626;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.zen-btn-danger:hover:not(:disabled) {
+  background-color: #B91C1C;
+  border-color: #B91C1C;
+}
+
+.zen-btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.zen-btn-danger:focus-visible {
+  outline: 3px solid #EF4444 !important;
+  outline-offset: 2px !important;
+}
+
+.zen-attachment-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.zen-attachment-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background-color: #FFFFFF;
+  transition: border-color var(--transition-fast);
+}
+
+.zen-attachment-card:hover {
+  border-color: var(--color-secondary-green);
+}
+
+.zen-attachment-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.zen-attachment-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zen-attachment-meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+.zen-attachment-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+/* Soft Removal Modal (AC-13, BR-21) */
+.zen-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.zen-modal-content {
+  background-color: #FFFFFF;
+  border-radius: var(--radius-md);
+  max-width: 500px;
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-modal, 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1));
+}
+

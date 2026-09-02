@@ -610,6 +610,85 @@ app.get("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: 
 });
 
 // ---------------------------------------------------------------------------
+// Get Owned Ticket Detail API (Lab 2 Issue 8 / #19, AC-21, AC-22, API-10)
+// ---------------------------------------------------------------------------
+app.get("/api/tickets/:id", requireDevRequester, async (req: RequesterRequest, res: Response) => {
+  const prisma = getPrisma();
+  const requester = req.devRequester!;
+  const ticketId = parseInt(req.params.id, 10);
+
+  if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid ticket ID parameter.",
+      },
+    });
+    return;
+  }
+
+  try {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: {
+        requester: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        relatedSystem: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        attachments: {
+          select: {
+            id: true,
+            originalFileName: true,
+            mimeType: true,
+            sizeBytes: true,
+            uploadedAt: true,
+            isRemoved: true,
+            removedAt: true,
+            removedReason: true,
+          },
+          orderBy: { id: "asc" },
+        },
+      },
+    });
+
+    // Ownership check (AC-22, BR-23)
+    if (!ticket || ticket.requesterId !== requester.id) {
+      res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Ticket not found or access denied.",
+        },
+      });
+      return;
+    }
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to retrieve ticket details.",
+      },
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Attachment APIs (Lab 2 Issue 4)
 // ---------------------------------------------------------------------------
 
@@ -909,17 +988,5 @@ app.patch(
     }
   }
 );
-
-// ---------------------------------------------------------------------------
-// Ticket Scoped Route Placeholder for My Tickets (Issue 7)
-// ---------------------------------------------------------------------------
-app.get("/api/tickets", requireDevRequester, (req: RequesterRequest, res: Response) => {
-  res.status(200).json({
-    message: "Requester context validated",
-    requester: req.devRequester,
-    items: [],
-    pagination: { page: 1, pageSize: 8, total: 0, totalPages: 0 },
-  });
-});
 
 export default app;
