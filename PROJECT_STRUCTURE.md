@@ -1,6 +1,6 @@
 # TokTickIT — Project Structure & File Guide
 
-เอกสารสรุปโครงสร้างโปรเจกต์ **TokTickIT** (Lab 1 Scaffold) 
+เอกสารสรุปโครงสร้างโปรเจกต์ **TokTickIT** (ครอบคลุมทั้ง Lab 1 Starter Scaffold และ Lab 2 Requester Experience)
 
 ---
 
@@ -8,105 +8,97 @@
 
 ```text
 toktickit/
-├── .gitignore
-├── README.md
-├── PROJECT_STRUCTURE.md
+├── .gitignore                   # Git exclusion rules
+├── package.json                 # Root npm scripts & Playwright configuration
+├── playwright.config.ts         # Playwright multi-server browser configuration
+├── README.md                    # Setup, database, dev, and test execution guide
+├── PROJECT_STRUCTURE.md         # File responsibility and architectural layout
+├── artifacts/
+│   └── lab-02/
+│       └── screenshots/         # Automated visual QA responsive screenshot evidence
+│           ├── create-ticket/   # Form states (initial, validation, submitting, success, failure)
+│           ├── my-tickets/      # Desktop table, mobile cards, empty, no-results
+│           └── ticket-detail/   # Read-only detail and attachment lifecycle
 ├── docs/
-│   └── lab-01/
-│       ├── ai_use.md
-│       ├── reviewer.md
-│       └── tests.md
-├── client/
-│   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── vite.config.ts
+│   ├── lab-01/                  # Lab 1 submission documentation
+│   └── lab-02/                  # Lab 2 specification, audit & verification docs
+│       ├── ai-use.md            # LLM prompts, reflections, and governance record
+│       ├── api-spec.md          # REST API contracts & error schemas
+│       ├── reviewer.md          # Peer review logs, comments, approvals, and merge proofs
+│       ├── specification.md     # Business rules (BR-01..34) & Acceptance Criteria (AC-01..36)
+│       ├── tests.md             # Traceability matrix and test execution summary
+│       └── ui-spec.md           # Zen Green design guidelines & visual checklist
+├── e2e/
+│   └── lab-02/                  # Playwright browser end-to-end test suites
+│       ├── requester-ticket-flow.spec.ts  # E2E-01: complete user journey
+│       ├── responsive-a11y.spec.ts        # E2E-02: desktop/tablet/mobile zero-overflow & a11y
+│       └── visual-qa-screenshots.spec.ts  # Automated visual QA screenshot capture
+├── scripts/
+│   └── capture-screenshots.mjs  # Standalone Playwright screenshot capture script
+├── client/                      # React + Vite + TypeScript Frontend
 │   ├── src/
-│   │   ├── App.tsx
-│   │   ├── api.ts
-│   │   ├── main.tsx
-│   │   └── vite-env.d.ts
-│   └── tests/
-│       ├── setup.ts
-│       └── lab-01/
-│           └── App.test.tsx
-└── server/
-    ├── .env.example
-    ├── package.json
-    ├── tsconfig.json
-    ├── vitest.config.ts
+│   │   ├── components/          # Reusable Zen Green UI components
+│   │   │   ├── AppHeader.tsx              # Zen Green navigation header & requester badge
+│   │   │   ├── AttachmentSection.tsx      # Active/removed attachments & soft-removal modal
+│   │   │   ├── CreateTicket.tsx           # Form with client validation & attachment upload
+│   │   │   ├── MyTickets.tsx              # Search, filter, sort, pagination, table/cards
+│   │   │   ├── RequesterSelector.tsx      # Testing selector & sessionStorage persistence
+│   │   │   └── RequesterTicketDetail.tsx  # Read-only ticket detail screen (no staff controls)
+│   │   ├── styles/
+│   │   │   └── zen-green.css    # Unified Zen Green design system tokens & media queries
+│   │   ├── api.ts               # Frontend API client & contract types
+│   │   └── App.tsx              # Main application container & view router
+│   └── tests/                   # Component & unit test suites (Vitest + Testing Library)
+│       ├── lab-01/
+│       │   └── App.test.tsx
+│       └── lab-02/
+│           ├── AttachmentSection.test.tsx
+│           ├── CreateTicket.test.tsx
+│           ├── MyTickets.test.tsx
+│           ├── RequesterSelector.test.tsx
+│           └── RequesterTicketDetail.test.tsx
+└── server/                      # Express + Prisma + TypeScript Backend
     ├── prisma/
-    │   ├── schema.prisma
-    │   └── seed.ts
+    │   ├── migrations/          # Version-controlled database schema migrations
+    │   ├── schema.prisma        # Data models (DevRequester, Category, RelatedSystem, Ticket, Attachment)
+    │   └── seed.ts              # Idempotent reference data seeding script
     ├── src/
-    │   ├── app.ts
-    │   ├── index.ts
-    │   └── prisma.ts
-    └── tests/
-        └── lab-01/
-            ├── categories.test.ts
-            └── health.test.ts
+    │   ├── app.ts               # Express application, routes, middleware & validation logic
+    │   ├── index.ts             # HTTP server entry point
+    │   └── prisma.ts            # Prisma client singleton
+    └── tests/                   # Integration & API test suites (Vitest + Supertest)
+        ├── lab-01/
+        │   ├── categories.test.ts
+        │   └── health.test.ts
+        └── lab-02/
+            ├── attachments.api.test.ts
+            ├── create-ticket.api.test.ts
+            ├── dev-requesters.api.test.ts
+            ├── my-tickets.api.test.ts
+            ├── reference-data.api.test.ts
+            └── ticket-detail.api.test.ts
 ```
 
 ---
 
-## 📄 File Details & Responsibilities (รายละเอียดหน้าที่ของแต่ละไฟล์)
+## 📄 File Details & Responsibilities
 
-### 1. Root Files (โฟลเดอร์หลัก)
+### 1. Root Configuration & Tooling
+* [`.gitignore`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/.gitignore) — กำหนดไฟล์ที่ไม่ติดตามใน Git (เช่น `node_modules/`, `.env`, `server/prisma/*.db`, `uploads/`)
+* [`package.json`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/package.json) — รวมคำสั่งรันระบบและทดสอบระดับ Root (`npm test`, `npm run test:e2e`, `npm run test:all`, `npm run db:migrate`, `npm run db:seed`)
+* [`playwright.config.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/playwright.config.ts) — กำหนดค่ารัน Playwright โดยเปิด Backend (port 3000) และ Client (port 5173) อัตโนมัติ
+* [`README.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/README.md) — คู่มือการติดตั้ง, รันโปรเจกต์, และการรันชุดการทดสอบทั้งหมด
+* [`PROJECT_STRUCTURE.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/PROJECT_STRUCTURE.md) — เอกสารอธิบายโครงสร้างและหน้าที่ของแต่ละไฟล์
 
-* [`.gitignore`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/.gitignore) — กำหนดไฟล์/โฟลเดอร์ที่ไม่ต้องอัปโหลดขึ้น Git เช่น `node_modules/`, `.env`, `dist/`, และไฟล์ฐานข้อมูล Prisma SQLite (`*.db`)
-* [`README.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/README.md) — ไฟล์อธิบายโปรเจกต์เบื้องต้น (ปัจจุบันมีเพียงหัวข้อชื่อโปรเจกต์ `# TokTickIT`)
-* [`PROJECT_STRUCTURE.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/PROJECT_STRUCTURE.md) — เอกสารสรุปโครงสร้างไฟล์และหน้าที่ความรับผิดชอบของแต่ละไฟล์ในโปรเจกต์
+### 2. End-to-End Automation & Visual QA (`e2e/lab-02/`, `artifacts/`)
+* [`e2e/lab-02/requester-ticket-flow.spec.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/e2e/lab-02/requester-ticket-flow.spec.ts) — การทดสอบ `E2E-01` ครอบคลุม User Journey ทั้งหมด (เลือก Requester ➔ สร้างตั๋วพร้อมไฟล์แนบ ➔ ตรวจสอบใน My Tickets ➔ เปิดดู Ticket Detail ➔ ตรวจสอบโควตาและดาวน์โหลด ➔ Soft-remove พร้อมบันทึกเหตุผล)
+* [`e2e/lab-02/responsive-a11y.spec.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/e2e/lab-02/responsive-a11y.spec.ts) — การทดสอบ `E2E-02` ตรวจสอบความถูกต้องของ Responsive Layout (Desktop 1280px, Tablet 768px, Mobile 375px) ให้ไม่มี Horizontal Overflow (`scrollWidth <= window.innerWidth`) และทดสอบการนำทางด้วยคีย์บอร์ด (`:focus-visible`)
+* [`e2e/lab-02/visual-qa-screenshots.spec.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/e2e/lab-02/visual-qa-screenshots.spec.ts) — การบันทึกภาพหน้าจอ Visual QA 11 ภาพลงในโฟลเดอร์ `artifacts/lab-02/screenshots/` อัตโนมัติ
 
----
-
-### 2. 📂 `docs/lab-01/` (เอกสารสำหรับประกอบการส่ง Lab 1)
-
-* [`docs/lab-01/ai_use.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-01/ai_use.md) — แบบบันทึกการใช้งาน AI/LLM สำหรับลงประวัติ Prompt ที่ใช้ (6–10 prompts) และบทสะท้อนความคิด (Reflection)
-* [`docs/lab-01/reviewer.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-01/reviewer.md) — แบบบันทึกการทำ Peer Review กับเพื่อนร่วมงาน (บันทึก Pull Request, ข้อติชมจาก Reviewer และคำตอบรับ)
-* [`docs/lab-01/tests.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-01/tests.md) — แบบบันทึกแผนการทดสอบ (Test Plan) และหลักฐานผลการทดสอบ (Test Evidence) ทั้ง Server และ Client
-
----
-
-### 3. 📂 `client/` (Frontend — React + Vite + TypeScript)
-
-#### Config & Root Files
-* [`client/.env.example`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/.env.example) — ตัวอย่างไฟล์กำหนด Environment Variable (เช่น `VITE_API_URL="http://localhost:3000"`)
-* [`client/index.html`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/index.html) — ไฟล์ HTML หลักสำหรับ Single Page Application (SPA) จุดค้ำยันของ React DOM (`<div id="root">`)
-* [`client/package.json`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/package.json) — กำหนด Dependencies (React, Bootstrap, Testing Library, Vitest ฯลฯ) และ Scripts (dev, build, preview, test)
-* [`client/tsconfig.json`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/tsconfig.json) — การตั้งค่า TypeScript สำหรับ Frontend (JSX React, Type checking, moduleResolution)
-* [`client/vite.config.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/vite.config.ts) — การตั้งค่า Vite Dev Server (port 5173) และการตั้งค่า Vitest สำหรับรัน UI Tests บนสภาพแวดล้อม `jsdom`
-
-#### Source Code (`client/src/`)
-* [`client/src/App.tsx`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/src/App.tsx) — Main UI Component หลัก จัดการสถานะ UI (idle, loading, success, error) มีปุ่มกด "Check System" เพื่อดึงสถานะระบบและหมวดหมู่ IT Service
-* [`client/src/api.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/src/api.ts) — API Client layer สำหรับติดต่อกับ Backend Server (ฟังก์ชัน `checkSystem()` ทำหน้าที่ยิง Request ไปยัง `/api/health` และ `/api/categories`)
-* [`client/src/main.tsx`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/src/main.tsx) — Entry point หลักของ React App ทำหน้าที่ Mount Component `<App />` เข้ากับ DOM element `#root` และนำเข้า Bootstrap CSS
-* [`client/src/vite-env.d.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/src/vite-env.d.ts) — TypeScript Type Declaration สำหรับ Vite Client Environment
-
-#### Unit / Component Tests (`client/tests/`)
-* [`client/tests/setup.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/tests/setup.ts) — ไฟล์ Setup สำหรับ Vitest นำเข้า Custom Matchers จาก `@testing-library/jest-dom`
-* [`client/tests/lab-01/App.test.tsx`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/client/tests/lab-01/App.test.tsx) — Component Test สำหรับ `App.tsx` (ทดสอบการแสดงผล Header, การคลิกปุ่ม, แสดงสถานะ Online/Offline และการโหลดหมวดหมู่)
-
----
-
-### 4. 📂 `server/` (Backend — Express + Prisma + TypeScript)
-
-#### Config & Root Files
-* [`server/.env.example`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/.env.example) — ตัวอย่าง Environment Variables ของ Backend เช่น `DATABASE_URL` (PostgreSQL connection string) และ `PORT=3000`
-* [`server/package.json`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/package.json) — กำหนด Dependencies (Express, Prisma Client, CORS) และ DevDependencies (Supertest, tsx, Vitest) รวมถึง npm scripts (`dev`, `prisma:migrate`, `prisma:seed`, `test`)
-* [`server/tsconfig.json`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/tsconfig.json) — การตั้งค่า TypeScript คอมไพเลอร์สำหรับ Node.js Backend (ส่งออกไปที่โฟลเดอร์ `dist/`)
-* [`server/vitest.config.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/vitest.config.ts) — การตั้งค่า Vitest สำหรับ Backend Integration Testing ในสภาพแวดล้อม `node`
-
-#### Database Schema & Seed (`server/prisma/`)
-* [`server/prisma/schema.prisma`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/prisma/schema.prisma) — นิยาม Prisma Data Model (มีโครงสำหรับการเพิ่ม `Category` model: `id`, `name`, `createdAt`) และการเชื่อมต่อฐานข้อมูล PostgreSQL
-* [`server/prisma/seed.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/prisma/seed.ts) — สคริปต์ยัดข้อมูลเริ่มต้น (Seed Data) ของหมวดหมู่บริการ IT ทั้ง 4 หมวดหมู่ (Account and Access, Hardware, Software, Network) โดยใช้ `upsert` เพื่อป้องกันข้อมูลซ้ำซ้อน
-
-#### Backend Source Code (`server/src/`)
-* [`server/src/app.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/src/app.ts) — การตั้งค่า Express App, Middleware (CORS, JSON Parser) และ Router Handler (`GET /api/health`, `GET /api/categories`) โดยแยกออกมาเพื่อให้ Supertest ใช้ทดสอบได้โดยไม่ต้องเปิด HTTP Port
-* [`server/src/index.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/src/index.ts) — Entry point หลักของ Server สั่งให้ `app.listen(PORT)` เพื่อเปิดรับ Web Request ที่ HTTP Port ( default: 3000 )
-* [`server/src/prisma.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/src/prisma.ts) — Singleton pattern สำหรับสร้าง PrismaClient (Lazy initialization) เพื่อป้องกันไม่ให้เกิด Database side-effects ขณะทดสอบ Endpoint ที่ไม่ได้ใช้ DB
-
-#### Integration Tests (`server/tests/`)
-* [`server/tests/lab-01/health.test.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/tests/lab-01/health.test.ts) — Integration test สำหรับสอบทาน `GET /api/health` โดยใช้ Supertest (ต้องส่ง HTTP 200 และคืนค่า JSON `{ status: "ok", service: "TokTickIT API" }`)
-* [`server/tests/lab-01/categories.test.ts`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/server/tests/lab-01/categories.test.ts) — Integration test สำหรับสอบทาน `GET /api/categories` ว่าส่งคืนข้อมูล 4 หมวดหมู่ที่ seeded ไว้อย่างถูกต้องตามลำดับ ID
+### 3. Lab 2 Documentation (`docs/lab-02/`)
+* [`docs/lab-02/specification.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/specification.md) — ข้อกำหนดความต้องการ (Functional Requirements), Business Rules (BR-01..34), และ Acceptance Criteria (AC-01..36)
+* [`docs/lab-02/api-spec.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/api-spec.md) — สัญญาระบบ REST API, Request/Response payload, และ Error Catalog
+* [`docs/lab-02/ui-spec.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/ui-spec.md) — ข้อกำหนดการออกแบบ Zen Green Design System, Mobile Breakpoints, Accessibility, และ Visual Checklist
+* [`docs/lab-02/tests.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/tests.md) — Test Plan, Traceability Matrix (AC-01..36) และบันทึกผลการทดสอบจริง (86/86 passed)
+* [`docs/lab-02/reviewer.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/reviewer.md) — บันทึก Peer Review ทั้งหมด (PR ของเราและของเพื่อนร่วมงาน)
+* [`docs/lab-02/ai-use.md`](file:///c:/Users/Feast/OneDrive/Desktop/Work%20University/software%20engineering/Lab1_Starter_Scaffold/toktickit/docs/lab-02/ai-use.md) — บันทึกประวัติ Prompts, การควบคุมคุณภาพ, และบทสะท้อนความคิดเชิงวิศวกรรม
