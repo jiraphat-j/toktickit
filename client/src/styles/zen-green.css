@@ -486,6 +486,299 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   My Tickets Toolbar & Filters (AC-16, AC-17)
+--------------------------------------------------------------------------- */
+.zen-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.zen-toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.zen-filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.zen-search-container {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.zen-search-input {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background-color: #FFFFFF;
+}
+
+.zen-filter-select {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background-color: #FFFFFF;
+  min-width: 140px;
+}
+
+.zen-btn-clear {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--color-field-border);
+  background-color: #F3F4F6;
+  color: var(--color-text-body);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.zen-btn-clear:hover {
+  background-color: #E5E7EB;
+  color: var(--color-text-heading);
+}
+
+/* ---------------------------------------------------------------------------
+   My Tickets Table (Desktop / Tablet >= 768px)
+--------------------------------------------------------------------------- */
+.zen-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.zen-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.zen-table th {
+  background-color: #F8FAFC;
+  color: var(--color-text-heading);
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid var(--color-field-border);
+  white-space: nowrap;
+}
+
+.zen-th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast);
+}
+
+.zen-th-sortable:hover {
+  background-color: #F1F5F9;
+}
+
+.zen-th-sortable:focus-visible {
+  outline: 2px solid var(--color-secondary-green) !important;
+  outline-offset: -2px !important;
+}
+
+.zen-sort-icon {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.zen-sort-icon.active {
+  color: var(--color-primary-green);
+  font-weight: bold;
+}
+
+.zen-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-field-border);
+  color: var(--color-text-body);
+  vertical-align: middle;
+}
+
+.zen-table tbody tr:hover {
+  background-color: #F9FBFA;
+}
+
+.zen-table-link {
+  font-weight: 600;
+  color: var(--color-primary-green);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.zen-table-link:hover {
+  text-decoration: underline;
+  color: #004D25;
+}
+
+.zen-attachment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  background-color: #E2E8F0;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------------------
+   Mobile Card View (< 768px, AC-28, AC-29)
+--------------------------------------------------------------------------- */
+.zen-mobile-ticket-list {
+  display: none;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.zen-mobile-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.zen-mobile-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zen-mobile-card-summary {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-heading);
+}
+
+.zen-mobile-card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Pagination Bar (AC-18, BR-27)
+--------------------------------------------------------------------------- */
+.zen-pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.zen-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.zen-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-field-border);
+  background-color: #FFFFFF;
+  color: var(--color-text-body);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.zen-page-btn:hover:not(:disabled) {
+  background-color: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+.zen-page-btn.active {
+  background-color: var(--color-primary-green);
+  color: #FFFFFF;
+  border-color: var(--color-primary-green);
+  font-weight: 600;
+}
+
+.zen-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zen-page-size-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   State Banners: Empty vs. No-Results (BR-28, AC-19, AC-20)
+--------------------------------------------------------------------------- */
+.zen-state-card {
+  background-color: #FFFFFF;
+  border: 1px dashed var(--color-field-border);
+  border-radius: var(--radius-md);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.zen-state-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.zen-state-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin: 0;
+}
+
+.zen-state-desc {
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  max-width: 420px;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
    Responsive Design & Overflow Prevention (AC-28)
 --------------------------------------------------------------------------- */
 @media (max-width: 768px) {
@@ -534,6 +827,36 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  /* My Tickets Responsive Table to Cards (AC-28, AC-29) */
+  .zen-table-container {
+    display: none;
+  }
+
+  .zen-mobile-ticket-list {
+    display: flex;
+  }
+
+  .zen-toolbar-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zen-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zen-filter-select, .zen-search-container {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .zen-pagination-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
   }
 }
 

@@ -57,6 +57,43 @@ export interface Ticket {
   attachments?: AttachmentMeta[];
 }
 
+export interface TicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  category: { id: number; name: string };
+  relatedSystem?: { id: number; name: string };
+  requestedPriority: Priority;
+  itPriority?: Priority | null;
+  currentStatus: TicketStatus;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    attachments: number;
+  };
+}
+
+export interface TicketListResponse {
+  items: TicketListItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface TicketQueryParams {
+  search?: string;
+  categoryId?: number;
+  requestedPriority?: Priority;
+  currentStatus?: TicketStatus;
+  sortBy?: "createdAt" | "updatedAt" | "ticketNumber";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+}
+
 export interface CreateTicketPayload {
   categoryId: number;
   relatedSystemId: number;
@@ -160,6 +197,45 @@ export async function uploadTicketAttachment(
     try {
       const data = await res.json();
       if (data.error) errorMsg = data.error;
+      else if (data.message) errorMsg = data.message;
+    } catch {
+      // ignore json parse error
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function fetchMyTickets(
+  requesterId: number,
+  params?: TicketQueryParams
+): Promise<TicketListResponse> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.categoryId) query.set("categoryId", params.categoryId.toString());
+  if (params?.requestedPriority) query.set("requestedPriority", params.requestedPriority);
+  if (params?.currentStatus) query.set("currentStatus", params.currentStatus);
+  if (params?.sortBy) query.set("sortBy", params.sortBy);
+  if (params?.sortOrder) query.set("sortOrder", params.sortOrder);
+  if (params?.page) query.set("page", params.page.toString());
+  if (params?.pageSize) query.set("pageSize", params.pageSize.toString());
+
+  const queryString = query.toString();
+  const url = `${API_URL}/api/tickets${queryString ? `?${queryString}` : ""}`;
+
+  const res = await fetch(url, {
+    headers: {
+      "X-Dev-Requester-Id": requesterId.toString(),
+    },
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to load tickets (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.error) errorMsg = data.error;
       else if (data.message) errorMsg = data.message;
     } catch {
       // ignore json parse error
