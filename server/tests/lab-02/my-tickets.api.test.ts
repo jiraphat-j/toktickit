@@ -123,6 +123,18 @@ describe("My Tickets API (Issue 7)", () => {
       });
     });
 
+    it("AC-17: filters tickets by currentStatus (NEW)", async () => {
+      const res = await request(app)
+        .get("/api/tickets?currentStatus=NEW")
+        .set("X-Dev-Requester-Id", requesterA);
+
+      expect(res.status).toBe(200);
+      expect(res.body.pagination.total).toBe(10);
+      res.body.items.forEach((item: any) => {
+        expect(item.currentStatus).toBe("NEW");
+      });
+    });
+
     it("AC-26: sorts by ticketNumber ascending and descending", async () => {
       const resAsc = await request(app)
         .get("/api/tickets?sortBy=ticketNumber&sortOrder=asc&pageSize=20")
@@ -139,6 +151,28 @@ describe("My Tickets API (Issue 7)", () => {
       expect(resDesc.status).toBe(200);
       expect(resDesc.body.items[0].ticketNumber).toBe("TKT-2026-900010");
       expect(resDesc.body.items[9].ticketNumber).toBe("TKT-2026-900001");
+    });
+
+    it("AC-26: sorts by updatedAt ascending and descending", async () => {
+      const resAsc = await request(app)
+        .get("/api/tickets?sortBy=updatedAt&sortOrder=asc&pageSize=20")
+        .set("X-Dev-Requester-Id", requesterA);
+
+      expect(resAsc.status).toBe(200);
+      const datesAsc = resAsc.body.items.map((t: any) => new Date(t.updatedAt).getTime());
+      for (let i = 0; i < datesAsc.length - 1; i++) {
+        expect(datesAsc[i]).toBeLessThanOrEqual(datesAsc[i + 1]);
+      }
+
+      const resDesc = await request(app)
+        .get("/api/tickets?sortBy=updatedAt&sortOrder=desc&pageSize=20")
+        .set("X-Dev-Requester-Id", requesterA);
+
+      expect(resDesc.status).toBe(200);
+      const datesDesc = resDesc.body.items.map((t: any) => new Date(t.updatedAt).getTime());
+      for (let i = 0; i < datesDesc.length - 1; i++) {
+        expect(datesDesc[i]).toBeGreaterThanOrEqual(datesDesc[i + 1]);
+      }
     });
 
     it("AC-18: paginates correctly with custom page size and page slice", async () => {

@@ -167,9 +167,20 @@ describe("My Tickets Screen (Issue 7)", () => {
         const lastCall = fetchSpy.mock.calls[fetchSpy.mock.calls.length - 1];
         expect(lastCall[0].toString()).toContain("requestedPriority=HIGH");
       });
+
+      // Change status filter
+      const statusSelect = screen.getByLabelText(/Filter by Status/i);
+      fireEvent.change(statusSelect, { target: { value: "NEW" } });
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenLastCalledWith(
+          expect.stringContaining("currentStatus=NEW"),
+          expect.anything()
+        );
+      });
     });
 
-    it("AC-26: clicking table header toggles sortOrder and changes sortBy", async () => {
+    it("AC-26: clicking table header toggles sortOrder and changes sortBy (ticketNumber and updatedAt)", async () => {
       const fetchSpy = setupFetchMock();
       render(
         <MyTickets
@@ -200,6 +211,28 @@ describe("My Tickets Screen (Issue 7)", () => {
       await waitFor(() => {
         expect(fetchSpy).toHaveBeenLastCalledWith(
           expect.stringContaining("sortBy=ticketNumber&sortOrder=asc"),
+          expect.anything()
+        );
+      });
+
+      // Click "Last Updated" header to sort by updatedAt desc
+      const updatedAtHeader = screen.getByRole("button", { name: /Sort by Last Updated/i });
+      fireEvent.click(updatedAtHeader);
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenLastCalledWith(
+          expect.stringContaining("sortBy=updatedAt&sortOrder=desc"),
+          expect.anything()
+        );
+      });
+
+      // Click again to toggle to asc
+      const updatedAtHeaderAsc = screen.getByRole("button", { name: /Sort by Last Updated/i });
+      fireEvent.click(updatedAtHeaderAsc);
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenLastCalledWith(
+          expect.stringContaining("sortBy=updatedAt&sortOrder=asc"),
           expect.anything()
         );
       });

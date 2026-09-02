@@ -390,6 +390,16 @@ export const MyTickets: React.FC<MyTicketsProps> = ({
                   >
                     Created Date {renderSortIndicator("createdAt")}
                   </th>
+                  <th
+                    className="zen-th-sortable"
+                    tabIndex={0}
+                    role="button"
+                    onClick={() => handleSort("updatedAt")}
+                    onKeyDown={(e) => e.key === "Enter" && handleSort("updatedAt")}
+                    aria-label="Sort by Last Updated"
+                  >
+                    Last Updated {renderSortIndicator("updatedAt")}
+                  </th>
                   <th>Summary</th>
                   <th>Category</th>
                   <th>Priority</th>
@@ -411,6 +421,9 @@ export const MyTickets: React.FC<MyTicketsProps> = ({
                     </td>
                     <td style={{ whiteSpace: "nowrap", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
                       {formatDate(t.createdAt)}
+                    </td>
+                    <td style={{ whiteSpace: "nowrap", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
+                      {formatDate(t.updatedAt)}
                     </td>
                     <td style={{ fontWeight: 500 }}>
                       <span
@@ -477,7 +490,8 @@ export const MyTickets: React.FC<MyTicketsProps> = ({
                 <div className="zen-mobile-card-summary">{t.summary}</div>
                 <div className="zen-mobile-card-details">
                   <span>📂 {t.category?.name}</span>
-                  <span>📅 {formatDate(t.createdAt)}</span>
+                  <span>📅 Created: {formatDate(t.createdAt)}</span>
+                  <span>🕒 Updated: {formatDate(t.updatedAt)}</span>
                   {t._count && t._count.attachments > 0 && (
                     <span>📎 {t._count.attachments}</span>
                   )}
