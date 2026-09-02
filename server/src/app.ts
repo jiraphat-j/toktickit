@@ -393,6 +393,223 @@ app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res:
 });
 
 // ---------------------------------------------------------------------------
+// List My Tickets API (Lab 2 Issue 7 / #18)
+// ---------------------------------------------------------------------------
+app.get("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: Response) => {
+  const prisma = getPrisma();
+  const requester = req.devRequester!;
+  const details: { field: string; message: string }[] = [];
+
+  const {
+    search,
+    categoryId,
+    requestedPriority,
+    currentStatus,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    page = "1",
+    pageSize = "8",
+  } = req.query;
+
+  // Validation: sortBy whitelist
+  const allowedSortBy = ["createdAt", "updatedAt", "ticketNumber"];
+  if (typeof sortBy !== "string" || !allowedSortBy.includes(sortBy)) {
+    details.push({
+      field: "sortBy",
+      message: `sortBy must be one of: ${allowedSortBy.join(", ")}.`,
+    });
+  }
+
+  // Validation: sortOrder whitelist
+  const normalizedSortOrder = typeof sortOrder === "string" ? sortOrder.toLowerCase() : "";
+  if (normalizedSortOrder !== "asc" && normalizedSortOrder !== "desc") {
+    details.push({
+      field: "sortOrder",
+      message: "sortOrder must be one of: asc, desc.",
+    });
+  }
+
+  // Validation: page must be positive integer >= 1
+  let pageNum = 1;
+  if (typeof page === "string") {
+    const parsedPage = parseInt(page, 10);
+    if (isNaN(parsedPage) || parsedPage < 1 || String(parsedPage) !== page.trim()) {
+      details.push({
+        field: "page",
+        message: "page must be a positive integer >= 1.",
+      });
+    } else {
+      pageNum = parsedPage;
+    }
+  } else {
+    details.push({
+      field: "page",
+      message: "page must be a positive integer >= 1.",
+    });
+  }
+
+  // Validation: pageSize whitelist (8, 20, 50)
+  let pageSizeNum = 8;
+  const allowedPageSizes = [8, 20, 50];
+  if (typeof pageSize === "string") {
+    const parsedPageSize = parseInt(pageSize, 10);
+    if (isNaN(parsedPageSize) || !allowedPageSizes.includes(parsedPageSize) || String(parsedPageSize) !== pageSize.trim()) {
+      details.push({
+        field: "pageSize",
+        message: `pageSize must be one of: ${allowedPageSizes.join(", ")}.`,
+      });
+    } else {
+      pageSizeNum = parsedPageSize;
+    }
+  } else {
+    details.push({
+      field: "pageSize",
+      message: `pageSize must be one of: ${allowedPageSizes.join(", ")}.`,
+    });
+  }
+
+  // Validation: categoryId (optional positive integer)
+  let parsedCategoryId: number | undefined;
+  if (categoryId !== undefined && categoryId !== "") {
+    if (typeof categoryId === "string") {
+      const parsed = parseInt(categoryId, 10);
+      if (isNaN(parsed) || parsed <= 0 || String(parsed) !== categoryId.trim()) {
+        details.push({
+          field: "categoryId",
+          message: "categoryId must be a positive integer.",
+        });
+      } else {
+        parsedCategoryId = parsed;
+      }
+    } else {
+      details.push({
+        field: "categoryId",
+        message: "categoryId must be a positive integer.",
+      });
+    }
+  }
+
+  // Validation: requestedPriority (optional enum)
+  const allowedPriorities = ["LOW", "MEDIUM", "HIGH"];
+  if (requestedPriority !== undefined && requestedPriority !== "") {
+    if (typeof requestedPriority !== "string" || !allowedPriorities.includes(requestedPriority)) {
+      details.push({
+        field: "requestedPriority",
+        message: `requestedPriority must be one of: ${allowedPriorities.join(", ")}.`,
+      });
+    }
+  }
+
+  // Validation: currentStatus (optional enum)
+  const allowedStatuses = ["NEW"];
+  if (currentStatus !== undefined && currentStatus !== "") {
+    if (typeof currentStatus !== "string" || !allowedStatuses.includes(currentStatus)) {
+      details.push({
+        field: "currentStatus",
+        message: `currentStatus must be one of: ${allowedStatuses.join(", ")}.`,
+      });
+    }
+  }
+
+  if (details.length > 0) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid query parameters.",
+        details,
+      },
+    });
+    return;
+  }
+
+  // Build Prisma where clause with Requester Ownership (BR-08, AC-22)
+  const where: any = {
+    requesterId: requester.id,
+  };
+
+  // Search filter (ticketNumber or summary, case-insensitive, BR-24, AC-16)
+  if (typeof search === "string" && search.trim().length > 0) {
+    const trimmedSearch = search.trim();
+    where.OR = [
+      { ticketNumber: { contains: trimmedSearch, mode: "insensitive" } },
+      { summary: { contains: trimmedSearch, mode: "insensitive" } },
+    ];
+  }
+
+  // Category filter
+  if (parsedCategoryId !== undefined) {
+    where.categoryId = parsedCategoryId;
+  }
+
+  // Priority filter
+  if (typeof requestedPriority === "string" && requestedPriority.length > 0) {
+    where.requestedPriority = requestedPriority;
+  }
+
+  // Status filter
+  if (typeof currentStatus === "string" && currentStatus.length > 0) {
+    where.currentStatus = currentStatus;
+  }
+
+  try {
+    const [total, items] = await Promise.all([
+      prisma.ticket.count({ where }),
+      prisma.ticket.findMany({
+        where,
+        orderBy: [
+          { [sortBy as string]: normalizedSortOrder as "asc" | "desc" },
+          { id: "desc" }, // Secondary stable sort tie-breaker (BR-26)
+        ],
+        skip: (pageNum - 1) * pageSizeNum,
+        take: pageSizeNum,
+        select: {
+          id: true,
+          ticketNumber: true,
+          summary: true,
+          category: {
+            select: { id: true, name: true },
+          },
+          relatedSystem: {
+            select: { id: true, name: true },
+          },
+          requestedPriority: true,
+          itPriority: true,
+          currentStatus: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              attachments: {
+                where: { isRemoved: false },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSizeNum);
+
+    res.status(200).json({
+      items,
+      pagination: {
+        page: pageNum,
+        pageSize: pageSizeNum,
+        total,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to list tickets.",
+      },
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Attachment APIs (Lab 2 Issue 4)
 // ---------------------------------------------------------------------------
 

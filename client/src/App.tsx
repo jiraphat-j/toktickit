@@ -11,6 +11,7 @@ import {
 import { AppHeader } from "./components/AppHeader.js";
 import { RequesterSelector } from "./components/RequesterSelector.js";
 import { CreateTicket } from "./components/CreateTicket.js";
+import { MyTickets } from "./components/MyTickets.js";
 
 export default function App() {
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
@@ -128,23 +129,10 @@ export default function App() {
 
           <main className="container py-4" style={{ maxWidth: 1100, margin: "0 auto", padding: "1.5rem" }}>
             {activeTab === "my-tickets" && (
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                  <h2 style={{ fontSize: "1.4rem", margin: 0, fontWeight: 700 }}>My Tickets</h2>
-                  <button
-                    type="button"
-                    className="zen-btn-primary"
-                    onClick={() => setActiveTab("create-ticket")}
-                  >
-                    + Create Ticket
-                  </button>
-                </div>
-                <div className="zen-card" style={{ textAlign: "center", padding: "3rem 1.5rem", color: "var(--color-text-muted)" }}>
-                  <p style={{ fontSize: "1.1rem", margin: 0 }}>
-                    Tickets will be loaded in Issue 7 (My Tickets API and UI).
-                  </p>
-                </div>
-              </div>
+              <MyTickets
+                currentRequester={currentRequester}
+                onCreateTicketClick={() => setActiveTab("create-ticket")}
+              />
             )}
 
             {activeTab === "create-ticket" && (
