@@ -18,3 +18,6 @@ lab1_checklist.md
 # lab 2 uploads
 uploads/
 server/uploads/
+# playwright
+test-results/
+playwright-report/

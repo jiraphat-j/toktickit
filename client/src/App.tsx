@@ -136,7 +136,7 @@ export default function App() {
             onChangeRequester={handleChangeRequester}
           />
 
-          <main className="container py-4" style={{ maxWidth: 1100, margin: "0 auto", padding: "1.5rem" }}>
+          <main className="container py-4 zen-main-container">
             {activeTab === "my-tickets" && (
               selectedTicketId !== null ? (
                 <RequesterTicketDetail

@@ -1,0 +1,20 @@
+{
+  "name": "toktickit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm --prefix server test && npm --prefix client test",
+    "test:server": "npm --prefix server test",
+    "test:client": "npm --prefix client test",
+    "test:e2e": "playwright test",
+    "test:all": "npm test && npm run test:e2e",
+    "db:migrate": "npm --prefix server run prisma:migrate",
+    "db:seed": "npm --prefix server run prisma:seed",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1"
+  }
+}
