@@ -27,7 +27,7 @@
 | **API-07** | API | AC-16, AC-17, AC-26 | `GET /api/tickets` search, filter, and sort | Returns filtered/sorted paginated items matching criteria | `server/tests/lab-02/my-tickets.api.test.ts` | **Pass** |
 | **API-08** | API | AC-22, AC-23 | `GET /api/tickets` cross-requester ownership | Requester B cannot see Requester A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | **Pass** |
 | **API-09** | API | AC-33 | `GET /api/tickets` with invalid query parameters | Returns `400 Bad Request` | `server/tests/lab-02/my-tickets.api.test.ts` | **Pass** |
-| **API-10** | API | AC-21, AC-22 | `GET /api/tickets/:id` owned vs unowned | Owned ticket returns `200`; unowned ticket returns `404 Not Found` | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
+| **API-10** | API | AC-21, AC-22 | `GET /api/tickets/:id` owned vs unowned | Owned ticket returns `200`; unowned ticket returns `404 Not Found` | `server/tests/lab-02/ticket-detail.api.test.ts` | **Pass** |
 | **API-11** | API | AC-08, AC-11 | `POST /api/tickets/:id/attachments` valid upload & 5-item limit | Valid upload returns `201`; 6th active upload returns `400` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
 | **API-12** | API | AC-09, AC-10 | `POST /api/tickets/:id/attachments` invalid file type or > 5MB | Invalid type returns `415`; oversized returns `413` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
 | **API-13** | API | AC-12, AC-32 | `GET /api/attachments/:id/download` | Active file downloads `200`; removed file returns `404` | `server/tests/lab-02/attachments.api.test.ts` | **Pass** |
@@ -40,8 +40,8 @@
 | **UI-05** | UI | AC-01, AC-07 | Create Ticket success view | Displays generated Ticket Number & action buttons; partial attachment retry | `client/tests/lab-02/CreateTicket.test.tsx` | **Pass** |
 | **UI-06** | UI | AC-16, AC-17, AC-18 | My Tickets query controls & pagination | Updates query params, triggers refetch, displays pagination | `client/tests/lab-02/MyTickets.test.tsx` | **Pass** |
 | **UI-07** | UI | AC-19, AC-20 | My Tickets distinct Empty vs No-Results states | Shows correct empty message or clear filters button | `client/tests/lab-02/MyTickets.test.tsx` | **Pass** |
-| **UI-08** | UI | AC-21 | Ticket Detail read-only display | All ticket header fields render read-only; no comment/workflow | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
-| **UI-09** | UI | AC-13, AC-14 | Attachment section soft-remove modal | Modal prompts for reason (min 3 chars) before disabling download | `client/tests/lab-02/AttachmentSection.test.tsx` | Planned |
+| **UI-08** | UI | AC-21 | Ticket Detail read-only display | All ticket header fields render read-only; no comment/workflow | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | **Pass** |
+| **UI-09** | UI | AC-13, AC-14 | Attachment section soft-remove modal | Modal prompts for reason (min 3 chars) before disabling download | `client/tests/lab-02/AttachmentSection.test.tsx` | **Pass** |
 | **E2E-01**| E2E| AC-01, AC-16, AC-21, AC-12, AC-14 | Complete Requester Ticketing Flow | Full browser journey: Select ➔ Create ➔ My Tickets ➔ Detail ➔ Remove | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
 | **E2E-02**| E2E| AC-28, AC-29, AC-30 | Responsive & Keyboard Accessibility | Desktop, tablet, mobile layouts render with zero horizontal scroll | `e2e/lab-02/responsive-a11y.spec.ts` | Planned |
 
@@ -120,7 +120,21 @@ npm run test:e2e
     - UI-07 (AC-19): renders distinct Empty State when requester has 0 tickets ever (PASS)
     - UI-07 (AC-20): renders distinct No-Results State when filters match 0 tickets and allows clearing filters (PASS)
     - AC-23: re-fetches tickets immediately when currentRequester changes (PASS)
-  - **Total Client:** 29 passed (29)
+  - **Total Client:** 37 passed (37 across 6 files)
+    - `tests/lab-01/App.test.tsx`: 3 tests passing (100%)
+    - `tests/lab-02/RequesterSelector.test.tsx` (UI-01, UI-02): 8 tests passing (100%)
+    - `tests/lab-02/CreateTicket.test.tsx` (UI-03, UI-04, UI-05): 10 tests passing (100%)
+    - `tests/lab-02/MyTickets.test.tsx` (UI-06, UI-07): 8 tests passing (100%)
+    - `tests/lab-02/RequesterTicketDetail.test.tsx` (UI-08): 4 tests passing (100%)
+      - UI-08 (AC-21): renders complete ticket detail in read-only mode for owned ticket (PASS)
+      - UI-08 (AC-21): strictly excludes comments, notes, actions taken, and status modification controls (PASS)
+      - UI-08: invokes onBack callback when clicking Back to My Tickets (PASS)
+      - UI-08 (AC-22): renders error view with back button when ticket access is denied or not found (PASS)
+    - `tests/lab-02/AttachmentSection.test.tsx` (UI-09): 4 tests passing (100%)
+      - UI-09 (AC-12, AC-14, AC-32): renders active and soft-removed attachments properly (PASS)
+      - UI-09 (AC-13, BR-21): soft removal modal enforces non-empty reason with minimum 3 characters (PASS)
+      - UI-09 (AC-13, AC-15): confirming removal calls API and notifies parent (PASS)
+      - UI-09 (AC-11, BR-19): displays cap warning and disables upload when active count is 5 (PASS)
 
 - **Server Tests (`npm --prefix server test`):**
   - `tests/lab-01/health.test.ts`: 1 test passing (100%)
@@ -130,18 +144,11 @@ npm run test:e2e
   - `tests/lab-02/create-ticket.api.test.ts`: 8 tests passing (100%)
   - `tests/lab-02/attachments.api.test.ts`: 7 tests passing (100%)
   - `tests/lab-02/my-tickets.api.test.ts` (API-07, API-08, API-09): 14 tests passing (100%)
-    - API-07: returns paginated list of tickets for current requester with default page size 8 (PASS)
-    - API-07 (AC-16): searches case-insensitively across summary and ticketNumber (PASS)
-    - API-07 (AC-17): combines multiple filters (category and priority) with AND logic (PASS)
-    - API-07 (AC-17): filters tickets by currentStatus (NEW) (PASS)
-    - API-07 (AC-26): sorts by ticketNumber ascending and descending (PASS)
-    - API-07 (AC-26): sorts by updatedAt ascending and descending (PASS)
-    - API-07 (AC-18): paginates correctly with custom page size and page slice (PASS)
-    - API-08 (AC-22, AC-23): scopes results strictly to authenticated requester (PASS)
-    - API-09 (AC-33): rejects request without valid X-Dev-Requester-Id (PASS)
-    - API-09 (AC-33): rejects invalid sortBy field with 400 (PASS)
-    - API-09 (AC-33): rejects invalid sortOrder with 400 (PASS)
-    - API-09 (AC-33): rejects invalid pageSize with 400 (PASS)
-    - API-09 (AC-33): rejects zero or negative page with 400 (PASS)
-    - API-09 (BR-27): returns empty items with valid pagination metadata for out-of-range positive page (PASS)
-  - **Total Server:** 37 passed (37)
+  - `tests/lab-02/ticket-detail.api.test.ts` (API-10): 6 tests passing (100%)
+    - API-10 (AC-21): returns 200 with complete read-only ticket details and attachments (PASS)
+    - API-10 (AC-22): returns 404 Not Found when requester attempts to access another requester's ticket (PASS)
+    - API-10: returns 404 Not Found for nonexistent ticket ID (PASS)
+    - API-10 (AC-33): rejects non-numeric or non-positive ticket ID with 400 (PASS)
+    - API-10 (AC-27): rejects request without X-Dev-Requester-Id header with 400 (PASS)
+    - API-10 (AC-27): rejects request with inactive requester ID with 400 (PASS)
+  - **Total Server:** 43 passed (43 across 8 files)

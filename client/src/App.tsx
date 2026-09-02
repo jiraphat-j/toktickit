@@ -12,10 +12,12 @@ import { AppHeader } from "./components/AppHeader.js";
 import { RequesterSelector } from "./components/RequesterSelector.js";
 import { CreateTicket } from "./components/CreateTicket.js";
 import { MyTickets } from "./components/MyTickets.js";
+import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 
 export default function App() {
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
   const [activeTab, setActiveTab] = useState<"my-tickets" | "create-ticket">("my-tickets");
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [revalidating, setRevalidating] = useState<boolean>(true);
 
   // Lab 1 Health & Category diagnostic state (retained for backward test compatibility)
@@ -55,11 +57,18 @@ export default function App() {
   const handleSelectRequester = (requester: DevRequester) => {
     setStoredRequesterId(requester.id);
     setCurrentRequester(requester);
+    setSelectedTicketId(null);
   };
 
   const handleChangeRequester = () => {
     setStoredRequesterId(null);
     setCurrentRequester(null);
+    setSelectedTicketId(null);
+  };
+
+  const handleTabChange = (tab: "my-tickets" | "create-ticket") => {
+    setActiveTab(tab);
+    setSelectedTicketId(null);
   };
 
   async function handleCheckSystem() {
@@ -123,23 +132,41 @@ export default function App() {
           <AppHeader
             currentRequester={currentRequester}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onChangeRequester={handleChangeRequester}
           />
 
           <main className="container py-4" style={{ maxWidth: 1100, margin: "0 auto", padding: "1.5rem" }}>
             {activeTab === "my-tickets" && (
-              <MyTickets
-                currentRequester={currentRequester}
-                onCreateTicketClick={() => setActiveTab("create-ticket")}
-              />
+              selectedTicketId !== null ? (
+                <RequesterTicketDetail
+                  ticketId={selectedTicketId}
+                  currentRequester={currentRequester}
+                  onBack={() => setSelectedTicketId(null)}
+                />
+              ) : (
+                <MyTickets
+                  currentRequester={currentRequester}
+                  onCreateTicketClick={() => {
+                    setActiveTab("create-ticket");
+                    setSelectedTicketId(null);
+                  }}
+                  onSelectTicket={(id) => setSelectedTicketId(id)}
+                />
+              )
             )}
 
             {activeTab === "create-ticket" && (
               <CreateTicket
                 currentRequester={currentRequester}
-                onSuccessViewTickets={() => setActiveTab("my-tickets")}
-                onCancel={() => setActiveTab("my-tickets")}
+                onSuccessViewTickets={() => {
+                  setActiveTab("my-tickets");
+                  setSelectedTicketId(null);
+                }}
+                onCancel={() => {
+                  setActiveTab("my-tickets");
+                  setSelectedTicketId(null);
+                }}
               />
             )}
           </main>

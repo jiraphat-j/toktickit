@@ -246,6 +246,68 @@ export async function fetchMyTickets(
   return res.json();
 }
 
+export type TicketDetail = Ticket;
+
+export async function fetchTicketDetail(
+  requesterId: number,
+  ticketId: number
+): Promise<TicketDetail> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}`, {
+    headers: {
+      "X-Dev-Requester-Id": requesterId.toString(),
+    },
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to load ticket details (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.error) errorMsg = data.error;
+      else if (data.message) errorMsg = data.message;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function removeTicketAttachment(
+  requesterId: number,
+  attachmentId: number,
+  reason: string
+): Promise<AttachmentMeta> {
+  const res = await fetch(`${API_URL}/api/attachments/${attachmentId}/remove`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Dev-Requester-Id": requesterId.toString(),
+    },
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to remove attachment (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.error) errorMsg = data.error;
+      else if (data.message) errorMsg = data.message;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export function getAttachmentDownloadUrl(attachmentId: number): string {
+  return `${API_URL}/api/attachments/${attachmentId}/download`;
+}
+
 export function getStoredRequesterId(): number | null {
   const raw = sessionStorage.getItem(DEV_REQUESTER_STORAGE_KEY);
   if (!raw) return null;
