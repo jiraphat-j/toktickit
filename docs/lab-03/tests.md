@@ -59,6 +59,7 @@
 | **UI-04** | UI | AC-13, AC-14, AC-15 | IT Staff Ticket Detail claiming, IT priority, status actions, dual threads | Contextual actions, distinct Zen Green comments vs Amber Internal Notes | `client/tests/lab-03/StaffTicketDetail.test.tsx` | **Planned** |
 | **UI-05** | UI | AC-16, AC-17, AC-20 | Admin User Management directory, modals, and guardrails | Create/Edit modals, duplicate email warning, self-deactivation disabled | `client/tests/lab-03/UserManagement.test.tsx` | **Planned** |
 | **E2E-01** | E2E | AC-01..05 | Authentication, first password change, shell display, and logout | End-to-end browser authentication flow with session verification | `e2e/lab-03/authentication.spec.ts` | **Planned** |
+| **E2E-01b** | E2E | AC-04, BR-06 | Browser back-navigation after logout | User logs out, clicks browser Back button (`page.goBack()`); redirected to `/login` and prohibited from viewing prior session data | `e2e/lab-03/authentication.spec.ts` | **Planned** |
 | **E2E-02** | E2E | AC-12..15 | IT Staff Ticket flow (Queue ➔ Detail ➔ Claim ➔ Workflow ➔ Comments/Notes) | Operational staff lifecycle journey across desktop and mobile | `e2e/lab-03/staff-ticket-flow.spec.ts` | **Planned** |
 | **E2E-03** | E2E | AC-16..21 | Administrator user governance flow and access denial for non-admins | User creation, edit, password reset, self-deactivation block, 403 test | `e2e/lab-03/user-administration.spec.ts` | **Planned** |
 | **REG-01** | Regression | AC-18 | Full Lab 1 & Lab 2 regression suite | Verification that all prior ticket creation, attachment, and reference APIs pass | `server/tests/lab-02/` & `client/tests/lab-02/` | **Planned** |
@@ -72,7 +73,7 @@
 | **AC-01** | Valid login establishes session; invalid/inactive accounts return 401 | `AUTH-01`, `AUTH-02`, `AUTH-03`, `UI-01`, `E2E-01` |
 | **AC-02** | User with `mustChangePassword = true` blocked from normal screens | `AUTH-05`, `AUTH-06`, `UI-02`, `E2E-01` |
 | **AC-03** | Password change enforces complexity rules (≥8 chars, uppercase, lowercase, digit) | `AUTH-04`, `AUTH-06`, `UI-02` |
-| **AC-04** | Logout invalidates session and prevents back-navigation | `AUTH-07`, `AUTH-08`, `E2E-01` |
+| **AC-04** | Logout invalidates session and prevents back-navigation | `AUTH-07`, `AUTH-08`, `E2E-01`, `E2E-01b` |
 | **AC-05** | Authenticated shell renders user full name, role badge, and role navigation | `SEC-01`, `UI-01`, `E2E-01` |
 | **AC-06** | Requester ticket operations derive identity from session (no selector) | `SEC-03`, `REQ-01`, `REG-01` |
 | **AC-07** | Requester views only owned tickets; cross-requester access returns 404 | `SEC-02`, `REQ-02`, `REG-01` |
