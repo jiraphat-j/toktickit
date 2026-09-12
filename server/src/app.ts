@@ -1,15 +1,23 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
+import { authRouter } from "./auth.js";
+import { SESSION_SECRET } from "./session.js";
 
 export const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser(SESSION_SECRET));
+app.use("/api/auth", authRouter);
 
 // Ensure upload directory exists
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");

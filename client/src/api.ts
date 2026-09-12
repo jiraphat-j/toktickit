@@ -322,3 +322,90 @@ export function setStoredRequesterId(id: number | null): void {
     sessionStorage.setItem(DEV_REQUESTER_STORAGE_KEY, id.toString());
   }
 }
+
+// ---------------------------------------------------------------------------
+// Lab 3 Authentication & User APIs
+// ---------------------------------------------------------------------------
+export type UserRole = "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  fullName: string;
+  role: UserRole;
+  isActive: boolean;
+  mustChangePassword: boolean;
+}
+
+export async function loginUser(email: string, password: string): Promise<AuthUser> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    let errorMsg = "Invalid email or password";
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  const data = await res.json();
+  return data.user;
+}
+
+export async function logoutUser(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to logout");
+  }
+}
+
+export async function fetchCurrentUser(): Promise<AuthUser | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.user || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function changeUserPassword(
+  newPassword: string,
+  confirmPassword: string
+): Promise<void> {
+  const res = await fetch(`${API_URL}/api/auth/change-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ newPassword, confirmPassword }),
+  });
+
+  if (!res.ok) {
+    let errorMsg = "Failed to update password";
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      if (data.error?.details && data.error.details.length > 0) {
+        errorMsg = data.error.details.map((d: any) => d.message).join(" ");
+      }
+    } catch {}
+    throw new Error(errorMsg);
+  }
+}
+
