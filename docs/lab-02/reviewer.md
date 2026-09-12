@@ -19,7 +19,7 @@
 | **PR #27 (Issue #18)** | `feat: My Tickets API and UI` | [#27](https://github.com/jiraphat-j/toktickit/pull/27) | "ตรวจ PR แล้วครับ โดยรวม My Tickets API, search, filtering, pagination, ownership isolation และ responsive UI ทำได้ดีค่ะ แต่ช่วยตรวจใน MyTickets.tsx ตอนนี้ UI มี sorting สำหรับ Ticket Number และ Created Date แต่ยังไม่มี Last Updated ทั้งที่ API/spec รองรับการ sort ด้วย updatedAt ด้วยรบกวนเพิ่ม column/header หรือ UI action สำหรับ sorting by Last Updated ให้ครบตาม requirement และTest coverage ยังไม่ครอบคลุม currentStatus filter และ updatedAt sorting..." | เพิ่มคอลัมน์/sorting สำหรับ `updatedAt` ใน UI และเพิ่ม automated tests สำหรับ `currentStatus` filter และ `updatedAt` sorting ใน commit `4c0bcb9` | **Approved & Merged** by @thanapornboont-star |
 | **PR #28 (Issue #19)** | `feat: Ticket Detail and Attachment UI` | [#28](https://github.com/jiraphat-j/toktickit/pull/28) | "ถูกต้องครบถ้วนค่ะ คาดว่าตอนนี้ยังไม่มีปัญหาค่ะ" | "ขอบคุณมากครับ" ยืนยันผลการทดสอบ API-10, UI-08, UI-09 ผ่านครบ 100% | **Approved & Merged** by @thanapornboont-star |
 | **PR #30 (Issue #20)** | `test: add Playwright E2E suites, responsive visual QA, and release readiness` | [#30](https://github.com/jiraphat-j/toktickit/pull/30) | "ตรวจ PR แล้วครับ โดยรวม Playwright E2E, responsive/accessibility tests และ visual QA ทำได้ครบดี มีการครอบคลุม requester flow ตั้งแต่ Create Ticket → My Tickets → Ticket Detail รวมถึง Desktop/Tablet/Mobile และ keyboard navigation และมีการอัปเดต tests.md พร้อมผล 86/86 tests ผ่านค่ะ" | "ขอบคุณมากครับ" ยืนยันผลการทดสอบ Playwright E2E (E2E-01, E2E-02) ผ่าน 100%, ภาพ screenshot ครบ 11 ภาพ และสถานะเทสต์ 86/86 ผ่านครบถ้วน | **Approved & Merged** by @thanapornboont-star |
-| **Release PR** | `release: merge lab2-staging to main` | [PR Link] | - | - | Planned |
+| **Release PR (#31)** | `release: merge lab2-staging to main` | [#31](https://github.com/jiraphat-j/toktickit/pull/31) | "ตรวจ Release PR แล้วค่ะ รวมทุกฟีเจอร์ Issue 1-9 ครบถ้วน เทสต์ผ่านทั้งหมด 86/86 tests พร้อม merge เข้า main ค่ะ" | "ขอบคุณมากครับ" Release to main complete | **Approved & Merged** by @thanapornboont-star |
 
 ---
 
@@ -329,6 +329,16 @@
   - **My Follow-up & Approval:** Approved by @jiraphat-j
   - **Merge Action:** Merged commit `5072afd` into partner `lab2-staging` by @jiraphat-j
 
+---
 
-
-
+### Release PR — Merge lab2-staging to main
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/31](https://github.com/jiraphat-j/toktickit/pull/31)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:**
+    > *"ตรวจ Release PR แล้วค่ะ รวมทุกฟีเจอร์ Issue 1-9 ครบถ้วน เทสต์ผ่านทั้งหมด 86/86 tests พร้อม merge เข้า main ค่ะ"*
+  - **Author Response:**
+    > *"ขอบคุณมากครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `6b04c75` into `main` by @thanapornboont-star
