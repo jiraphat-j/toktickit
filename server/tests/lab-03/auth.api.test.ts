@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import { app } from "../../src/app.js";
 import { getPrisma } from "../../src/prisma.js";
+import { expireAllSessions } from "../../src/session.js";
 import bcrypt from "bcryptjs";
 
 describe("Lab 3 Authentication & Password Lifecycle APIs (Issue #35)", () => {
@@ -74,14 +75,14 @@ describe("Lab 3 Authentication & Password Lifecycle APIs (Issue #35)", () => {
     expect(res.body.error.message).toBe("Invalid email or password");
   });
 
-  // AUTH-07: GET /api/auth/me returns profile for active session vs 401 for unauthenticated (AC-04, BR-06)
-  it("AUTH-07 (AC-04, BR-06): GET /api/auth/me returns current user profile with valid cookie vs 401 without", async () => {
-    // Unauthenticated request
+  // AUTH-07: GET /api/auth/me returns profile for active session vs 401 for unauthenticated or expired session (AC-04, BR-06)
+  it("AUTH-07 (AC-04, BR-06): GET /api/auth/me returns current user profile with valid cookie vs 401 for absent or expired session", async () => {
+    // 1. Unauthenticated request (absent session)
     const unauthRes = await request(app).get("/api/auth/me");
     expect(unauthRes.status).toBe(401);
     expect(unauthRes.body.error.code).toBe("UNAUTHORIZED");
 
-    // Authenticated request
+    // 2. Authenticated request (valid session)
     const loginRes = await request(app)
       .post("/api/auth/login")
       .send({
@@ -98,6 +99,23 @@ describe("Lab 3 Authentication & Password Lifecycle APIs (Issue #35)", () => {
     expect(meRes.status).toBe(200);
     expect(meRes.body.user.email).toBe(testRequesterEmail);
     expect(meRes.body.user.role).toBe("REQUESTER");
+
+    // 3. Expired session test (expire session and verify 401 rejection)
+    expireAllSessions();
+
+    const expiredRes = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", cookie);
+
+    expect(expiredRes.status).toBe(401);
+    expect(expiredRes.body.error.code).toBe("UNAUTHORIZED");
+    expect(expiredRes.body.error.message).toMatch(/expired|invalid/i);
+
+    // Subsequent request is also rejected because expired session was pruned from store
+    const secondRes = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", cookie);
+    expect(secondRes.status).toBe(401);
   });
 
   // AUTH-04: Password complexity validation on change-password (AC-03, BR-03)

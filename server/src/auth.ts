@@ -204,6 +204,13 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
+    res.cookie("toktickit_auth", "1", {
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.status(200).json({
       user: {
         id: user.id,
@@ -218,23 +225,21 @@ authRouter.post("/login", async (req: Request, res: Response) => {
     res.status(500).json({
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "Login failed.",
+        message: "Login failed due to an unexpected error",
       },
     });
   }
 });
 
 // POST /api/auth/logout
-authRouter.post("/logout", (req: AuthenticatedRequest, res: Response) => {
+authRouter.post("/logout", requireAuth, (req: AuthenticatedRequest, res: Response) => {
   const token = extractSessionToken(req);
   if (token) {
     destroySession(token);
   }
   res.clearCookie(SESSION_COOKIE_NAME);
-  res.status(200).json({
-    success: true,
-    message: "Logged out successfully",
-  });
+  res.clearCookie("toktickit_auth");
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 });
 
 // GET /api/auth/me

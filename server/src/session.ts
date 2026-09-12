@@ -35,3 +35,17 @@ export function destroySession(token: string): void {
 export function clearAllSessions(): void {
   sessionStore.clear();
 }
+
+export function expireSession(token: string): boolean {
+  const session = sessionStore.get(token);
+  if (!session) return false;
+  session.expiresAt = new Date(Date.now() - 1000);
+  return true;
+}
+
+export function expireAllSessions(): void {
+  const past = new Date(Date.now() - 1000);
+  for (const session of sessionStore.values()) {
+    session.expiresAt = past;
+  }
+}

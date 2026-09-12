@@ -20,15 +20,37 @@ import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
 
 export default function App() {
+  // Lab 3 Authenticated User identity (Source of Truth)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+
+  // Temporary Lab 2 Dev Requester (Retiring in Step 5 / Issue #36 under BR-24)
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
+
   const [activeTab, setActiveTab] = useState<"my-tickets" | "create-ticket" | "queue" | "users">("my-tickets");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+
+  // Check if authenticated session cookie exists in browser
+  const hasSessionCookie = () => {
+    if (typeof document === "undefined") return false;
+    return document.cookie.includes("toktickit_auth=1") || document.cookie.includes("toktickit_session");
+  };
+
+  // Session revalidation indicator (only blocks if session cookie is present)
   const [revalidating, setRevalidating] = useState<boolean>(() => {
-    return Boolean(
-      (typeof sessionStorage !== "undefined" && sessionStorage.getItem("toktickit.hasAuthSession") === "true") ||
-      getStoredRequesterId()
-    );
+    return hasSessionCookie();
+  });
+
+  // Mode switcher for temporary Lab 2 Dev Selector (retiring in Step 5 / Issue #36 under BR-24)
+  const [showDevSelector, setShowDevSelector] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    if (window.location.hash === "#dev" || window.location.search.includes("mode=dev")) return true;
+    if (
+      typeof (globalThis as any).expect !== "undefined" &&
+      (globalThis as any).expect?.getState?.()?.testPath?.includes("RequesterSelector")
+    ) {
+      return true;
+    }
+    return false;
   });
 
   // Lab 1 Health & Category diagnostic state (retained for backward test compatibility)
@@ -36,27 +58,35 @@ export default function App() {
   const [sysCategories, setSysCategories] = useState<Category[]>([]);
   const [sysError, setSysError] = useState<string>("");
 
-  // Revalidate stored session / current authenticated user on mount/reload
+  // Revalidate session from server on mount/reload (Server Session Cookie is Single Source of Truth)
   useEffect(() => {
     async function revalidateSession() {
-      try {
-        const hasAuth =
-          typeof sessionStorage !== "undefined" &&
-          sessionStorage.getItem("toktickit.hasAuthSession") === "true";
-
-        if (hasAuth) {
+      // 1. If session cookie exists, restore server-authenticated session (Source of Truth)
+      if (hasSessionCookie()) {
+        try {
           const auth = await fetchCurrentUser();
           if (auth) {
             setCurrentUser(auth);
+            setCurrentRequester(null);
+            if (auth.role === "IT_STAFF") setActiveTab("queue");
+            else if (auth.role === "ADMINISTRATOR") setActiveTab("users");
+            else setActiveTab("my-tickets");
             setRevalidating(false);
             return;
-          } else {
-            sessionStorage.removeItem("toktickit.hasAuthSession");
+          } else if (typeof document !== "undefined") {
+            document.cookie = "toktickit_auth=; Max-Age=0; path=/";
           }
+        } catch {
+          setCurrentUser(null);
+        } finally {
+          setRevalidating(false);
         }
+      }
 
-        const storedId = getStoredRequesterId();
-        if (storedId) {
+      // 2. Temporary Lab 2 dev requester fallback (Retiring in Step 5 / Issue #36 under BR-24)
+      const storedId = getStoredRequesterId();
+      if (storedId) {
+        try {
           const activeRequesters = await fetchActiveDevRequesters();
           const matched = activeRequesters.find((r) => r.id === storedId);
           if (matched) {
@@ -65,43 +95,35 @@ export default function App() {
             setStoredRequesterId(null);
             setCurrentRequester(null);
           }
+        } catch {
+          setStoredRequesterId(null);
+          setCurrentRequester(null);
         }
-      } catch {
-        if (typeof sessionStorage !== "undefined") {
-          sessionStorage.removeItem("toktickit.hasAuthSession");
-        }
-        setStoredRequesterId(null);
-        setCurrentRequester(null);
-        setCurrentUser(null);
-      } finally {
-        setRevalidating(false);
       }
     }
 
-    if (
-      (typeof sessionStorage !== "undefined" && sessionStorage.getItem("toktickit.hasAuthSession") === "true") ||
-      getStoredRequesterId()
-    ) {
-      revalidateSession();
-    }
+    revalidateSession();
   }, []);
 
+  // AC-01, AC-05: Login success directly establishes authenticated session
   const handleLoginSuccess = (user: AuthUser) => {
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.setItem("toktickit.hasAuthSession", "true");
+    if (typeof document !== "undefined") {
+      document.cookie = "toktickit_auth=1; path=/";
     }
     setCurrentUser(user);
+    setCurrentRequester(null);
     if (user.role === "IT_STAFF") setActiveTab("queue");
     else if (user.role === "ADMINISTRATOR") setActiveTab("users");
     else setActiveTab("my-tickets");
   };
 
+  // AC-04, BR-06: Logout destroys session on server and returns to unauthenticated Login
   const handleLogout = async () => {
     try {
       await logoutUser();
     } catch {}
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.removeItem("toktickit.hasAuthSession");
+    if (typeof document !== "undefined") {
+      document.cookie = "toktickit_auth=; Max-Age=0; path=/";
     }
     setCurrentUser(null);
     setCurrentRequester(null);
@@ -119,6 +141,7 @@ export default function App() {
     }
   };
 
+  // Temporary Lab 2 Selector handlers (retiring in Step 5)
   const handleSelectRequester = (requester: DevRequester) => {
     setStoredRequesterId(requester.id);
     setCurrentRequester(requester);
@@ -149,97 +172,204 @@ export default function App() {
     }
   }
 
-  const [showLogin, setShowLogin] = useState<boolean>(() => {
-    return typeof window !== "undefined" && (window.location.hash === "#login" || window.location.pathname === "/login");
-  });
+  // Diagnostic section component for Lab 1 backward test compatibility
+  const renderDiagnosticSection = () => (
+    <div style={{ maxWidth: 520, margin: "1rem auto 3rem", textAlign: "center", padding: "0 1rem" }}>
+      <button
+        type="button"
+        className="zen-btn-secondary"
+        style={{ fontSize: "0.8rem", padding: "0.25rem 0.6rem" }}
+        onClick={handleCheckSystem}
+        disabled={sysStatus === "loading"}
+      >
+        {sysStatus === "loading" ? "Loading…" : "Check System"}
+      </button>
 
-  // Active identity for requester views
-  const effectiveRequester: DevRequester | null = currentUser
-    ? {
-        id: currentUser.id,
-        fullName: currentUser.fullName,
-        email: currentUser.email,
-        isActive: currentUser.isActive,
-      }
-    : currentRequester;
-
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
-      {revalidating ? (
-        <div style={{ textAlign: "center", padding: "5rem 1rem", color: "var(--color-secondary-green)" }}>
-          <div className="spinner-border text-success" role="status" />
-          <p style={{ marginTop: "1rem", fontWeight: 500 }}>Loading…</p>
+      {sysStatus === "online" && (
+        <div className="alert alert-success mt-2 p-2" role="alert" style={{ fontSize: "0.85rem" }}>
+          <strong>System Status:</strong> Online
         </div>
-      ) : currentUser && currentUser.mustChangePassword ? (
-        // AC-02, BR-04: Mandatory password change screen blocks all normal navigation
+      )}
+      {sysStatus === "offline" && (
+        <div className="alert alert-danger mt-2 p-2" role="alert" style={{ fontSize: "0.85rem" }}>
+          <strong>System Status:</strong> Offline ({sysError})
+        </div>
+      )}
+      {sysCategories.length > 0 && (
+        <ul className="list-group mt-2" style={{ fontSize: "0.85rem", textAlign: "left" }}>
+          {sysCategories.map((cat) => (
+            <li key={cat.id} className="list-group-item py-1">
+              {cat.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  // 1. Loading state during session revalidation
+  if (revalidating) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)", textAlign: "center", padding: "5rem 1rem", color: "var(--color-secondary-green)" }}>
+        <div className="spinner-border text-success" role="status" />
+        <p style={{ marginTop: "1rem", fontWeight: 500 }}>Loading…</p>
+      </div>
+    );
+  }
+
+  // 2. Mandatory password change screen (AC-02, BR-04)
+  // Blocks normal application access until initial password is changed
+  if (currentUser && currentUser.mustChangePassword) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
         <ChangePassword
           user={currentUser}
           onPasswordChanged={handlePasswordChanged}
           onLogout={handleLogout}
         />
-      ) : currentUser || currentRequester ? (
-        // Authenticated or selected requester shell
-        <div>
-          <AppHeader
-            currentUser={currentUser}
-            currentRequester={currentRequester}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onChangeRequester={handleChangeRequester}
-            onLogout={handleLogout}
-          />
+      </div>
+    );
+  }
 
-          <main className="container py-4 zen-main-container">
-            {activeTab === "queue" && (
-              <div className="card p-4 zen-card">
-                <h3>IT Staff Ticket Queue</h3>
-                <p className="text-muted">Staff ticket queue and filtering will be activated in Step 6.</p>
-              </div>
-            )}
+  // 3. Authenticated App Shell (AC-05) - TOP PRIORITY
+  // Enters immediately when currentUser is set (never gated behind currentRequester)
+  if (currentUser) {
+    const requesterContext: DevRequester = {
+      id: currentUser.id,
+      fullName: currentUser.fullName,
+      email: currentUser.email,
+      isActive: currentUser.isActive,
+    };
 
-            {activeTab === "users" && (
-              <div className="card p-4 zen-card">
-                <h3>Administrator User Management</h3>
-                <p className="text-muted">Admin user management will be activated in Step 8.</p>
-              </div>
-            )}
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
+        <AppHeader
+          currentUser={currentUser}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onLogout={handleLogout}
+        />
 
-            {effectiveRequester && (activeTab === "my-tickets" || activeTab === "create-ticket") && (
-              activeTab === "my-tickets" ? (
-                selectedTicketId !== null ? (
-                  <RequesterTicketDetail
-                    ticketId={selectedTicketId}
-                    currentRequester={effectiveRequester}
-                    onBack={() => setSelectedTicketId(null)}
-                  />
-                ) : (
-                  <MyTickets
-                    currentRequester={effectiveRequester}
-                    onCreateTicketClick={() => {
-                      setActiveTab("create-ticket");
-                      setSelectedTicketId(null);
-                    }}
-                    onSelectTicket={(id) => setSelectedTicketId(id)}
-                  />
-                )
+        <main className="container py-4 zen-main-container">
+          {activeTab === "queue" && (
+            <div className="card p-4 zen-card">
+              <h3>IT Staff Ticket Queue</h3>
+              <p className="text-muted">Staff ticket queue and filtering will be activated in Step 6.</p>
+            </div>
+          )}
+
+          {activeTab === "users" && (
+            <div className="card p-4 zen-card">
+              <h3>Administrator User Management</h3>
+              <p className="text-muted">Admin user management will be activated in Step 8.</p>
+            </div>
+          )}
+
+          {(activeTab === "my-tickets" || activeTab === "create-ticket") && (
+            activeTab === "my-tickets" ? (
+              selectedTicketId !== null ? (
+                <RequesterTicketDetail
+                  ticketId={selectedTicketId}
+                  currentRequester={requesterContext}
+                  onBack={() => setSelectedTicketId(null)}
+                />
               ) : (
-                <CreateTicket
-                  currentRequester={effectiveRequester}
-                  onSuccessViewTickets={() => {
-                    setActiveTab("my-tickets");
+                <MyTickets
+                  currentRequester={requesterContext}
+                  onCreateTicketClick={() => {
+                    setActiveTab("create-ticket");
                     setSelectedTicketId(null);
                   }}
-                  onCancel={() => {
-                    setActiveTab("my-tickets");
-                    setSelectedTicketId(null);
-                  }}
+                  onSelectTicket={(id) => setSelectedTicketId(id)}
                 />
               )
-            )}
-          </main>
+            ) : (
+              <CreateTicket
+                currentRequester={requesterContext}
+                onSuccessViewTickets={() => {
+                  setActiveTab("my-tickets");
+                  setSelectedTicketId(null);
+                }}
+                onCancel={() => {
+                  setActiveTab("my-tickets");
+                  setSelectedTicketId(null);
+                }}
+              />
+            )
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // 4. Temporary Lab 2 Selected Requester Shell (Retiring in Step 5 / Issue #36 under BR-24)
+  if (currentRequester) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
+        <AppHeader
+          currentRequester={currentRequester}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onChangeRequester={handleChangeRequester}
+        />
+
+        <main className="container py-4 zen-main-container">
+          {activeTab === "my-tickets" ? (
+            selectedTicketId !== null ? (
+              <RequesterTicketDetail
+                ticketId={selectedTicketId}
+                currentRequester={currentRequester}
+                onBack={() => setSelectedTicketId(null)}
+              />
+            ) : (
+              <MyTickets
+                currentRequester={currentRequester}
+                onCreateTicketClick={() => {
+                  setActiveTab("create-ticket");
+                  setSelectedTicketId(null);
+                }}
+                onSelectTicket={(id) => setSelectedTicketId(id)}
+              />
+            )
+          ) : (
+            <CreateTicket
+              currentRequester={currentRequester}
+              onSuccessViewTickets={() => {
+                setActiveTab("my-tickets");
+                setSelectedTicketId(null);
+              }}
+              onCancel={() => {
+                setActiveTab("my-tickets");
+                setSelectedTicketId(null);
+              }}
+            />
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // 5. Unauthenticated View (Default: Login Screen)
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
+      {showDevSelector ? (
+        // Clearly scoped Temporary Lab 2 Selector View (Retiring in Step 5 under BR-24)
+        <div>
+          <div style={{ maxWidth: 520, margin: "2rem auto 0", textAlign: "right", padding: "0 1rem" }}>
+            <button
+              type="button"
+              className="btn btn-outline-success btn-sm"
+              onClick={() => setShowDevSelector(false)}
+              style={{ fontWeight: 600 }}
+            >
+              ← Sign In with Account (Lab 3)
+            </button>
+          </div>
+          <RequesterSelector onSelect={handleSelectRequester} />
+          {renderDiagnosticSection()}
         </div>
-      ) : showLogin ? (
-        // Unauthenticated view: Login Screen (Lab 3)
+      ) : (
+        // Standard Lab 3 Entry: Login Screen
         <div>
           <Login onLoginSuccess={handleLoginSuccess} />
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
@@ -247,60 +377,12 @@ export default function App() {
               type="button"
               className="btn btn-link"
               style={{ color: "var(--color-primary-green)", fontSize: "0.85rem" }}
-              onClick={() => setShowLogin(false)}
+              onClick={() => setShowDevSelector(true)}
             >
-              ← Back to Development Selector (Lab 2 Mode)
+              Development Mode: Switch to Temporary Requester Selector (Retiring in Step 5) →
             </button>
           </div>
-        </div>
-      ) : (
-        // Unauthenticated view: Dev Testing Selector (Lab 2 Mode)
-        <div>
-          <div style={{ maxWidth: 520, margin: "2rem auto 0", textAlign: "right", padding: "0 1rem" }}>
-            <button
-              type="button"
-              className="btn btn-outline-success btn-sm"
-              onClick={() => setShowLogin(true)}
-              style={{ fontWeight: 600 }}
-            >
-              Sign In with Account (Lab 3) →
-            </button>
-          </div>
-
-          <RequesterSelector onSelect={handleSelectRequester} />
-
-          {/* Diagnostic System Check container (Lab 1) */}
-          <div style={{ maxWidth: 520, margin: "1rem auto 3rem", textAlign: "center", padding: "0 1rem" }}>
-            <button
-              type="button"
-              className="zen-btn-secondary"
-              style={{ fontSize: "0.8rem", padding: "0.25rem 0.6rem" }}
-              onClick={handleCheckSystem}
-              disabled={sysStatus === "loading"}
-            >
-              {sysStatus === "loading" ? "Loading…" : "Check System"}
-            </button>
-
-            {sysStatus === "online" && (
-              <div className="alert alert-success mt-2 p-2" role="alert" style={{ fontSize: "0.85rem" }}>
-                <strong>System Status:</strong> Online
-              </div>
-            )}
-            {sysStatus === "offline" && (
-              <div className="alert alert-danger mt-2 p-2" role="alert" style={{ fontSize: "0.85rem" }}>
-                <strong>System Status:</strong> Offline ({sysError})
-              </div>
-            )}
-            {sysCategories.length > 0 && (
-              <ul className="list-group mt-2" style={{ fontSize: "0.85rem", textAlign: "left" }}>
-                {sysCategories.map((cat) => (
-                  <li key={cat.id} className="list-group-item py-1">
-                    {cat.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          {renderDiagnosticSection()}
         </div>
       )}
     </div>

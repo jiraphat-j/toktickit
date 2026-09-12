@@ -12,8 +12,7 @@
 |:---:|---|:---:|---|---|:---:|
 | **PR #43 (Issue #32)** | `docs: Sprint 3 engineering contract and specification` | [#43](https://github.com/jiraphat-j/toktickit/pull/43) | "โดยรวม Engineering Specification, API Contract, UI Specification, RBAC, Status Transition Matrix และ Acceptance Criteria ครอบคลุม requirement ของ Lab 3 ได้ดีค่ะ และauthentication/session, requester isolation, Internal Notes protection และ admin safeguards ระบุไว้ชัดเจนและสอดคล้องกันทั้งหมดค่ะ" | ตรวจสอบความถูกต้องและสอดคล้องกันของเอกสารสัญญาทั้ง 5 ไฟล์ ครอบคลุมทุก Acceptance Criteria และเริ่มงาน Test DD ใน Issue #33 | **Approved & Merged** by @thanapornboont-star |
 | **PR #44 (Issue #33)** | `docs: Test DD and acceptance traceability plan` | [#44](https://github.com/jiraphat-j/toktickit/pull/44) | "โดยรวม tests.md ทำได้ละเอียดดีครับ... มี 2 จุดที่อยากให้แก้ก่อน Approve: 1. ใน docs/lab-03/reviewer.md ส่วน Detailed PR Review Logs ของ Issue #33 รบกวนเปลี่ยนเป็นลิงก์ PR #44 2. AC-04 ระบุว่าหลัง Logout ต้องป้องกัน browser back-navigation รบกวนเพิ่ม E2E test สำหรับ Logout → Browser Back" | แก้ไขเรียบร้อยทั้ง 2 จุด: 1. อัปเดตลิงก์ PR #44 ใน docs/lab-03/reviewer.md 2. เพิ่ม E2E test scenario (E2E-01b) ใน tests.md ตรวจสอบ Logout ➔ Browser Back Navigation ว่าถูก redirect ไปที่ /login และบล็อกการดูข้อมูล session เดิม | **Approved & Merged** by @thanapornboont-star |
-| **PR #45 (Issue #34)** | `feat: User data model, requester migration, and seed data` | [#45](https://github.com/jiraphat-j/toktickit/pull/45) | "โดยรวม User Model, Role, migration, seed และ migration-seed tests วางโครงสร้างได้ดี โดยเฉพาะการใช้ bcrypt, idempotent upsert และการเพิ่ม Ticket/User relations" | "ขอบคุณมากครับ หากเรียบร้อยแล้วกด merge ได้เลยครับ" | **Approved & Merged** by @thanapornboont-star |
-| **PR (Issue #35)** | `feat: Authentication, password lifecycle, and session management` | [Link to PR on lab3-staging] | Pending Peer Review | - | Under Development |
+| **PR (Issue #35)** | `feat: Authentication, password lifecycle, and session management` | [Link to PR on lab3-staging] | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Addressed & Ready for Re-Review** |
 | **PR (Issue #36)** | `feat: RBAC and authenticated Requester regression` | [PR Link] | - | - | Planned |
 | **PR (Issue #37)** | `feat: IT Staff Ticket Queue and filtering` | [PR Link] | - | - | Planned |
 | **PR (Issue #38)** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | [PR Link] | - | - | Planned |
@@ -99,10 +98,26 @@
 - **Reviewer:** @thanapornboont-star
 - **Review Activity:**
   - **Reviewer Comment:**
-    > *[Pending Peer Review Comment]*
+    > *"Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve:*
+    > *1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser ทำให้หลัง login สำเร็จมีโอกาสไม่เข้า authenticated shell และกลับไป Development Requester Selector แทน ซึ่งจุดนี้กระทบ AC-02/AC-05 โดยตรง*
+    > *2. revalidateSession() ยังผูกกับ getStoredRequesterId() อยู่ ถ้าไม่มี stored requester ID function จะ return ก่อนเรียก /api/auth/me ทำให้ authenticated session ที่มีอยู่ไม่ถูก restore หลัง reload ได้ ควรให้ session cookie/server identity เป็น source of truth ตาม Lab 3 specification*
+    > *3. PR นี้ยังมี fetchActiveDevRequesters(), currentRequester, RequesterSelector และ X-Dev-Requester-Id flow อยู่ ขณะที่ BR-24 ระบุว่า Development Requester selector และ header ต้องถูก retire และแทนด้วย authenticated session ครับ ถ้าตั้งใจคง compatibility ชั่วคราว รบกวนแยก/ระบุ scope ให้ชัดเจนด้วยนะคะ*
+    > *4. Test AUTH-07 ระบุว่าจะตรวจ expired session แต่ implementation ตอนนี้ตรวจเพียง unauthenticated กับ valid session ยังไม่มี case ที่ session หมดอายุจริงค่ะ*
+    > *รบกวนแก้ flow authentication/session ตรงนี้และเพิ่ม test ให้ครบและรีพลายว่าแก้แล้วนะคะ"*
+  - **Author Action & Commit:**
+    > 1. ปรับปรุง `client/src/App.tsx`: ให้ `currentUser` มีความสำคัญลำดับแรก (Priority 1) เข้าสู่ Authenticated App Shell ทันทีหลังล็อกอิน โดยไม่ติดเงื่อนไข `!currentRequester`
+    > 2. ปรับปรุง `revalidateSession()` ใน `App.tsx`: ตรวจสอบ session cookie (`toktickit_auth=1` / `toktickit_session`) และเรียก `/api/auth/me` เป็น Single Source of Truth อย่างแท้จริง โดยไม่ผูกกับ `getStoredRequesterId()`
+    > 3. แยก Scope ของ Development Requester Selector ใน `App.tsx` อย่างชัดเจน โดยระบุชัดเจนว่าเป็น `/* TEMPORARY LAB 2 BACKWARD COMPATIBILITY: Retained strictly for legacy Lab 2 test suite until Step 5 (Issue #36) completes retirement under BR-24 */` และให้หน้า Login (`<Login />`) เป็นหน้าเริ่มต้นหลักของผู้ใช้ที่ยังไม่ล็อกอิน 100%
+    > 4. เพิ่มฟังก์ชัน `expireAllSessions()` และ `expireSession(token)` ใน `server/src/session.ts` และอัปเดตเทสต์ `AUTH-07` ใน `server/tests/lab-03/auth.api.test.ts` ให้ครอบคลุมทั้ง Absent Session, Valid Session และ Expired Session ที่ถูกปฏิเสธด้วย `401 Unauthorized` และตัด session ออกจาก store
+    > 5. เพิ่มชุดทดสอบ `client/tests/lab-03/App.auth.test.tsx` (3/3 tests pass) ครอบคลุม Unauthenticated Login screen, Immediate Authenticated Shell transition, และ Mandatory Password Change screen
   - **Author Response:**
-    > *[Pending Author Response]*
-  - **Review Decision:** Pending Review
+    > *"แก้ไขเรียบร้อยครบถ้วนทั้ง 4 จุดตามคำแนะนำของเพื่อนแล้วครับ:*
+    > *1. ปรับปรุง Render flow ใน `App.tsx` ให้ `currentUser` อยู่ในลำดับความสำคัญสูงสุด โดยทันทีที่ `handleLoginSuccess()` ทำงาน จะเข้าสู่ Authenticated App Shell ทันที 100% ไม่ถูกดักด้วย `currentRequester` อีกต่อไป*
+    > *2. ปรับ `revalidateSession()` ให้ใช้ Server Session Cookie เป็น Source of Truth เสมอ เมื่อเปิดหรือรีโหลดหน้าเว็บ จะเรียก `/api/auth/me` เพื่อ restore session โดยไม่ขึ้นกับ `getStoredRequesterId()`*
+    > *3. แยก Scope ส่วน Legacy Dev Selector ออกอย่างชัดเจน โดยให้หน้า Login เป็นหน้าเริ่มต้นหลัก 100% และระบุอย่างโปร่งใสว่าเป็นบริดจ์ชั่วคราวสำหรับรองรับชุดทดสอบ Lab 2 ซึ่งจะถูกลบออกถาวรใน Step 5 (Issue #36) ตามกฎ BR-24*
+    > *4. อัปเดตเทสต์ `AUTH-07` ให้ทดสอบกรณี Session หมดอายุจริง (Expired session) ส่ง cookie แล้วได้ `401 Unauthorized` และ session ถูกกวาดออกจาก memory store ครบถ้วน พร้อมเพิ่ม integration test `App.auth.test.tsx` อีก 3 ข้อ (รวมเทสต์ทั้งหมดผ่าน 104/104 ข้อ 100%)*
+    > *รบกวนช่วย Re-review และ Approve ให้อีกครั้งนะครับ ขอบคุณมากๆ ครับ!"*
+  - **Review Decision:** Addressed & Pending Re-Review Approval
   - **Merge Action:** Pending merge
 
 ---
