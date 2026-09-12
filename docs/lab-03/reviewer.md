@@ -10,8 +10,8 @@
 
 | Issue / PR | Title / Feature | PR Link | Reviewer Comments | Author Responses / Action | Status |
 |:---:|---|:---:|---|---|:---:|
-| **PR (Issue #32)** | `docs: Sprint 3 engineering contract and specification` | [PR Link] | Planned | Planned | Under Review |
-| **PR (Issue #33)** | `docs: Test DD and acceptance traceability plan` | [PR Link] | - | - | Planned |
+| **PR #43 (Issue #32)** | `docs: Sprint 3 engineering contract and specification` | [#43](https://github.com/jiraphat-j/toktickit/pull/43) | "โดยรวม Engineering Specification, API Contract, UI Specification, RBAC, Status Transition Matrix และ Acceptance Criteria ครอบคลุม requirement ของ Lab 3 ได้ดีค่ะ และauthentication/session, requester isolation, Internal Notes protection และ admin safeguards ระบุไว้ชัดเจนและสอดคล้องกันทั้งหมดค่ะ" | ตรวจสอบความถูกต้องและสอดคล้องกันของเอกสารสัญญาทั้ง 5 ไฟล์ ครอบคลุมทุก Acceptance Criteria และเริ่มงาน Test DD ใน Issue #33 | **Approved & Merged** by @thanapornboont-star |
+| **PR (Issue #33)** | `docs: Test DD and acceptance traceability plan` | [PR Link] | Planned | Planned | Under Review |
 | **PR (Issue #34)** | `feat: User data model, requester migration, and seed data` | [PR Link] | - | - | Planned |
 | **PR (Issue #35)** | `feat: Authentication, password lifecycle, and session management` | [PR Link] | - | - | Planned |
 | **PR (Issue #36)** | `feat: RBAC and authenticated Requester regression` | [PR Link] | - | - | Planned |
@@ -36,6 +36,21 @@
 ## 3. Detailed PR Review Logs
 
 ### Issue #32 — Sprint 3 Engineering Contract and Specification
+- **PR:** [https://github.com/jiraphat-j/toktickit/pull/43](https://github.com/jiraphat-j/toktickit/pull/43)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Reviewer Comment:**
+    > *"โดยรวม Engineering Specification, API Contract, UI Specification, RBAC, Status Transition Matrix และ Acceptance Criteria ครอบคลุม requirement ของ Lab 3 ได้ดีค่ะ และauthentication/session, requester isolation, Internal Notes protection และ admin safeguards ระบุไว้ชัดเจนและสอดคล้องกันทั้งหมดค่ะ"*
+  - **Author Response:**
+    > *"ขอบคุณมากครับ ตรวจสอบความถูกต้องและสอดคล้องกันของเอกสารสัญญาทั้ง 5 ไฟล์ ครอบคลุมทุก Acceptance Criteria เรียบร้อยแล้วครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `d8527fa` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `lab3/01-engineering-contract`
+
+---
+
+### Issue #33 — Test DD and Acceptance Traceability Plan
 - **PR:** [Link to PR on lab3-staging]
 - **Author:** @jiraphat-j
 - **Reviewer:** @thanapornboont-star
