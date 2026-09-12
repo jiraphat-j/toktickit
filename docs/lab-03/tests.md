@@ -20,14 +20,14 @@
 
 | Test ID | Level | AC / BR | Scenario / What It Tests | Expected Result | Automated Test File | Status |
 |:---:|:---:|:---:|---|---|---|:---:|
-| **AUTH-01** | API | AC-01, BR-01 | `POST /api/auth/login` with valid email and password | Returns user context and sets signed HttpOnly session cookie | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-02** | API | AC-01, BR-01 | `POST /api/auth/login` with invalid password or unregistered email | Returns generic `401 Unauthorized` without revealing account existence | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-03** | API | AC-01, BR-01 | `POST /api/auth/login` with inactive account (`isActive = false`) | Returns generic `401 Unauthorized` | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-04** | API | AC-03, BR-03 | Password complexity validation (length ≥ 8, uppercase, lowercase, number) | Rejects weak passwords with `400 Bad Request` | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-05** | API | AC-02, BR-04 | User with `mustChangePassword = true` accessing normal endpoints | Blocked with `403 Forbidden` (`PASSWORD_CHANGE_REQUIRED`) until password changed | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-06** | API | AC-02, BR-05 | `POST /api/auth/change-password` with valid new password and match | Updates password hash, sets `mustChangePassword = false`, returns `200` | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-07** | API | AC-04, BR-06 | `GET /api/auth/me` with active session vs expired session | Valid session returns profile; expired/absent session returns `401` | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
-| **AUTH-08** | API | AC-04, BR-06 | `POST /api/auth/logout` terminates active session | Clears cookie and invalidates subsequent requests with `401` | `server/tests/lab-03/auth.api.test.ts` | **Planned** |
+| **AUTH-01** | API | AC-01, BR-01 | `POST /api/auth/login` with valid email and password | Returns user context and sets signed HttpOnly session cookie | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-02** | API | AC-01, BR-01 | `POST /api/auth/login` with invalid password or unregistered email | Returns generic `401 Unauthorized` without revealing account existence | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-03** | API | AC-01, BR-01 | `POST /api/auth/login` with inactive account (`isActive = false`) | Returns generic `401 Unauthorized` | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-04** | API | AC-03, BR-03 | Password complexity validation (length ≥ 8, uppercase, lowercase, number) | Rejects weak passwords with `400 Bad Request` | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-05** | API | AC-02, BR-04 | User with `mustChangePassword = true` accessing normal endpoints | Blocked with `403 Forbidden` (`PASSWORD_CHANGE_REQUIRED`) until password changed | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-06** | API | AC-02, BR-05 | `POST /api/auth/change-password` with valid new password and match | Updates password hash, sets `mustChangePassword = false`, returns `200` | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-07** | API | AC-04, BR-06 | `GET /api/auth/me` with active session vs expired session | Valid session returns profile; expired/absent session returns `401` | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
+| **AUTH-08** | API | AC-04, BR-06 | `POST /api/auth/logout` terminates active session | Clears cookie and invalidates subsequent requests with `401` | `server/tests/lab-03/auth.api.test.ts` | **PASS** |
 | **SEC-01** | Security | AC-05, BR-07 | Role-based endpoint authorization matrix | Requesters forbidden from staff/admin routes; staff forbidden from admin routes | `server/tests/lab-03/authorization.api.test.ts` | **Planned** |
 | **SEC-02** | Security | AC-07, BR-09 | Requester ticket ownership isolation | Accessing another requester's ticket returns `404 Not Found` | `server/tests/lab-03/authorization.api.test.ts` | **Planned** |
 | **SEC-03** | Security | AC-06, BR-24 | Client-supplied `requesterId` in request body is ignored | Requester identity is strictly derived from authenticated session | `server/tests/lab-03/authorization.api.test.ts` | **Planned** |
@@ -53,8 +53,8 @@
 | **ADM-02** | API | AC-17, BR-08 | Create user with single role and initial password (`POST /api/admin/users`) | Creates account with `mustChangePassword = true`; rejects duplicate email | `server/tests/lab-03/users-admin.api.test.ts` | **Planned** |
 | **ADM-03** | API | AC-19, BR-19 | Edit user details and toggle active status (`PATCH /api/admin/users/:id`) | Updates name, email, role, or active status (deactivation used over delete) | `server/tests/lab-03/users-admin.api.test.ts` | **Planned** |
 | **ADM-04** | API | AC-19, BR-22 | Reset initial password (`POST /api/admin/users/:id/reset-password`) | Sets new password hash and flags `mustChangePassword = true` | `server/tests/lab-03/users-admin.api.test.ts` | **Planned** |
-| **UI-01** | UI | AC-01, AC-05 | Login screen rendering, field validation, and busy state | Inline error validation on empty submit; busy spinner during request | `client/tests/lab-03/Login.test.tsx` | **Planned** |
-| **UI-02** | UI | AC-02, AC-03 | Mandatory Change Password screen validation and submission | Complexity feedback; blocks navigation until valid password saved | `client/tests/lab-03/ChangePassword.test.tsx` | **Planned** |
+| **UI-01** | UI | AC-01, AC-05 | Login screen rendering, field validation, and busy state | Inline error validation on empty submit; busy spinner during request | `client/tests/lab-03/Login.test.tsx` | **PASS** |
+| **UI-02** | UI | AC-02, AC-03 | Mandatory Change Password screen validation and submission | Complexity feedback; blocks navigation until valid password saved | `client/tests/lab-03/ChangePassword.test.tsx` | **PASS** |
 | **UI-03** | UI | AC-12, AC-22 | IT Staff Ticket Queue table/cards, search, filter, and pagination | Filter interactions, sorting toggles, badges, and empty/no-results states | `client/tests/lab-03/StaffTicketQueue.test.tsx` | **Planned** |
 | **UI-04** | UI | AC-13, AC-14, AC-15 | IT Staff Ticket Detail claiming, IT priority, status actions, dual threads | Contextual actions, distinct Zen Green comments vs Amber Internal Notes | `client/tests/lab-03/StaffTicketDetail.test.tsx` | **Planned** |
 | **UI-05** | UI | AC-16, AC-17, AC-20 | Admin User Management directory, modals, and guardrails | Create/Edit modals, duplicate email warning, self-deactivation disabled | `client/tests/lab-03/UserManagement.test.tsx` | **Planned** |
