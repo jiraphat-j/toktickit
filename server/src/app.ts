@@ -1055,23 +1055,234 @@ app.get(
   }
 );
 
-// GET /api/staff/tickets (SEC-01)
+// GET /api/staff/tickets (STF-01..04, AC-12, BR-23)
 app.get(
   "/api/staff/tickets",
-  authenticateSessionOrDev,
+  requireAuth,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (req: RequesterRequest, res: Response) => {
+    const prisma = getPrisma();
+    const details: { field: string; message: string }[] = [];
+
+    const {
+      search,
+      categoryId,
+      currentStatus,
+      itPriority,
+      ownerId,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = "1",
+      limit = "10",
+      pageSize,
+    } = req.query;
+
+    const where: any = {};
+
+    // Search filter (ticketNumber or summary, case-insensitive, BR-23, AC-12)
+    if (typeof search === "string" && search.trim().length > 0) {
+      const trimmedSearch = search.trim();
+      where.OR = [
+        { ticketNumber: { contains: trimmedSearch, mode: "insensitive" } },
+        { summary: { contains: trimmedSearch, mode: "insensitive" } },
+      ];
+    }
+
+    // Category filter
+    if (categoryId !== undefined && categoryId !== "") {
+      const parsedCatId = parseInt(String(categoryId), 10);
+      if (isNaN(parsedCatId) || parsedCatId <= 0 || String(parsedCatId) !== String(categoryId).trim()) {
+        details.push({ field: "categoryId", message: "categoryId must be a positive integer." });
+      } else {
+        where.categoryId = parsedCatId;
+      }
+    }
+
+    // Status filter (NEW, OPEN, IN_PROGRESS, RESOLVED)
+    const allowedStatuses = ["NEW", "OPEN", "IN_PROGRESS", "RESOLVED"];
+    if (currentStatus !== undefined && currentStatus !== "") {
+      if (typeof currentStatus !== "string" || !allowedStatuses.includes(currentStatus)) {
+        details.push({
+          field: "currentStatus",
+          message: `currentStatus must be one of: ${allowedStatuses.join(", ")}.`,
+        });
+      } else {
+        where.currentStatus = currentStatus;
+      }
+    }
+
+    // IT Priority filter (LOW, MEDIUM, HIGH)
+    const allowedPriorities = ["LOW", "MEDIUM", "HIGH"];
+    if (itPriority !== undefined && itPriority !== "") {
+      if (typeof itPriority !== "string" || !allowedPriorities.includes(itPriority)) {
+        details.push({
+          field: "itPriority",
+          message: `itPriority must be one of: ${allowedPriorities.join(", ")}.`,
+        });
+      } else {
+        where.itPriority = itPriority;
+      }
+    }
+
+    // Owner filter ("unassigned", "me", or integer user ID)
+    if (ownerId !== undefined && ownerId !== "") {
+      if (ownerId === "unassigned") {
+        where.primaryOwnerId = null;
+      } else if (ownerId === "me") {
+        const staffUserId = req.user?.id || req.devRequester?.id;
+        where.primaryOwnerId = staffUserId;
+      } else {
+        const parsedOwnerId = parseInt(String(ownerId), 10);
+        if (isNaN(parsedOwnerId) || parsedOwnerId <= 0 || String(parsedOwnerId) !== String(ownerId).trim()) {
+          details.push({
+            field: "ownerId",
+            message: "ownerId must be a positive integer, 'unassigned', or 'me'.",
+          });
+        } else {
+          where.primaryOwnerId = parsedOwnerId;
+        }
+      }
+    }
+
+    // Sorting whitelist
+    const allowedSortBy = ["createdAt", "updatedAt", "ticketNumber", "itPriority"];
+    if (typeof sortBy !== "string" || !allowedSortBy.includes(sortBy)) {
+      details.push({
+        field: "sortBy",
+        message: `sortBy must be one of: ${allowedSortBy.join(", ")}.`,
+      });
+    }
+
+    // Sort order whitelist
+    const normalizedSortOrder = typeof sortOrder === "string" ? sortOrder.toLowerCase() : "";
+    if (normalizedSortOrder !== "asc" && normalizedSortOrder !== "desc") {
+      details.push({
+        field: "sortOrder",
+        message: "sortOrder must be one of: asc, desc.",
+      });
+    }
+
+    // Pagination: page
+    let pageNum = 1;
+    if (page !== undefined && page !== "") {
+      const parsedPage = parseInt(String(page), 10);
+      if (isNaN(parsedPage) || parsedPage < 1 || String(parsedPage) !== String(page).trim()) {
+        details.push({ field: "page", message: "page must be a positive integer >= 1." });
+      } else {
+        pageNum = parsedPage;
+      }
+    }
+
+    // Pagination: limit / pageSize
+    let limitNum = 10;
+    const effectiveLimitParam = pageSize !== undefined && pageSize !== "" ? pageSize : limit;
+    if (effectiveLimitParam !== undefined && effectiveLimitParam !== "") {
+      const parsedLimit = parseInt(String(effectiveLimitParam), 10);
+      if (isNaN(parsedLimit) || parsedLimit < 1 || String(parsedLimit) !== String(effectiveLimitParam).trim()) {
+        details.push({ field: "limit", message: "limit must be a positive integer >= 1." });
+      } else {
+        limitNum = parsedLimit;
+      }
+    }
+
+    if (details.length > 0) {
+      res.status(400).json({
+        error: {
+          code: "BAD_REQUEST",
+          message: "Invalid query parameters.",
+          details,
+        },
+      });
+      return;
+    }
+
+    try {
+      const [totalItems, items] = await Promise.all([
+        prisma.ticket.count({ where }),
+        prisma.ticket.findMany({
+          where,
+          orderBy: [
+            { [sortBy as string]: normalizedSortOrder as "asc" | "desc" },
+            { id: "desc" },
+          ],
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            category: { select: { id: true, name: true } },
+            requestedPriority: true,
+            itPriority: true,
+            currentStatus: true,
+            requester: { select: { id: true, fullName: true, email: true } },
+            primaryOwner: { select: { id: true, fullName: true, email: true } },
+            problemAppearsResolved: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(totalItems / limitNum) || 1;
+
+      res.status(200).json({
+        items,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          totalItems,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to query staff ticket queue.",
+        },
+      });
+    }
+  }
+);
+
+// GET /api/staff/members (Active Staff & Admin Directory for Queue Assignment Filter)
+app.get(
+  "/api/staff/members",
+  requireAuth,
   requireRole("IT_STAFF", "ADMINISTRATOR"),
   async (_req: Request, res: Response) => {
-    res.status(200).json({
-      items: [],
-      pagination: { page: 1, limit: 10, totalItems: 0, totalPages: 0 },
-    });
+    try {
+      const staffMembers = await getPrisma().user.findMany({
+        where: {
+          role: { in: ["IT_STAFF", "ADMINISTRATOR"] },
+          isActive: true,
+        },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+        orderBy: { fullName: "asc" },
+      });
+
+      res.status(200).json(staffMembers);
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch staff members.",
+        },
+      });
+    }
   }
 );
 
 // PATCH /api/staff/tickets/:id/status (REQ-04, SEC-01)
 app.patch(
   "/api/staff/tickets/:id/status",
-  authenticateSessionOrDev,
+  requireAuth,
   requireRole("IT_STAFF", "ADMINISTRATOR"),
   async (_req: Request, res: Response) => {
     res.status(200).json({ status: "OK" });
@@ -1081,7 +1292,7 @@ app.patch(
 // GET /api/admin/users (SEC-01)
 app.get(
   "/api/admin/users",
-  authenticateSessionOrDev,
+  requireAuth,
   requireRole("ADMINISTRATOR"),
   async (_req: Request, res: Response) => {
     res.status(200).json({
@@ -1094,7 +1305,7 @@ app.get(
 // POST /api/admin/users (SEC-01)
 app.post(
   "/api/admin/users",
-  authenticateSessionOrDev,
+  requireAuth,
   requireRole("ADMINISTRATOR"),
   async (_req: Request, res: Response) => {
     res.status(201).json({ status: "CREATED" });

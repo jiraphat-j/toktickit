@@ -439,3 +439,112 @@ export async function toggleProblemResolved(
   return res.json();
 }
 
+// ---------------------------------------------------------------------------
+// IT Staff Ticket Queue & Staff Directory APIs (Issue #37, AC-12, BR-23)
+// ---------------------------------------------------------------------------
+export type StaffTicketStatus = "NEW" | "OPEN" | "IN_PROGRESS" | "RESOLVED";
+
+export interface StaffTicketSummary {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  category: { id: number; name: string };
+  requestedPriority: Priority;
+  itPriority: Priority;
+  currentStatus: StaffTicketStatus;
+  requester: { id: number; fullName: string; email: string };
+  primaryOwner: { id: number; fullName: string; email: string } | null;
+  problemAppearsResolved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StaffTicketQueuePagination {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface StaffTicketQueueResponse {
+  items: StaffTicketSummary[];
+  pagination: StaffTicketQueuePagination;
+}
+
+export interface StaffTicketFilterParams {
+  search?: string;
+  categoryId?: number;
+  currentStatus?: StaffTicketStatus | "";
+  itPriority?: Priority | "";
+  ownerId?: string | number; // "unassigned", "me", or number
+  sortBy?: "ticketNumber" | "createdAt" | "updatedAt" | "itPriority";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+}
+
+export interface StaffMember {
+  id: number;
+  fullName: string;
+  email: string;
+  role: "IT_STAFF" | "ADMINISTRATOR";
+}
+
+export async function fetchStaffTickets(
+  params: StaffTicketFilterParams = {}
+): Promise<StaffTicketQueueResponse> {
+  const query = new URLSearchParams();
+  if (params.search) query.set("search", params.search);
+  if (params.categoryId !== undefined && params.categoryId !== null && params.categoryId !== (0 as any)) {
+    query.set("categoryId", String(params.categoryId));
+  }
+  if (params.currentStatus) query.set("currentStatus", params.currentStatus);
+  if (params.itPriority) query.set("itPriority", params.itPriority);
+  if (params.ownerId !== undefined && params.ownerId !== null && params.ownerId !== "") {
+    query.set("ownerId", String(params.ownerId));
+  }
+  if (params.sortBy) query.set("sortBy", params.sortBy);
+  if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+  if (params.page !== undefined && params.page !== null) {
+    query.set("page", String(params.page));
+  }
+  if (params.limit !== undefined && params.limit !== null) {
+    query.set("limit", String(params.limit));
+  }
+
+  const url = `${API_URL}/api/staff/tickets${query.toString() ? `?${query.toString()}` : ""}`;
+  const res = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch staff tickets (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function fetchStaffMembers(): Promise<StaffMember[]> {
+  const res = await fetch(`${API_URL}/api/staff/members`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch staff members (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+

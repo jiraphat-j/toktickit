@@ -18,6 +18,7 @@ import { MyTickets } from "./components/MyTickets.js";
 import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
+import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 
 export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
@@ -255,10 +256,12 @@ export default function App() {
 
         <main className="container py-4 zen-main-container">
           {activeTab === "queue" && (
-            <div className="card p-4 zen-card">
-              <h3>IT Staff Ticket Queue</h3>
-              <p className="text-muted">Staff ticket queue and filtering will be activated in Step 6.</p>
-            </div>
+            <StaffTicketQueue
+              currentUser={currentUser}
+              onSelectTicket={(ticketId) => {
+                setSelectedTicketId(ticketId);
+              }}
+            />
           )}
 
           {activeTab === "users" && (
