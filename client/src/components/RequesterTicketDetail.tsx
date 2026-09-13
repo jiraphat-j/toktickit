@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { DevRequester, TicketDetail, fetchTicketDetail } from "../api.js";
+import { DevRequester, TicketDetail, fetchTicketDetail, toggleProblemResolved } from "../api.js";
 import { AttachmentSection, formatDate } from "./AttachmentSection.js";
 
 export interface RequesterTicketDetailProps {
@@ -16,6 +16,8 @@ export function RequesterTicketDetail({
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [resolving, setResolving] = useState<boolean>(false);
+  const [resolveError, setResolveError] = useState<string>("");
 
   const loadTicket = useCallback(async () => {
     setLoading(true);
@@ -34,6 +36,21 @@ export function RequesterTicketDetail({
     loadTicket();
   }, [loadTicket]);
 
+  const handleToggleResolved = async () => {
+    if (!ticket) return;
+    const newStatus = !ticket.problemAppearsResolved;
+    setResolving(true);
+    setResolveError("");
+    try {
+      const updated = await toggleProblemResolved(ticket.id, newStatus);
+      setTicket((prev) => (prev ? { ...prev, problemAppearsResolved: updated.problemAppearsResolved } : null));
+    } catch (err: any) {
+      setResolveError(err.message || "Failed to update problem resolution indicator.");
+    } finally {
+      setResolving(false);
+    }
+  };
+
   const getPriorityBadgeClass = (priority: string) => {
     switch (priority) {
       case "HIGH":
@@ -46,6 +63,8 @@ export function RequesterTicketDetail({
         return "zen-priority-badge";
     }
   };
+
+  const isTerminal = ticket?.currentStatus === "CLOSED" || ticket?.currentStatus === "CANCELLED";
 
   if (loading) {
     return (
@@ -131,12 +150,76 @@ export function RequesterTicketDetail({
               <span className={getPriorityBadgeClass(ticket.requestedPriority)} data-testid="ticket-priority">
                 {ticket.requestedPriority}
               </span>
+              {ticket.problemAppearsResolved && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    padding: "0.2rem 0.6rem",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    backgroundColor: "#FEF3C7",
+                    color: "#92400E",
+                    border: "1px solid #FDE68A",
+                  }}
+                  data-testid="problem-resolved-badge"
+                >
+                  Problem Appears Resolved
+                </span>
+              )}
             </div>
             <h2 style={{ fontSize: "1.35rem", fontWeight: 600, margin: "0.75rem 0 0.25rem", color: "var(--color-text-main)" }}>
               {ticket.summary}
             </h2>
           </div>
+          <div>
+            <button
+              type="button"
+              onClick={handleToggleResolved}
+              disabled={resolving || isTerminal}
+              className={ticket.problemAppearsResolved ? "zen-btn-secondary" : "zen-btn-primary"}
+              data-testid="toggle-problem-resolved-btn"
+              style={{
+                fontSize: "0.85rem",
+                padding: "0.45rem 0.85rem",
+                cursor: isTerminal ? "not-allowed" : "pointer",
+                opacity: isTerminal ? 0.6 : 1,
+              }}
+            >
+              {resolving
+                ? "Updating..."
+                : ticket.problemAppearsResolved
+                ? "Undo Problem Resolved"
+                : "Mark Problem as Resolved"}
+            </button>
+            {resolveError && (
+              <p style={{ color: "#DC2626", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>{resolveError}</p>
+            )}
+          </div>
         </div>
+
+        {/* Problem Appears Resolved Indicator Banner (UI-Spec 3.3, AC-08) */}
+        {ticket.problemAppearsResolved && (
+          <div
+            style={{
+              backgroundColor: "#DCFCE7",
+              border: "1px solid #86EFAC",
+              borderRadius: "6px",
+              padding: "0.75rem 1rem",
+              marginTop: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              color: "#166534",
+            }}
+            data-testid="problem-resolved-banner"
+          >
+            <span style={{ fontSize: "1.1rem" }}>✓</span>
+            <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>
+              Requester has indicated this issue appears resolved. Awaiting IT Staff formal resolution.
+            </span>
+          </div>
+        )}
 
         {/* Read-Only Metadata Grid (AC-21) */}
         <div
