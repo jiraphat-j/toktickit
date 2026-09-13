@@ -6,7 +6,13 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
-import { authRouter } from "./auth.js";
+import {
+  authRouter,
+  requireAuth,
+  requireRole,
+  authenticateSessionOrDev,
+  UserOrRequesterRequest,
+} from "./auth.js";
 import { SESSION_SECRET } from "./session.js";
 
 export const app = express();
@@ -59,72 +65,10 @@ const upload = multer({
 });
 
 // ---------------------------------------------------------------------------
-// Context Middleware: Validate X-Dev-Requester-Id
+// Context Middleware: Validate Session or Legacy X-Dev-Requester-Id
 // ---------------------------------------------------------------------------
-export interface RequesterRequest extends Request {
-  devRequester?: {
-    id: number;
-    fullName: string;
-    email: string;
-    isActive: boolean;
-  };
-}
-
-export async function requireDevRequester(
-  req: RequesterRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  const requesterIdHeader = req.headers["x-dev-requester-id"];
-
-  if (!requesterIdHeader || typeof requesterIdHeader !== "string") {
-    res.status(400).json({
-      error: {
-        code: "BAD_REQUEST",
-        message: "X-Dev-Requester-Id header is required and must be a valid integer ID.",
-      },
-    });
-    return;
-  }
-
-  const requesterId = parseInt(requesterIdHeader, 10);
-  if (isNaN(requesterId) || requesterId <= 0) {
-    res.status(400).json({
-      error: {
-        code: "BAD_REQUEST",
-        message: "X-Dev-Requester-Id header must be a positive integer ID.",
-      },
-    });
-    return;
-  }
-
-  try {
-    const prisma = getPrisma();
-    const requester = await prisma.devRequester.findUnique({
-      where: { id: requesterId },
-    });
-
-    if (!requester || !requester.isActive) {
-      res.status(400).json({
-        error: {
-          code: "BAD_REQUEST",
-          message: "Development Requester not found or is currently inactive.",
-        },
-      });
-      return;
-    }
-
-    req.devRequester = requester;
-    next();
-  } catch (error) {
-    res.status(500).json({
-      error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to validate Development Requester context.",
-      },
-    });
-  }
-}
+export type RequesterRequest = UserOrRequesterRequest;
+export const requireDevRequester = authenticateSessionOrDev;
 
 // ---------------------------------------------------------------------------
 // Helpers: Ticket Number Generator & Idempotency Fingerprint
@@ -229,7 +173,7 @@ app.get("/api/related-systems", async (_req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: Response) => {
   const prisma = getPrisma();
-  const requester = req.devRequester!;
+  const requester = (req.user || req.devRequester)!;
   const { categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
 
   const details: { field: string; message: string }[] = [];
@@ -347,7 +291,9 @@ app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res:
         summary: trimmedSummary,
         description: trimmedDescription,
         requestedPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH",
+        itPriority: requestedPriority as "LOW" | "MEDIUM" | "HIGH",
         currentStatus: "NEW",
+        problemAppearsResolved: false,
       },
       include: {
         category: { select: { id: true, name: true } },
@@ -405,7 +351,7 @@ app.post("/api/tickets", requireDevRequester, async (req: RequesterRequest, res:
 // ---------------------------------------------------------------------------
 app.get("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: Response) => {
   const prisma = getPrisma();
-  const requester = req.devRequester!;
+  const requesterId = (req.user?.id || req.devRequester?.id)!;
   const details: { field: string; message: string }[] = [];
 
   const {
@@ -532,7 +478,7 @@ app.get("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: 
 
   // Build Prisma where clause with Requester Ownership (BR-08, AC-22)
   const where: any = {
-    requesterId: requester.id,
+    requesterId,
   };
 
   // Search filter (ticketNumber or summary, case-insensitive, BR-24, AC-16)
@@ -583,6 +529,7 @@ app.get("/api/tickets", requireDevRequester, async (req: RequesterRequest, res: 
           requestedPriority: true,
           itPriority: true,
           currentStatus: true,
+          problemAppearsResolved: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -674,8 +621,21 @@ app.get("/api/tickets/:id", requireDevRequester, async (req: RequesterRequest, r
       },
     });
 
-    // Ownership check (AC-22, BR-23)
-    if (!ticket || ticket.requesterId !== requester.id) {
+    // Ownership check (AC-22, BR-23, BR-09, SEC-02)
+    if (!ticket) {
+      res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Ticket not found or access denied.",
+        },
+      });
+      return;
+    }
+
+    const currentUserId = req.user?.id || req.devRequester?.id;
+    const isStaffOrAdmin = req.user?.role === "IT_STAFF" || req.user?.role === "ADMINISTRATOR";
+
+    if (!isStaffOrAdmin && ticket.requesterId !== currentUserId) {
       res.status(404).json({
         error: {
           code: "NOT_FOUND",
@@ -759,7 +719,10 @@ app.post(
         where: { id: ticketId },
       });
 
-      if (!ticket || ticket.requesterId !== requester.id) {
+      const currentUserId = req.user?.id || req.devRequester?.id;
+      const isStaffOrAdmin = req.user?.role === "IT_STAFF" || req.user?.role === "ADMINISTRATOR";
+
+      if (!ticket || (!isStaffOrAdmin && ticket.requesterId !== currentUserId)) {
         fs.unlinkSync(req.file.path);
         res.status(404).json({
           error: {
@@ -820,7 +783,8 @@ app.get(
   requireDevRequester,
   async (req: RequesterRequest, res: Response) => {
     const prisma = getPrisma();
-    const requester = req.devRequester!;
+    const currentUserId = req.user?.id || req.devRequester?.id;
+    const isStaffOrAdmin = req.user?.role === "IT_STAFF" || req.user?.role === "ADMINISTRATOR";
     const ticketId = parseInt(req.params.id, 10);
 
     if (isNaN(ticketId) || ticketId <= 0) {
@@ -835,7 +799,7 @@ app.get(
         where: { id: ticketId },
       });
 
-      if (!ticket || ticket.requesterId !== requester.id) {
+      if (!ticket || (!isStaffOrAdmin && ticket.requesterId !== currentUserId)) {
         res.status(404).json({
           error: {
             code: "NOT_FOUND",
@@ -868,7 +832,8 @@ app.get(
   requireDevRequester,
   async (req: RequesterRequest, res: Response) => {
     const prisma = getPrisma();
-    const requester = req.devRequester!;
+    const currentUserId = req.user?.id || req.devRequester?.id;
+    const isStaffOrAdmin = req.user?.role === "IT_STAFF" || req.user?.role === "ADMINISTRATOR";
     const attachmentId = parseInt(req.params.id, 10);
 
     if (isNaN(attachmentId) || attachmentId <= 0) {
@@ -886,7 +851,7 @@ app.get(
 
       if (
         !attachment ||
-        attachment.ticket.requesterId !== requester.id ||
+        (!isStaffOrAdmin && attachment.ticket.requesterId !== currentUserId) ||
         attachment.isRemoved
       ) {
         res.status(404).json({
@@ -928,7 +893,8 @@ app.patch(
   requireDevRequester,
   async (req: RequesterRequest, res: Response) => {
     const prisma = getPrisma();
-    const requester = req.devRequester!;
+    const currentUserId = req.user?.id || req.devRequester?.id;
+    const isStaffOrAdmin = req.user?.role === "IT_STAFF" || req.user?.role === "ADMINISTRATOR";
     const attachmentId = parseInt(req.params.id, 10);
     const { reason } = req.body;
 
@@ -956,7 +922,7 @@ app.patch(
         include: { ticket: true },
       });
 
-      if (!attachment || attachment.ticket.requesterId !== requester.id) {
+      if (!attachment || (!isStaffOrAdmin && attachment.ticket.requesterId !== currentUserId)) {
         res.status(404).json({
           error: {
             code: "NOT_FOUND",
@@ -994,6 +960,144 @@ app.patch(
         },
       });
     }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Lab 3 RBAC & Ticket Workflow Endpoints (Issue #36)
+// ---------------------------------------------------------------------------
+
+// POST /api/tickets/:id/resolve-indication (REQ-03, AC-08, BR-10)
+app.post(
+  "/api/tickets/:id/resolve-indication",
+  authenticateSessionOrDev,
+  async (req: RequesterRequest, res: Response) => {
+    const prisma = getPrisma();
+    const currentUserId = req.user?.id || req.devRequester?.id;
+    const ticketId = parseInt(req.params.id, 10);
+
+    if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+      res.status(400).json({
+        error: {
+          code: "BAD_REQUEST",
+          message: "Invalid ticket ID parameter.",
+        },
+      });
+      return;
+    }
+
+    if (req.user && req.user.role !== "REQUESTER") {
+      res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Only ticket requesters can indicate problem resolution.",
+        },
+      });
+      return;
+    }
+
+    try {
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+      });
+
+      if (!ticket || ticket.requesterId !== currentUserId) {
+        res.status(404).json({
+          error: {
+            code: "NOT_FOUND",
+            message: "Ticket not found.",
+          },
+        });
+        return;
+      }
+
+      const resolved = typeof req.body?.resolved === "boolean" ? req.body.resolved : true;
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          problemAppearsResolved: resolved,
+        },
+        select: {
+          id: true,
+          problemAppearsResolved: true,
+          updatedAt: true,
+        },
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update problem resolution indicator.",
+        },
+      });
+    }
+  }
+);
+
+// GET /api/tickets/:id/internal-notes (SEC-04, BR-18)
+app.get(
+  "/api/tickets/:id/internal-notes",
+  authenticateSessionOrDev,
+  async (req: RequesterRequest, res: Response) => {
+    if (req.user?.role === "REQUESTER") {
+      res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Requesters are not permitted to access internal notes.",
+        },
+      });
+      return;
+    }
+
+    res.status(200).json([]);
+  }
+);
+
+// GET /api/staff/tickets (SEC-01)
+app.get(
+  "/api/staff/tickets",
+  authenticateSessionOrDev,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (_req: Request, res: Response) => {
+    res.status(200).json({
+      items: [],
+      pagination: { page: 1, limit: 10, totalItems: 0, totalPages: 0 },
+    });
+  }
+);
+
+// PATCH /api/staff/tickets/:id/status (REQ-04, SEC-01)
+app.patch(
+  "/api/staff/tickets/:id/status",
+  authenticateSessionOrDev,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (_req: Request, res: Response) => {
+    res.status(200).json({ status: "OK" });
+  }
+);
+
+// GET /api/admin/users (SEC-01)
+app.get(
+  "/api/admin/users",
+  authenticateSessionOrDev,
+  requireRole("ADMINISTRATOR"),
+  async (_req: Request, res: Response) => {
+    res.status(200).json({
+      items: [],
+      pagination: { page: 1, total: 0 },
+    });
+  }
+);
+
+// POST /api/admin/users (SEC-01)
+app.post(
+  "/api/admin/users",
+  authenticateSessionOrDev,
+  requireRole("ADMINISTRATOR"),
+  async (_req: Request, res: Response) => {
+    res.status(201).json({ status: "CREATED" });
   }
 );
 

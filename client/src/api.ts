@@ -49,6 +49,7 @@ export interface Ticket {
   requestedPriority: Priority;
   itPriority?: Priority | null;
   currentStatus: TicketStatus;
+  problemAppearsResolved?: boolean;
   createdAt: string;
   updatedAt: string;
   category?: Category;
@@ -66,6 +67,7 @@ export interface TicketListItem {
   requestedPriority: Priority;
   itPriority?: Priority | null;
   currentStatus: TicketStatus;
+  problemAppearsResolved?: boolean;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -407,5 +409,33 @@ export async function changeUserPassword(
     } catch {}
     throw new Error(errorMsg);
   }
+}
+
+export async function toggleProblemResolved(
+  ticketId: number,
+  resolved: boolean
+): Promise<{ id: number; problemAppearsResolved: boolean; updatedAt: string }> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/resolve-indication`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ resolved }),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to update problem resolution indicator (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
 }
 

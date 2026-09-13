@@ -141,6 +141,205 @@ export async function requireAuth(
   }
 }
 
+export function requireRole(...roles: Role[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required.",
+        },
+      });
+      return;
+    }
+
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Access denied: insufficient permissions.",
+        },
+      });
+      return;
+    }
+
+    next();
+  };
+}
+
+export interface UserOrRequesterRequest extends Request {
+  user?: AuthenticatedUser;
+  sessionToken?: string;
+  devRequester?: {
+    id: number;
+    fullName: string;
+    email: string;
+    isActive: boolean;
+  };
+}
+
+export async function authenticateSessionOrDev(
+  req: UserOrRequesterRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const token = extractSessionToken(req);
+  const prisma = getPrisma();
+
+  // 1. Session Token Authentication (Priority 1)
+  if (token) {
+    const session = getSession(token);
+    if (!session) {
+      res.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Session is invalid or has expired.",
+        },
+      });
+      return;
+    }
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          isActive: true,
+          mustChangePassword: true,
+        },
+      });
+
+      if (!user || !user.isActive) {
+        destroySession(token);
+        res.status(401).json({
+          error: {
+            code: "UNAUTHORIZED",
+            message: "User account not found or is deactivated.",
+          },
+        });
+        return;
+      }
+
+      if (user.mustChangePassword) {
+        const allowedEndings = [
+          "/api/auth/change-password",
+          "/api/auth/me",
+          "/api/auth/logout",
+        ];
+        const currentUrl = (req.originalUrl || req.url).split("?")[0];
+        const isAllowed = allowedEndings.some((allowed) => currentUrl.endsWith(allowed));
+
+        if (!isAllowed) {
+          res.status(403).json({
+            error: {
+              code: "PASSWORD_CHANGE_REQUIRED",
+              message: "Password change is required before accessing application resources.",
+            },
+          });
+          return;
+        }
+      }
+
+      req.user = user;
+      req.sessionToken = token;
+      req.devRequester = {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        isActive: user.isActive,
+      };
+      next();
+      return;
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to authenticate session user.",
+        },
+      });
+      return;
+    }
+  }
+
+  // 2. Fallback for legacy Lab 2 tests: X-Dev-Requester-Id header
+  const requesterIdHeader = req.headers["x-dev-requester-id"];
+  if (requesterIdHeader && typeof requesterIdHeader === "string") {
+    const requesterId = parseInt(requesterIdHeader, 10);
+    if (isNaN(requesterId) || requesterId <= 0) {
+      res.status(400).json({
+        error: {
+          code: "BAD_REQUEST",
+          message: "X-Dev-Requester-Id header must be a positive integer ID.",
+        },
+      });
+      return;
+    }
+
+    try {
+      let requester = await prisma.devRequester.findUnique({
+        where: { id: requesterId },
+      });
+
+      if (!requester) {
+        const user = await prisma.user.findUnique({
+          where: { id: requesterId },
+        });
+        if (user && user.isActive) {
+          requester = {
+            id: user.id,
+            fullName: user.fullName,
+            email: user.email,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          };
+        }
+      }
+
+      if (!requester || !requester.isActive) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Development Requester not found or is currently inactive.",
+          },
+        });
+        return;
+      }
+
+      req.devRequester = requester;
+      req.user = {
+        id: requester.id,
+        fullName: requester.fullName,
+        email: requester.email,
+        role: "REQUESTER" as Role,
+        isActive: requester.isActive,
+        mustChangePassword: false,
+      };
+      next();
+      return;
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to validate Development Requester context.",
+        },
+      });
+      return;
+    }
+  }
+
+  // 3. Neither session nor header is provided
+  res.status(400).json({
+    error: {
+      code: "BAD_REQUEST",
+      message: "X-Dev-Requester-Id header is required and must be a valid integer ID.",
+    },
+  });
+}
+
 export const authRouter = Router();
 
 // POST /api/auth/login

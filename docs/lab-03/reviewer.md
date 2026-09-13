@@ -12,8 +12,9 @@
 |:---:|---|:---:|---|---|:---:|
 | **PR #43 (Issue #32)** | `docs: Sprint 3 engineering contract and specification` | [#43](https://github.com/jiraphat-j/toktickit/pull/43) | "โดยรวม Engineering Specification, API Contract, UI Specification, RBAC, Status Transition Matrix และ Acceptance Criteria ครอบคลุม requirement ของ Lab 3 ได้ดีค่ะ และauthentication/session, requester isolation, Internal Notes protection และ admin safeguards ระบุไว้ชัดเจนและสอดคล้องกันทั้งหมดค่ะ" | ตรวจสอบความถูกต้องและสอดคล้องกันของเอกสารสัญญาทั้ง 5 ไฟล์ ครอบคลุมทุก Acceptance Criteria และเริ่มงาน Test DD ใน Issue #33 | **Approved & Merged** by @thanapornboont-star |
 | **PR #44 (Issue #33)** | `docs: Test DD and acceptance traceability plan` | [#44](https://github.com/jiraphat-j/toktickit/pull/44) | "โดยรวม tests.md ทำได้ละเอียดดีครับ... มี 2 จุดที่อยากให้แก้ก่อน Approve: 1. ใน docs/lab-03/reviewer.md ส่วน Detailed PR Review Logs ของ Issue #33 รบกวนเปลี่ยนเป็นลิงก์ PR #44 2. AC-04 ระบุว่าหลัง Logout ต้องป้องกัน browser back-navigation รบกวนเพิ่ม E2E test สำหรับ Logout → Browser Back" | แก้ไขเรียบร้อยทั้ง 2 จุด: 1. อัปเดตลิงก์ PR #44 ใน docs/lab-03/reviewer.md 2. เพิ่ม E2E test scenario (E2E-01b) ใน tests.md ตรวจสอบ Logout ➔ Browser Back Navigation ว่าถูก redirect ไปที่ /login และบล็อกการดูข้อมูล session เดิม | **Approved & Merged** by @thanapornboont-star |
-| **PR #46 (Issue #35)** | `feat: Authentication, password lifecycle, and session management` | [#46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Addressed & Ready for Re-Review** |
-| **PR (Issue #36)** | `feat: RBAC and authenticated Requester regression` | [PR Link] | - | - | Planned |
+| **PR #45 (Issue #34)** | `feat: Database migration, User model, and seed data` | [#45](https://github.com/jiraphat-j/toktickit/pull/45) | "โดยรวม User Model, Role, migration, seed และ migration-seed tests วางโครงสร้างได้ดี โดยเฉพาะการใช้ bcrypt, idempotent upsert และการเพิ่ม Ticket/User relations" | ตรวจสอบความถูกต้องและรัน test migration-seed ผ่าน 100% เรียบร้อยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `8d5884a`) |
+| **PR #46 (Issue #35)** | `feat: Authentication, password lifecycle, and session management` | [#46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Approved & Merged** by @thanapornboont-star (Merge commit `fc9dd58`) |
+| **PR (Issue #36)** | `feat: RBAC and authenticated Requester regression` | [PR Link] | - | - | Ready for PR |
 | **PR (Issue #37)** | `feat: IT Staff Ticket Queue and filtering` | [PR Link] | - | - | Planned |
 | **PR (Issue #38)** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | [PR Link] | - | - | Planned |
 | **PR (Issue #39)** | `feat: Administrator User Management and safeguards` | [PR Link] | - | - | Planned |
@@ -32,6 +33,7 @@
 | **PR #51 (Step 3)** | `feat: migrate identity to User model and seed Lab 3 roles and data` | [#51](https://github.com/thanapornboont-star/toktickit/pull/51) | "ตรวจ PR #51 เรียบร้อยครับ ตัว migration ทำได้ยอดเยี่ยมมาก มีการย้ายข้อมูลจาก DevRequester เข้า User table โดยคง id เดิมและ sync sequence ให้ครบถ้วน ทำให้ข้อมูลเดิมไม่สูญหายและไม่เกิด regression กับเทสต์เดิมของ Lab 1-2 เลยครับ ตัว seed ก็ครอบคลุมทั้ง 3 role และรันซ้ำได้ปลอดภัย" | "ขอบคุณค่ะ" | **Approved & Merged** |
 | **PR #52 (Step 4)** | `Sprint3/auth account entry` | [#52](https://github.com/thanapornboont-star/toktickit/pull/52) | "ตรวจ PR #52 เรียบร้อยครับ ระบบ Authentication และ First Password Change ทำได้รัดกุมมาก: มีการใช้ bcrypt และ session token ใน DB พร้อม expiration check, การล็อกอินตอบ error แบบ generic (401) ป้องกัน user enumeration และแยกเคสบัญชีถูกปิดใช้งาน (403) ถูกต้องตาม BR-01, BR-02, หน้า ChangePassword มี interactive checklist ตรวจสอบกฎรหัสผ่านแบบเรียลไทม์ และระบบใน App.tsx ดักไม่ให้เข้าหน้าอื่นก่อนเปลี่ยนรหัสผ่านได้สมบูรณ์, เทสต์ทั้งฝั่ง Server และ Client ผ่านครบ 100% โดยไม่กระทบโค้ดเดิม" | "ขอบคุณมากค่ะ โชคดีจังไม่ต้องแก้" | **Approved & Merged** |
 | **PR #53 (Step 5)** | `feat(sprint3/wi4): RBAC enforcement, requester continuity, public comments, indicate-resolved` | [#53](https://github.com/thanapornboont-star/toktickit/pull/53) | "ตรวจ PR #53 เรียบร้อยครับ การวาง Authorization Boundary และการเชื่อมต่อ Requester Continuity ทำได้สมบูรณ์มาก: การบังคับตัวตนผ่าน Bearer token และการตัดสิทธิ์ field ที่ client พยายาม spoof (requesterId, ownerId, status) เป็นไปตาม BR-07 และ BR-10 ครบถ้วน, การตอบกลับด้วย 404 Not Found เมื่อ Requester เข้าถึงตั๋วคนอื่น ช่วยป้องกัน information disclosure ได้ถูกต้องตาม BR-09, ฟังก์ชัน Public Comments และ Problem Appears Resolved ทำงานได้ตาม AC-08, AC-09, Middleware authenticateSessionOrDev ช่วยให้โค้ดของเดิมใน Lab 2 ยังทำงานได้ครบถ้วนโดยไม่เกิด regression, เทสต์ทั้ง Server (53/53) และ Client (39/39) ผ่านครบ 100% เอกสาร tests.md และ reviewer.md อัปเดตเรียบร้อยครับ Approved ครับ" | "ขอบคุณอีกครั้งค่ะ" | **Approved & Merged** |
+| **PR #54 (Step 6)** | `feat(sprint3/wi5): StaffTicketQueue component, search/filter toolbar, and tests` | [#54](https://github.com/thanapornboont-star/toktickit/pull/54) | "ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครบถ้วนตาม AC-12/AC-22: มี toolbar ค้นหาด้วย ticketNumber/summary, filter แยกหมวดหมู่/สถานะ/ความสำคัญ, responsive layout สำหรับ desktop table และ mobile card list, และมี automated tests ผ่านครบทั้ง 11 ข้อ ไม่พบ regression กับเทสต์เดิมครับ Approved ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 
 ---
 
@@ -118,8 +120,34 @@
     > *3. แยก Scope ส่วน Legacy Dev Selector ออกอย่างชัดเจน โดยให้หน้า Login เป็นหน้าเริ่มต้นหลัก 100% และระบุอย่างโปร่งใสว่าเป็นบริดจ์ชั่วคราวสำหรับรองรับชุดทดสอบ Lab 2 ซึ่งจะถูกลบออกถาวรใน Step 5 (Issue #36) ตามกฎ BR-24*
     > *4. อัปเดตเทสต์ `AUTH-07` ให้ทดสอบกรณี Session หมดอายุจริง (Expired session) ส่ง cookie แล้วได้ `401 Unauthorized` และ session ถูกกวาดออกจาก memory store ครบถ้วน พร้อมเพิ่ม integration test `App.auth.test.tsx` อีก 3 ข้อ (รวมเทสต์ทั้งหมดผ่าน 104/104 ข้อ 100%)*
     > *รบกวนช่วย Re-review และ Approve ให้อีกครั้งนะครับ ขอบคุณมากๆ ครับ!"*
-  - **Review Decision:** Addressed & Pending Re-Review Approval
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `fc9dd583f663e5ddfe3779786242eb1faf86da82` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `feature/35-authentication-session`
+
+---
+
+### Issue #36 — RBAC Authorization Layer and Requester Regression
+- **PR:** [Link to PR on lab3-staging]
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Implementation Summary:**
+    1. Built centralized RBAC middleware `requireRole` and hybrid `authenticateSessionOrDev` in `server/src/auth.ts`
+    2. Enforced requester ownership isolation: cross-requester ticket access and attachments return `404 Not Found` (SEC-02, BR-09)
+    3. Server ignores client-supplied `requesterId` in ticket creation and derives identity strictly from authenticated session (SEC-03, BR-24)
+    4. Implemented Problem Appears Resolved toggle (`POST /api/tickets/:id/resolve-indication`, REQ-03, AC-08, BR-10) without altering `currentStatus`
+    5. Blocked unauthorized requester access to internal notes (403 Forbidden, SEC-04) and staff status transitions (403 Forbidden, REQ-04)
+    6. Updated client UI with Problem Appears Resolved toggle button, badge, and banner in `RequesterTicketDetail.tsx`
+    7. Scoped legacy Dev Requester selector strictly for Lab 2 test backward compatibility while defaulting 100% to Login screen (BR-24)
+    8. Added automated test suites: `server/tests/lab-03/authorization.api.test.ts` (17 tests) and `client/tests/lab-03/RequesterTicketDetail.resolved.test.tsx` (3 tests)
+    9. Full regression: 72/72 server tests pass (100%), 52/52 client tests pass (100%)
+  - **Reviewer Comment:**
+    > *Pending peer review from @thanapornboont-star*
+  - **Author Response:**
+    > *Pending peer review*
+  - **Review Decision:** In Progress / Pending PR Review
   - **Merge Action:** Pending merge
+
 
 ---
 
@@ -187,4 +215,26 @@
     > *"ขอบคุณอีกครั้งค่ะ"*
   - **Review Decision:** Approved by @jiraphat-j
   - **Merge Status:** Merged into partner `lab3-staging` (Merged commit on 2026-09-12)
+
+---
+
+### Partner PR #54 — Sprint 3 Staff Ticket Queue, Multi-Filter, and Pagination
+- **PR:** [https://github.com/thanapornboont-star/toktickit/pull/54](https://github.com/thanapornboont-star/toktickit/pull/54)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Feature Branch:** `sprint3/staff-queue`
+- **Target Branch:** `lab3-staging`
+- **Linked Issue:** Closes #44
+- **Review Activity:**
+  - **My Review Comment:**
+    > *"ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครอบคลุมตาม AC-12/AC-22:  
+    > - มี multi-field toolbar สำหรับ search (ticketNumber/summary) และกรอง category, status, IT priority, assignment ได้อย่างถูกต้อง  
+    > - ออกแบบ responsive layout รองรับทั้ง desktop table และ mobile card list (touch target >= 44px)  
+    > - ระบบ pagination และ sortable columns ทำงานได้ลื่นไหล  
+    > - Unit/Component tests (`StaffTicketQueue.test.tsx`) ผ่านครบ 11 ข้อ และเทสต์รวมทั้ง Client (50/50) และ Server (71/71) ผ่าน 100% ไม่มี regression ครับ Approved ครับ"*
+  - **Partner Response:**
+    > *"ขอบคุณค่ะ"*
+  - **Review Decision:** Approved by @jiraphat-j
+  - **Merge Status:** Merged into partner `lab3-staging` (Merged commit on 2026-09-13)
+
 

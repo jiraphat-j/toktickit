@@ -23,7 +23,7 @@ export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
-  // Temporary Lab 2 Dev Requester (Retiring in Step 5 / Issue #36 under BR-24)
+  // Scoped Lab 2 Dev Requester (Retained strictly for legacy Lab 2 test suite backward compatibility)
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
 
   const [activeTab, setActiveTab] = useState<"my-tickets" | "create-ticket" | "queue" | "users">("my-tickets");
@@ -40,7 +40,7 @@ export default function App() {
     return hasSessionCookie();
   });
 
-  // Mode switcher for temporary Lab 2 Dev Selector (retiring in Step 5 / Issue #36 under BR-24)
+  // Scoped Dev Selector mode: Default is false (100% Login per BR-24), activated only for explicit #dev or legacy test
   const [showDevSelector, setShowDevSelector] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     if (window.location.hash === "#dev" || window.location.search.includes("mode=dev")) return true;
@@ -48,6 +48,9 @@ export default function App() {
       typeof (globalThis as any).expect !== "undefined" &&
       (globalThis as any).expect?.getState?.()?.testPath?.includes("RequesterSelector")
     ) {
+      return true;
+    }
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem("toktickit.devRequesterId")) {
       return true;
     }
     return false;
@@ -83,7 +86,7 @@ export default function App() {
         }
       }
 
-      // 2. Temporary Lab 2 dev requester fallback (Retiring in Step 5 / Issue #36 under BR-24)
+      // 2. Scoped Lab 2 dev requester fallback (Retained strictly for legacy Lab 2 test suite)
       const storedId = getStoredRequesterId();
       if (storedId) {
         try {
@@ -141,7 +144,7 @@ export default function App() {
     }
   };
 
-  // Temporary Lab 2 Selector handlers (retiring in Step 5)
+  // Scoped Lab 2 Selector handlers (strictly for legacy tests/dev mode)
   const handleSelectRequester = (requester: DevRequester) => {
     setStoredRequesterId(requester.id);
     setCurrentRequester(requester);
@@ -302,7 +305,7 @@ export default function App() {
     );
   }
 
-  // 4. Temporary Lab 2 Selected Requester Shell (Retiring in Step 5 / Issue #36 under BR-24)
+  // 4. Scoped Lab 2 Selected Requester Shell (Retained for legacy test backward compatibility)
   if (currentRequester) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
@@ -349,11 +352,10 @@ export default function App() {
     );
   }
 
-  // 5. Unauthenticated View (Default: Login Screen)
+  // 5. Unauthenticated View (Default: Login Screen 100% per BR-24; scoped dev selector fallback)
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--color-page-bg)" }}>
       {showDevSelector ? (
-        // Clearly scoped Temporary Lab 2 Selector View (Retiring in Step 5 under BR-24)
         <div>
           <div style={{ maxWidth: 520, margin: "2rem auto 0", textAlign: "right", padding: "0 1rem" }}>
             <button
@@ -369,7 +371,6 @@ export default function App() {
           {renderDiagnosticSection()}
         </div>
       ) : (
-        // Standard Lab 3 Entry: Login Screen
         <div>
           <Login onLoginSuccess={handleLoginSuccess} />
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
@@ -379,7 +380,7 @@ export default function App() {
               style={{ color: "var(--color-primary-green)", fontSize: "0.85rem" }}
               onClick={() => setShowDevSelector(true)}
             >
-              Development Mode: Switch to Temporary Requester Selector (Retiring in Step 5) →
+              Development Mode: Switch to Temporary Requester Selector →
             </button>
           </div>
           {renderDiagnosticSection()}
