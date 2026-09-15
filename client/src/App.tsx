@@ -19,6 +19,7 @@ import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
+import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 
 export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
@@ -256,12 +257,20 @@ export default function App() {
 
         <main className="container py-4 zen-main-container">
           {activeTab === "queue" && (
-            <StaffTicketQueue
-              currentUser={currentUser}
-              onSelectTicket={(ticketId) => {
-                setSelectedTicketId(ticketId);
-              }}
-            />
+            selectedTicketId !== null ? (
+              <StaffTicketDetail
+                ticketId={selectedTicketId}
+                currentUser={currentUser}
+                onBack={() => setSelectedTicketId(null)}
+              />
+            ) : (
+              <StaffTicketQueue
+                currentUser={currentUser}
+                onSelectTicket={(ticketId) => {
+                  setSelectedTicketId(ticketId);
+                }}
+              />
+            )
           )}
 
           {activeTab === "users" && (
