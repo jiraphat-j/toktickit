@@ -434,4 +434,118 @@ describe("Lab 3 Staff Ticket Detail & Operations API Tests (STF-05..08, AC-13..1
       expect(res.body.primaryOwner.email).toBeDefined();
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Ticket Communication & Authorization Boundaries (COM-01..02, AC-09..11, BR-16..18, SEC-04)
+  // -------------------------------------------------------------------------
+  describe("Ticket Communication & Authorization Boundaries (Public Comments vs Internal Notes)", () => {
+    it("COM-01 (AC-09): allows Requester to create a Public Comment on their ticket", async () => {
+      const res = await request(app)
+        .post(`/api/tickets/${testTicketId}/comments`)
+        .set("Cookie", requesterCookie)
+        .send({ content: "Requester inquiry on status" });
+
+      expect(res.status).toBe(201);
+      expect(res.body.content).toBe("Requester inquiry on status");
+      expect(res.body.author.id).toBe(requesterUserId);
+      expect(res.body.author.role).toBe("REQUESTER");
+    });
+
+    it("COM-01 (AC-09): allows Staff and Admin to read and create Public Comments", async () => {
+      // Staff reads comments
+      const staffGet = await request(app)
+        .get(`/api/tickets/${testTicketId}/comments`)
+        .set("Cookie", staffCookie);
+
+      expect(staffGet.status).toBe(200);
+      expect(Array.isArray(staffGet.body)).toBe(true);
+      expect(staffGet.body.length).toBeGreaterThanOrEqual(1);
+
+      // Staff creates public comment
+      const staffPost = await request(app)
+        .post(`/api/tickets/${testTicketId}/comments`)
+        .set("Cookie", staffCookie)
+        .send({ content: "Staff public response to requester" });
+
+      expect(staffPost.status).toBe(201);
+      expect(staffPost.body.content).toBe("Staff public response to requester");
+      expect(staffPost.body.author.role).toBe("IT_STAFF");
+
+      // Admin reads comments
+      const adminGet = await request(app)
+        .get(`/api/tickets/${testTicketId}/comments`)
+        .set("Cookie", adminCookie);
+
+      expect(adminGet.status).toBe(200);
+
+      // Admin creates public comment
+      const adminPost = await request(app)
+        .post(`/api/tickets/${testTicketId}/comments`)
+        .set("Cookie", adminCookie)
+        .send({ content: "Admin public comment note" });
+
+      expect(adminPost.status).toBe(201);
+      expect(adminPost.body.author.role).toBe("ADMINISTRATOR");
+    });
+
+    it("SEC-04 (AC-11, BR-18): strictly rejects Requester from reading Internal Notes with 403 Forbidden", async () => {
+      const res = await request(app)
+        .get(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", requesterCookie);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("SEC-04 (AC-11, BR-18): strictly rejects Requester from creating Internal Notes with 403 Forbidden", async () => {
+      const res = await request(app)
+        .post(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", requesterCookie)
+        .send({ content: "Unauthorized internal note attempt by requester" });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe("FORBIDDEN");
+    });
+
+    it("COM-02 (AC-10, BR-16): allows Staff and Admin to create and read Internal Notes", async () => {
+      // Staff creates internal note
+      const staffPost = await request(app)
+        .post(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", staffCookie)
+        .send({ content: "Confidential staff investigation diagnostic note" });
+
+      expect(staffPost.status).toBe(201);
+      expect(staffPost.body.content).toBe("Confidential staff investigation diagnostic note");
+      expect(staffPost.body.author.role).toBe("IT_STAFF");
+
+      // Admin creates internal note
+      const adminPost = await request(app)
+        .post(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", adminCookie)
+        .send({ content: "Confidential admin escalation note" });
+
+      expect(adminPost.status).toBe(201);
+      expect(adminPost.body.author.role).toBe("ADMINISTRATOR");
+
+      // Staff reads internal notes
+      const staffGet = await request(app)
+        .get(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", staffCookie);
+
+      expect(staffGet.status).toBe(200);
+      expect(Array.isArray(staffGet.body)).toBe(true);
+      expect(staffGet.body.length).toBe(2);
+      expect(staffGet.body.some((n: any) => n.content.includes("investigation"))).toBe(true);
+      expect(staffGet.body.some((n: any) => n.content.includes("escalation"))).toBe(true);
+
+      // Admin reads internal notes
+      const adminGet = await request(app)
+        .get(`/api/tickets/${testTicketId}/internal-notes`)
+        .set("Cookie", adminCookie);
+
+      expect(adminGet.status).toBe(200);
+      expect(adminGet.body.length).toBe(2);
+    });
+  });
 });
+
