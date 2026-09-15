@@ -29,8 +29,9 @@ describe("Lab 3 Authentication & Password Lifecycle APIs (Issue #35)", () => {
     expect(res.body.user.isActive).toBe(true);
 
     // Verify session cookie
-    const cookies = res.headers["set-cookie"];
-    expect(cookies).toBeDefined();
+    const rawCookies = res.headers["set-cookie"];
+    expect(rawCookies).toBeDefined();
+    const cookies = Array.isArray(rawCookies) ? rawCookies : [rawCookies as string];
     const sessionCookie = cookies.find((c: string) => c.startsWith("toktickit_session="));
     expect(sessionCookie).toBeDefined();
     expect(sessionCookie).toContain("HttpOnly");
