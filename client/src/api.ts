@@ -16,13 +16,23 @@ export interface RelatedSystem {
 
 export type Priority = "LOW" | "MEDIUM" | "HIGH";
 
-export type TicketStatus = "NEW";
+export type TicketStatus =
+  | "NEW"
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "WAITING_FOR_REQUESTER"
+  | "RESOLVED"
+  | "CLOSED"
+  | "REOPENED"
+  | "CANCELLED";
 
 export interface DevRequester {
   id: number;
   fullName: string;
   email: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AttachmentMeta {
@@ -41,9 +51,9 @@ export interface AttachmentMeta {
 export interface Ticket {
   id: number;
   ticketNumber: string;
-  requesterId: number;
-  categoryId: number;
-  relatedSystemId: number;
+  requesterId?: number;
+  categoryId?: number;
+  relatedSystemId?: number;
   summary: string;
   description: string;
   requestedPriority: Priority;
@@ -416,7 +426,7 @@ export async function changeUserPassword(
 export async function toggleProblemResolved(
   ticketId: number,
   resolved: boolean
-): Promise<{ id: number; problemAppearsResolved: boolean; updatedAt: string }> {
+): Promise<{ id: number; problemAppearsResolved: boolean; currentStatus?: TicketStatus; updatedAt?: string }> {
   const res = await fetch(`${API_URL}/api/tickets/${ticketId}/resolve-indication`, {
     method: "POST",
     headers: {
@@ -444,7 +454,7 @@ export async function toggleProblemResolved(
 // ---------------------------------------------------------------------------
 // IT Staff Ticket Queue & Staff Directory APIs (Issue #37, AC-12, BR-23)
 // ---------------------------------------------------------------------------
-export type StaffTicketStatus = "NEW" | "OPEN" | "IN_PROGRESS" | "RESOLVED";
+export type StaffTicketStatus = TicketStatus;
 
 export interface StaffTicketSummary {
   id: number;
@@ -732,5 +742,146 @@ export async function createInternalNote(
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Administrator User Management APIs (Issue #39)
+// ---------------------------------------------------------------------------
+
+export interface AdminUser {
+  id: number;
+  fullName: string;
+  email: string;
+  role: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+  isActive: boolean;
+  mustChangePassword: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserListResponse {
+  items: AdminUser[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export interface UserQueryParams {
+  search?: string;
+  role?: string;
+  isActive?: boolean | string;
+  page?: number;
+  limit?: number;
+}
+
+export interface CreateUserData {
+  fullName: string;
+  email: string;
+  role: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+  initialPassword: string;
+}
+
+export interface UpdateUserData {
+  fullName?: string;
+  email?: string;
+  role?: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+  isActive?: boolean;
+}
+
+export async function fetchAdminUsers(params?: UserQueryParams): Promise<UserListResponse> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.role) query.set("role", params.role);
+  if (params?.isActive !== undefined && params?.isActive !== "") {
+    query.set("isActive", String(params.isActive));
+  }
+  if (params?.page) query.set("page", params.page.toString());
+  if (params?.limit) query.set("limit", params.limit.toString());
+
+  const qs = query.toString();
+  const url = `${API_URL}/api/admin/users${qs ? `?${qs}` : ""}`;
+  const res = await fetch(url, { credentials: "include" });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch users (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function createAdminUser(userData: CreateUserData): Promise<AdminUser> {
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(userData),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to create user (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function updateAdminUser(userId: number, updateData: UpdateUserData): Promise<AdminUser> {
+  const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(updateData),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to update user (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+export async function resetUserPassword(
+  userId: number,
+  initialPassword: string
+): Promise<{ success: boolean; message: string; mustChangePassword: boolean }> {
+  const res = await fetch(`${API_URL}/api/admin/users/${userId}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ initialPassword }),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to reset password (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
 
 

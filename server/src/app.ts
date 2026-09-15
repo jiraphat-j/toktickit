@@ -5,6 +5,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import bcrypt from "bcryptjs";
 import { getPrisma } from "./prisma.js";
 import {
   authRouter,
@@ -12,6 +13,8 @@ import {
   requireRole,
   authenticateSessionOrDev,
   UserOrRequesterRequest,
+  AuthenticatedRequest,
+  validatePasswordComplexity,
 } from "./auth.js";
 import { SESSION_SECRET } from "./session.js";
 
@@ -1777,27 +1780,432 @@ app.patch(
   }
 );
 
-// GET /api/admin/users (SEC-01)
+// ---------------------------------------------------------------------------
+// Administrator User Management Endpoints (AC-16..21, BR-07, BR-08, BR-19..22, ADM-01..04, SEC-05, SEC-06)
+// ---------------------------------------------------------------------------
+
+// 1. GET /api/admin/users — List users with search, role filter, active filter, pagination
 app.get(
   "/api/admin/users",
   requireAuth,
   requireRole("ADMINISTRATOR"),
-  async (_req: Request, res: Response) => {
-    res.status(200).json({
-      items: [],
-      pagination: { page: 1, total: 0 },
-    });
+  async (req: Request, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const { search, role, isActive, page, limit } = req.query;
+
+      const pageNum = page ? parseInt(page as string, 10) : 1;
+      const limitNum = limit ? parseInt(limit as string, 10) : 10;
+
+      if (isNaN(pageNum) || pageNum < 1 || isNaN(limitNum) || limitNum < 1) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Page and limit must be positive integers.",
+          },
+        });
+        return;
+      }
+
+      if (role && !["REQUESTER", "IT_STAFF", "ADMINISTRATOR"].includes(role as string)) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Invalid role filter.",
+          },
+        });
+        return;
+      }
+
+      const where: any = {};
+
+      if (search && typeof search === "string" && search.trim()) {
+        const term = search.trim();
+        where.OR = [
+          { fullName: { contains: term, mode: "insensitive" } },
+          { email: { contains: term, mode: "insensitive" } },
+        ];
+      }
+
+      if (role) {
+        where.role = role as any;
+      }
+
+      if (isActive !== undefined && isActive !== "") {
+        if (isActive === "true") {
+          where.isActive = true;
+        } else if (isActive === "false") {
+          where.isActive = false;
+        }
+      }
+
+      const totalItems = await prisma.user.count({ where });
+      const totalPages = Math.ceil(totalItems / limitNum) || 1;
+      const skip = (pageNum - 1) * limitNum;
+
+      const users = await prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+          isActive: true,
+          mustChangePassword: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip,
+        take: limitNum,
+      });
+
+      res.status(200).json({
+        items: users,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          totalItems,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to list users." },
+      });
+    }
   }
 );
 
-// POST /api/admin/users (SEC-01)
+// 2. POST /api/admin/users — Create new user account with single role and initial password
 app.post(
   "/api/admin/users",
   requireAuth,
   requireRole("ADMINISTRATOR"),
-  async (_req: Request, res: Response) => {
-    res.status(201).json({ status: "CREATED" });
+  async (req: Request, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const { fullName, email, role, initialPassword } = req.body;
+
+      if (!fullName || typeof fullName !== "string" || fullName.trim().length < 2 || fullName.trim().length > 100) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Full name must be between 2 and 100 characters.",
+          },
+        });
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || typeof email !== "string" || !emailRegex.test(email.trim())) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Valid email address is required.",
+          },
+        });
+        return;
+      }
+
+      if (!role || !["REQUESTER", "IT_STAFF", "ADMINISTRATOR"].includes(role)) {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Valid role (REQUESTER, IT_STAFF, ADMINISTRATOR) is required.",
+          },
+        });
+        return;
+      }
+
+      if (!initialPassword || typeof initialPassword !== "string") {
+        res.status(400).json({
+          error: {
+            code: "BAD_REQUEST",
+            message: "Initial password is required.",
+          },
+        });
+        return;
+      }
+
+      const complexity = validatePasswordComplexity(initialPassword);
+      if (!complexity.valid) {
+        res.status(400).json({
+          error: {
+            code: "WEAK_PASSWORD",
+            message: complexity.errors.join(" "),
+            details: complexity.errors,
+          },
+        });
+        return;
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Check duplicate email (BR-08)
+      const existingUser = await prisma.user.findFirst({
+        where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+      });
+
+      if (existingUser) {
+        res.status(409).json({
+          error: {
+            code: "EMAIL_ALREADY_EXISTS",
+            message: `A user with email "${normalizedEmail}" already exists.`,
+          },
+        });
+        return;
+      }
+
+      const passwordHash = await bcrypt.hash(initialPassword, 10);
+
+      const newUser = await prisma.user.create({
+        data: {
+          fullName: fullName.trim(),
+          email: normalizedEmail,
+          role,
+          passwordHash,
+          isActive: true,
+          mustChangePassword: true,
+        },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+          isActive: true,
+          mustChangePassword: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      res.status(201).json(newUser);
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to create user." },
+      });
+    }
+  }
+);
+
+// 3. PATCH /api/admin/users/:id — Edit user details and toggle active status with safeguards
+app.patch(
+  "/api/admin/users/:id",
+  requireAuth,
+  requireRole("ADMINISTRATOR"),
+  async (req: Request, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const authReq = req as AuthenticatedRequest;
+      const userId = parseInt(req.params.id, 10);
+
+      if (isNaN(userId)) {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Invalid user ID." },
+        });
+        return;
+      }
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!targetUser) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "User not found." },
+        });
+        return;
+      }
+
+      const { fullName, email, role, isActive } = req.body;
+
+      // Validation: fullName
+      if (fullName !== undefined) {
+        if (typeof fullName !== "string" || fullName.trim().length < 2 || fullName.trim().length > 100) {
+          res.status(400).json({
+            error: { code: "BAD_REQUEST", message: "Full name must be between 2 and 100 characters." },
+          });
+          return;
+        }
+      }
+
+      // Validation: email
+      let normalizedEmail: string | undefined = undefined;
+      if (email !== undefined) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (typeof email !== "string" || !emailRegex.test(email.trim())) {
+          res.status(400).json({
+            error: { code: "BAD_REQUEST", message: "Valid email address is required." },
+          });
+          return;
+        }
+        normalizedEmail = email.toLowerCase().trim();
+        if (normalizedEmail !== targetUser.email.toLowerCase()) {
+          const emailExists = await prisma.user.findFirst({
+            where: {
+              email: { equals: normalizedEmail, mode: "insensitive" },
+              id: { not: userId },
+            },
+          });
+          if (emailExists) {
+            res.status(409).json({
+              error: {
+                code: "EMAIL_ALREADY_EXISTS",
+                message: `Email "${normalizedEmail}" is already registered by another user.`,
+              },
+            });
+            return;
+          }
+        }
+      }
+
+      // Validation: role
+      if (role !== undefined) {
+        if (!["REQUESTER", "IT_STAFF", "ADMINISTRATOR"].includes(role)) {
+          res.status(400).json({
+            error: { code: "BAD_REQUEST", message: "Invalid role specified." },
+          });
+          return;
+        }
+      }
+
+      // Safeguard 1: Self-deactivation prevention (BR-20, SEC-05)
+      if (authReq.user?.id === userId && isActive === false) {
+        res.status(400).json({
+          error: {
+            code: "CANNOT_DEACTIVATE_SELF",
+            message: "Administrators cannot deactivate their own account.",
+          },
+        });
+        return;
+      }
+
+      // Safeguard 2: Last active administrator lockout protection (BR-21, SEC-06)
+      if (targetUser.role === "ADMINISTRATOR" && targetUser.isActive) {
+        const isDeactivating = isActive === false;
+        const isDemoting = role !== undefined && role !== "ADMINISTRATOR";
+
+        if (isDeactivating || isDemoting) {
+          const activeAdminCount = await prisma.user.count({
+            where: {
+              role: "ADMINISTRATOR",
+              isActive: true,
+            },
+          });
+
+          if (activeAdminCount <= 1) {
+            res.status(400).json({
+              error: {
+                code: "LAST_ACTIVE_ADMIN",
+                message: "Cannot deactivate or demote the last active administrator.",
+              },
+            });
+            return;
+          }
+        }
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(fullName !== undefined && { fullName: fullName.trim() }),
+          ...(normalizedEmail !== undefined && { email: normalizedEmail }),
+          ...(role !== undefined && { role }),
+          ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+          isActive: true,
+          mustChangePassword: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to update user." },
+      });
+    }
+  }
+);
+
+// 4. POST /api/admin/users/:id/reset-password — Reset initial password
+app.post(
+  "/api/admin/users/:id/reset-password",
+  requireAuth,
+  requireRole("ADMINISTRATOR"),
+  async (req: Request, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const userId = parseInt(req.params.id, 10);
+
+      if (isNaN(userId)) {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Invalid user ID." },
+        });
+        return;
+      }
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!targetUser) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "User not found." },
+        });
+        return;
+      }
+
+      const { initialPassword } = req.body;
+
+      if (!initialPassword || typeof initialPassword !== "string") {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Initial password is required." },
+        });
+        return;
+      }
+
+      const complexity = validatePasswordComplexity(initialPassword);
+      if (!complexity.valid) {
+        res.status(400).json({
+          error: {
+            code: "WEAK_PASSWORD",
+            message: complexity.errors.join(" "),
+            details: complexity.errors,
+          },
+        });
+        return;
+      }
+
+      const passwordHash = await bcrypt.hash(initialPassword, 10);
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          mustChangePassword: true,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Password reset successfully; user must change password on next login",
+        mustChangePassword: true,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to reset password." },
+      });
+    }
   }
 );
 
 export default app;
+

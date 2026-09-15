@@ -20,6 +20,7 @@ import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
+import { UserManagement } from "./components/UserManagement.js";
 
 export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
@@ -274,10 +275,7 @@ export default function App() {
           )}
 
           {activeTab === "users" && (
-            <div className="card p-4 zen-card">
-              <h3>Administrator User Management</h3>
-              <p className="text-muted">Admin user management will be activated in Step 8.</p>
-            </div>
+            <UserManagement currentUser={currentUser} />
           )}
 
           {(activeTab === "my-tickets" || activeTab === "create-ticket") && (

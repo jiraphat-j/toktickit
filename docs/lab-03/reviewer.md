@@ -15,8 +15,9 @@
 | **Issue #34** | `feat: Database migration, User model, and seed data` | [PR #45](https://github.com/jiraphat-j/toktickit/pull/45) | "โดยรวม User Model, Role, migration, seed และ migration-seed tests วางโครงสร้างได้ดี โดยเฉพาะการใช้ bcrypt, idempotent upsert และการเพิ่ม Ticket/User relations" | ตรวจสอบความถูกต้องและรัน test migration-seed ผ่าน 100% เรียบร้อยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `8d5884a`) |
 | **Issue #35** | `feat: Authentication, password lifecycle, and session management` | [PR #46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Approved & Merged** by @thanapornboont-star (Merge commit `fc9dd58`) |
 | **Issue #36** | `feat: RBAC authorization layer and Requester regression` | [PR #47](https://github.com/jiraphat-j/toktickit/pull/47) | "BAC middleware, requester ownership isolation, forged requesterId protection และ Problem Appears Resolved test ทำได้ดีค่ะ" | ขอบพระคุณครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `3a0e6c6`) |
-| **Issue #38** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมากค่ะ... แต่ staff-ticket-detail.api.test.ts ตอนนี้ยังเน้น owner, priority และ status workflow เป็นหลัก ยังไม่มี automated API test ที่ยืนยัน communication permission boundary โดยเฉพาะ Requester ต้องถูกปฏิเสธการอ่าน/สร้าง Internal Note ด้วย 403 รบกวนเพิ่ม tests อย่างน้อยตามนี้: Requester สร้าง Public Comment ได้, Staff/Admin อ่าน/สร้าง Public Comment ได้, Requester ไม่สามารถอ่าน/สร้าง Internal Note (403), Staff/Admin สร้าง Internal Note ได้" | เพิ่มชุดทดสอบใน `server/tests/lab-03/staff-ticket-detail.api.test.ts` ครอบคลุม Communication & Authorization Boundaries ครบทั้ง 5 เคส: Requester สร้าง Public Comment, Staff/Admin อ่าน/สร้าง Public Comment, Requester บล็อก Internal Notes (403), Staff/Admin อ่าน/สร้าง Internal Notes ได้สมบูรณ์ ผ่านครบ 34/34 tests | In Review |
-| **Issue #39** | `feat: Administrator User Management and safeguards` | Planned | - | - | Planned |
+| **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%" | ขอบคุณครับ ได้รับการ Approve และ Merge เรียบร้อยแล้วครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
+| **Issue #38** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมากค่ะ... แต่ staff-ticket-detail.api.test.ts ตอนนี้ยังเน้น owner, priority และ status workflow เป็นหลัก ยังไม่มี automated API test ที่ยืนยัน communication permission boundary โดยเฉพาะ Requester ต้องถูกปฏิเสธการอ่าน/สร้าง Internal Note ด้วย 403 รบกวนเพิ่ม tests อย่างน้อยตามนี้: Requester สร้าง Public Comment ได้, Staff/Admin อ่าน/สร้าง Public Comment ได้, Requester ไม่สามารถอ่าน/สร้าง Internal Note (403), Staff/Admin สร้าง Internal Note ได้" | เพิ่มชุดทดสอบใน `server/tests/lab-03/staff-ticket-detail.api.test.ts` ครอบคลุม Communication & Authorization Boundaries ครบทั้ง 5 เคส: Requester สร้าง Public Comment, Staff/Admin อ่าน/สร้าง Public Comment, Requester บล็อก Internal Notes (403), Staff/Admin อ่าน/สร้าง Internal Notes ได้สมบูรณ์ ผ่านครบ 34/34 tests ใน commit `14eb5f3` | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
+| **Issue #39** | `feat: Administrator User Management and safeguards` | Pending (`feature/39-admin-user-management`) | - | - | In Progress |
 | **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | Planned | - | - | Planned |
 | **Issue #41** | `test: E2E scenarios and complete regression suite` | Planned | - | - | Planned |
 | **Issue #42** | `docs: Lab 3 documentation completion and submission evidence` | Planned | - | - | Planned |
@@ -34,6 +35,7 @@
 | **Step 5** | `feat(sprint3/wi4): RBAC enforcement, requester continuity, public comments, indicate-resolved` | [PR #53](https://github.com/thanapornboont-star/toktickit/pull/53) | "ตรวจ PR #53 เรียบร้อยครับ การวาง Authorization Boundary และการเชื่อมต่อ Requester Continuity ทำได้สมบูรณ์มาก: การบังคับตัวตนผ่าน Bearer token และการตัดสิทธิ์ field ที่ client พยายาม spoof (requesterId, ownerId, status) เป็นไปตาม BR-07 และ BR-10 ครบถ้วน, การตอบกลับด้วย 404 Not Found เมื่อ Requester เข้าถึงตั๋วคนอื่น ช่วยป้องกัน information disclosure ได้ถูกต้องตาม BR-09, ฟังก์ชัน Public Comments และ Problem Appears Resolved ทำงานได้ตาม AC-08, AC-09, Middleware authenticateSessionOrDev ช่วยให้โค้ดของเดิมใน Lab 2 ยังทำงานได้ครบถ้วนโดยไม่เกิด regression, เทสต์ทั้ง Server (53/53) และ Client (39/39) ผ่านครบ 100% เอกสาร tests.md และ reviewer.md อัปเดตเรียบร้อยครับ Approved ครับ" | "ขอบคุณอีกครั้งค่ะ" | **Approved & Merged** |
 | **Step 6** | `feat(sprint3/wi5): StaffTicketQueue component, search/filter toolbar, and tests` | [PR #54](https://github.com/thanapornboont-star/toktickit/pull/54) | "ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครอบคลุมตาม AC-12/AC-22: มี toolbar ค้นหาด้วย ticketNumber/summary, filter แยกหมวดหมู่/สถานะ/ความสำคัญ, responsive layout สำหรับ desktop table และ mobile card list, และมี automated tests ผ่านครบทั้ง 11 ข้อ ไม่พบ regression กับเทสต์เดิมครับ Approved ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 | **Step 7** | `feat(sprint3/wi6): Staff ticket operations, comments, and internal notes` | [PR #55](https://github.com/thanapornboont-star/toktickit/pull/55) | "- Base branch เข้า `lab3-staging` ถูกต้อง<br>- โค้ดตรงตามข้อกำหนด Work Item 6 (AC-10, AC-13 ถึง AC-16, BR-12, BR-15, BR-18)<br>- Backend มี State Machine เช็คสถานะตั๋วอย่างเข้มงวด และบล็อก Requester จาก Internal Notes (403 Forbidden)<br>- Frontend นำ `StaffTicketDetail` มาแทน placeholder ใน `App.tsx` ครบถ้วน แยกโทนสี Amber สำหรับ Internal Notes ชัดเจน<br>- Test ผ่าน 100% ทั้ง Server (104 tests) และ Client (58 tests) เอกสารอัปเดตเรียบร้อย พร้อม merge ครับ" | "ขอบคุณมากค่า" | **Approved & Merged** by @jiraphat-j |
+| **Step 8** | `feat(admin): implement administrator user management, business rule guards, and tests` | [PR #56](https://github.com/thanapornboont-star/toktickit/pull/56) | "- Base branch `lab3-staging` ถูกต้อง<br>- ระบบ User Management ครบ 4 endpoints (`GET`, `POST`, `PATCH`, `reset-password`) ตาม AC-16..19<br>- ป้องกัน Duplicate Email ด้วย 409 Conflict (BR-08)<br>- Safeguards ป้องกัน Admin deactivating own account (BR-20, SEC-05) และ Last Active Admin Lockout (BR-21, SEC-06)<br>- Frontend `UserManagement.tsx` มี User Table, Modals, Reset Password และปุ่ม Deactivate ปิดการใช้งานตนเองตาม UI-05<br>- Tests ผ่านครบถ้วนทั้ง Server และ Client พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 
 ---
 
@@ -216,7 +218,30 @@
     > - ยืนยันการบล็อก Requester ไม่ให้อ่านหรือสร้าง Internal Note ด้วย 403 Forbidden (SEC-04, AC-11, BR-18)
     > - ยืนยัน Staff และ Admin สามารถอ่านและเขียน Internal Note ได้อย่างถูกต้องตาม BR-16
     > เทสต์ทั้งหมดใน suite ผ่านครบ 34/34 tests (รวมทั้งระบบ 151 server tests) ไม่มี regression ครับ รบกวน re-review อีกครั้งได้เลยครับ ขอบคุณมากครับ"*
-  - **Review Decision:** Changes Addressed (Awaiting Re-review)
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `644ef78` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `feature/38-staff-ticket-detail`
+
+---
+
+### Issue #39 — Administrator User Management and Safeguards
+- **PR:** Pending (`feature/39-admin-user-management`)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Implementation Summary:**
+    1. User Directory API (`GET /api/admin/users`, AC-16, BR-07, ADM-01) with search by name/email, role filter, active status filter, and pagination.
+    2. User Creation API (`POST /api/admin/users`, AC-17, AC-18, BR-08, ADM-02) with single role, initial password, duplicate email rejection (409 Conflict), flag `mustChangePassword = true`.
+    3. User Edit & Deactivation API (`PATCH /api/admin/users/:id`, AC-19, AC-20, BR-19, BR-20, BR-21, ADM-03, SEC-05, SEC-06) with Admin self-deactivation lock and Last Active Admin lockout safeguard.
+    4. Reset Password API (`POST /api/admin/users/:id/reset-password`, AC-19, BR-22, ADM-04).
+    5. Admin Route Authorization (`SEC-01`, `AC-21`): Strictly restricted to ADMINISTRATOR role, non-admins rejected with 403 Forbidden.
+    6. Frontend `UserManagement.tsx` (`UI-05`, `AC-22`): Responsive user table, search/filter toolbar, Create/Edit modals, Password Reset modal, self-deactivation disabled safeguard.
+    7. Integrate `UserManagement` in `App.tsx` navigation tab for Administrators.
+  - **Reviewer Comment:**
+    > *In Progress*
+  - **Author Response:**
+    > *In Progress*
+  - **Review Decision:** In Progress
   - **Merge Action:** Pending
 
 
@@ -330,5 +355,27 @@
     > *"ขอบคุณมากค่า"*
   - **Review Decision:** Approved by @jiraphat-j
   - **Merge Status:** Merged into partner `lab3-staging` (Merged commit on 2026-09-13)
+
+---
+
+### Partner PR #56 — Sprint 3 Administrator User Management, Business Rule Guards, and Tests
+- **PR:** [PR #56](https://github.com/thanapornboont-star/toktickit/pull/56)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Feature Branch:** `sprint3/admin-users`
+- **Target Branch:** `lab3-staging`
+- **Linked Issue:** Closes #46
+- **Review Activity:**
+  - **My Review Comment:**
+    > *- Base branch เข้า `lab3-staging` ถูกต้อง  
+    > - ระบบ User Management ครบถ้วนทั้ง 4 endpoints (`GET /api/admin/users`, `POST /api/admin/users`, `PATCH /api/admin/users/:id`, `POST /api/admin/users/:id/reset-password`) ตาม AC-16 ถึง AC-19  
+    > - ป้องกัน Duplicate Email ด้วย 409 Conflict ตาม BR-08  
+    > - Safeguards สำคัญ: ป้องกัน Admin deactivating own account (BR-20, SEC-05) และ Last Active Admin Lockout (BR-21, SEC-06) ได้อย่างรัดกุม  
+    > - Frontend `UserManagement.tsx` ออกแบบ responsive มี User Table, Search/Filter, Create/Edit Modals, Reset Password Dialog, และปุ่ม Deactivate ปิดการใช้งานสำหรับตนเองตาม UI-05 ครบถ้วน  
+    > - Tests ผ่านครบถ้วนทั้ง Server และ Client พร้อม merge ครับ*
+  - **Partner Response:**
+    > *"ขอบคุณค่ะ"*
+  - **Review Decision:** Approved by @jiraphat-j
+  - **Merge Status:** Merged into partner `lab3-staging` (Merge commit `3721317826cc2f235bb735eac517ddf1d874373c`)
 
 
