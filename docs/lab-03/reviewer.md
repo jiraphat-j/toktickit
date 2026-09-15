@@ -15,8 +15,8 @@
 | **Issue #34** | `feat: Database migration, User model, and seed data` | [PR #45](https://github.com/jiraphat-j/toktickit/pull/45) | "โดยรวม User Model, Role, migration, seed และ migration-seed tests วางโครงสร้างได้ดี โดยเฉพาะการใช้ bcrypt, idempotent upsert และการเพิ่ม Ticket/User relations" | ตรวจสอบความถูกต้องและรัน test migration-seed ผ่าน 100% เรียบร้อยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `8d5884a`) |
 | **Issue #35** | `feat: Authentication, password lifecycle, and session management` | [PR #46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Approved & Merged** by @thanapornboont-star (Merge commit `fc9dd58`) |
 | **Issue #36** | `feat: RBAC authorization layer and Requester regression` | [PR #47](https://github.com/jiraphat-j/toktickit/pull/47) | "BAC middleware, requester ownership isolation, forged requesterId protection และ Problem Appears Resolved test ทำได้ดีค่ะ" | ขอบพระคุณครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `3a0e6c6`) |
-| **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | Pending (`feature/37-staff-ticket-queue`) | - | - | Ready for PR |
-| **Issue #38** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | Planned | - | - | Planned |
+| **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%" | ขอบคุณครับ ได้รับการ Approve และ Merge เรียบร้อยแล้วครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
+| **Issue #38** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | Pending (`feature/38-staff-ticket-detail`) | - | - | In Progress |
 | **Issue #39** | `feat: Administrator User Management and safeguards` | Planned | - | - | Planned |
 | **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | Planned | - | - | Planned |
 | **Issue #41** | `test: E2E scenarios and complete regression suite` | Planned | - | - | Planned |
@@ -153,7 +153,7 @@
 ---
 
 ### Issue #37 — IT Staff Ticket Queue and Advanced Filtering
-- **PR:** Pending (Branch: `feature/37-staff-ticket-queue`)
+- **PR:** [PR #48](https://github.com/jiraphat-j/toktickit/pull/48)
 - **Author:** @jiraphat-j
 - **Reviewer:** @thanapornboont-star
 - **Review Activity:**
@@ -170,11 +170,37 @@
        - Client: `client/tests/lab-03/StaffTicketQueue.test.tsx` (9 tests covering `UI-03`, rendering, mobile cards, search, filters, sorting, empty states, and selection).
     9. Full regression: 100/100 server tests pass (100%), 61/61 client tests pass (100%).
   - **Reviewer Comment:**
-    > *Pending peer review from @thanapornboont-star*
+    > *"ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%"*
   - **Author Response:**
-    > *Pending peer review*
-  - **Review Decision:** Ready for PR (Step 3/Step 4)
-  - **Merge Action:** Pending PR
+    > *"ขอบคุณมากครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `d2f99b3` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `feature/37-staff-ticket-queue`
+
+---
+
+### Issue #38 — IT Staff Ticket Detail, Claiming, and Communication Workflow
+- **PR:** Pending (`feature/38-staff-ticket-detail`)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Implementation Summary:**
+    1. Operational Bar: Claim ticket and reassign primary owner (`PATCH /api/staff/tickets/:id/owner`, AC-13, BR-11, STF-05).
+    2. Operational IT Priority: Update `itPriority` independently of `requestedPriority` (`PATCH /api/staff/tickets/:id/priority`, AC-14, BR-13, STF-06).
+    3. Status Workflow Transitions: Enforce strict Status Transition Matrix state machine (`PATCH /api/staff/tickets/:id/status`, AC-15, BR-15, STF-07, STF-08).
+    4. Communication Threads:
+       - Public Comments (`GET`/`POST /api/tickets/:id/comments`, AC-09, BR-16, BR-17, COM-01, COM-03) with Zen Green accent, 1–2000 chars validation.
+       - Internal Notes (`GET`/`POST /api/tickets/:id/internal-notes`, AC-10, AC-11, BR-16, BR-17, BR-18, SEC-04, COM-02) with distinct Amber Warning accent, restricted strictly to Staff/Admin (403 for Requesters).
+    5. Frontend:
+       - Create `StaffTicketDetail.tsx` with operational controls, dual threads, attachment continuity, and responsive layout.
+       - Update `RequesterTicketDetail.tsx` to support Public Comments (AC-09).
+       - Mount `StaffTicketDetail` in `App.tsx` when selecting a ticket from the queue.
+  - **Reviewer Comment:**
+    > *In Progress*
+  - **Author Response:**
+    > *In Progress*
+  - **Review Decision:** In Progress
+  - **Merge Action:** Pending
 
 
 ---

@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { DevRequester, TicketDetail, fetchTicketDetail, toggleProblemResolved } from "../api.js";
+import {
+  DevRequester,
+  TicketDetail,
+  TicketComment,
+  fetchTicketDetail,
+  toggleProblemResolved,
+  fetchTicketComments,
+  createTicketComment,
+} from "../api.js";
 import { AttachmentSection, formatDate } from "./AttachmentSection.js";
 
 export interface RequesterTicketDetailProps {
@@ -19,12 +27,21 @@ export function RequesterTicketDetail({
   const [resolving, setResolving] = useState<boolean>(false);
   const [resolveError, setResolveError] = useState<string>("");
 
+  const [comments, setComments] = useState<TicketComment[]>([]);
+  const [commentInput, setCommentInput] = useState<string>("");
+  const [postingComment, setPostingComment] = useState<boolean>(false);
+  const [commentError, setCommentError] = useState<string>("");
+
   const loadTicket = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await fetchTicketDetail(currentRequester.id, ticketId);
+      const [data, commentsList] = await Promise.all([
+        fetchTicketDetail(currentRequester.id, ticketId),
+        fetchTicketComments(ticketId).catch(() => []),
+      ]);
       setTicket(data);
+      setComments(commentsList);
     } catch (err: any) {
       setError(err.message || "Failed to load ticket details.");
     } finally {
@@ -35,6 +52,32 @@ export function RequesterTicketDetail({
   useEffect(() => {
     loadTicket();
   }, [loadTicket]);
+
+  const handlePostComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticket) return;
+    const trimmed = commentInput.trim();
+    if (!trimmed) {
+      setCommentError("Comment content cannot be empty.");
+      return;
+    }
+    if (trimmed.length > 2000) {
+      setCommentError("Comment cannot exceed 2000 characters.");
+      return;
+    }
+
+    setPostingComment(true);
+    setCommentError("");
+    try {
+      const newComment = await createTicketComment(ticket.id, trimmed);
+      setComments((prev) => [...prev, newComment]);
+      setCommentInput("");
+    } catch (err: any) {
+      setCommentError(err.message || "Failed to post comment.");
+    } finally {
+      setPostingComment(false);
+    }
+  };
 
   const handleToggleResolved = async () => {
     if (!ticket) return;
@@ -313,6 +356,89 @@ export function RequesterTicketDetail({
           attachments={ticket.attachments || []}
           onAttachmentChange={loadTicket}
         />
+      </div>
+
+      {/* Public Comments Section (AC-09, BR-16) */}
+      <div className="zen-card" style={{ marginTop: "1.5rem" }} data-testid="requester-comments-section">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 style={{ fontSize: "1.1rem", color: "var(--color-primary-green)", margin: 0 }}>
+            💬 Public Comments
+          </h4>
+          <span
+            className="badge"
+            style={{ backgroundColor: "#E8F5E9", color: "#1B5E20", fontWeight: 600, padding: "4px 8px" }}
+          >
+            ✓ Visible to Requester & IT Staff
+          </span>
+        </div>
+
+        {/* Comments Stream */}
+        <div
+          className="mb-3 overflow-auto"
+          data-testid="requester-comments-feed"
+          style={{ maxHeight: 350, minHeight: 80 }}
+        >
+          {comments.length === 0 ? (
+            <p className="text-muted text-center py-3">No public comments yet.</p>
+          ) : (
+            comments.map((c) => (
+              <div
+                key={c.id}
+                className="p-3 mb-2 rounded border"
+                data-testid={`requester-comment-${c.id}`}
+                style={{
+                  backgroundColor: c.author.role === "REQUESTER" ? "#F9FBF9" : "#F1F8F3",
+                  borderLeft: c.author.role === "REQUESTER" ? "4px solid #81C784" : "4px solid #2E7D32",
+                }}
+              >
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <strong>{c.author.fullName}</strong>
+                  <span className="badge bg-light text-secondary small border">
+                    {c.author.role}
+                  </span>
+                </div>
+                <p className="mb-1 small" style={{ whiteSpace: "pre-wrap" }}>
+                  {c.content}
+                </p>
+                <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                  {formatDate(c.createdAt)}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add Comment Form */}
+        <form onSubmit={handlePostComment} data-testid="requester-add-comment-form">
+          {commentError && (
+            <div className="alert alert-danger py-1 small mb-2">{commentError}</div>
+          )}
+          <div className="mb-2">
+            <textarea
+              className="form-control"
+              rows={3}
+              maxLength={2000}
+              placeholder="Type a message or response to IT Staff... (1–2000 chars)"
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+              disabled={postingComment}
+              data-testid="requester-comment-textarea"
+            />
+            <div className="d-flex justify-content-between small text-muted mt-1">
+              <span>Markdown supported</span>
+              <span>{commentInput.length} / 2000</span>
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="zen-btn-primary"
+            disabled={postingComment || !commentInput.trim()}
+            data-testid="requester-submit-comment-btn"
+            style={{ minHeight: 44 }}
+          >
+            {postingComment ? "Posting..." : "Post Comment"}
+          </button>
+        </form>
       </div>
     </div>
   );
