@@ -16,9 +16,9 @@
 | **Issue #35** | `feat: Authentication, password lifecycle, and session management` | [PR #46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Approved & Merged** by @thanapornboont-star (Merge commit `fc9dd58`) |
 | **Issue #36** | `feat: RBAC authorization layer and Requester regression` | [PR #47](https://github.com/jiraphat-j/toktickit/pull/47) | "BAC middleware, requester ownership isolation, forged requesterId protection และ Problem Appears Resolved test ทำได้ดีค่ะ" | ขอบพระคุณครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `3a0e6c6`) |
 | **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%" | ขอบคุณครับ ได้รับการ Approve และ Merge เรียบร้อยแล้วครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
-| **Issue #38** | `feat: IT Staff Ticket Detail, claiming, and communication workflow` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมากค่ะ... แต่ staff-ticket-detail.api.test.ts ตอนนี้ยังเน้น owner, priority และ status workflow เป็นหลัก ยังไม่มี automated API test ที่ยืนยัน communication permission boundary โดยเฉพาะ Requester ต้องถูกปฏิเสธการอ่าน/สร้าง Internal Note ด้วย 403 รบกวนเพิ่ม tests อย่างน้อยตามนี้: Requester สร้าง Public Comment ได้, Staff/Admin อ่าน/สร้าง Public Comment ได้, Requester ไม่สามารถอ่าน/สร้าง Internal Note (403), Staff/Admin สร้าง Internal Note ได้" | เพิ่มชุดทดสอบใน `server/tests/lab-03/staff-ticket-detail.api.test.ts` ครอบคลุม Communication & Authorization Boundaries ครบทั้ง 5 เคส: Requester สร้าง Public Comment, Staff/Admin อ่าน/สร้าง Public Comment, Requester บล็อก Internal Notes (403), Staff/Admin อ่าน/สร้าง Internal Notes ได้สมบูรณ์ ผ่านครบ 34/34 tests ใน commit `14eb5f3` | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
-| **Issue #39** | `feat: Administrator User Management and safeguards` | Pending (`feature/39-admin-user-management`) | - | - | In Progress |
-| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | Planned | - | - | Planned |
+| **Issue #38** | `feat: Staff ticket operations, comments, and internal notes` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมาก... เพิ่ม automated API test ยืนยัน communication permission boundary" | เพิ่ม Automated API Tests ใน staff-ticket-detail.api.test.ts ครอบคลุม Communication Permission Boundary ครบถ้วน 5 เคส ผ่านครบ 34/34 tests | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
+| **Issue #39** | `feat: Administrator User Management and safeguards` | [PR #50](https://github.com/jiraphat-j/toktickit/pull/50) | "โดยรวม User Directory, User Creation พร้อม password complexity, Edit/Active status toggle, Safeguards (Self-deactivation lock & Last Active Admin lockout) และ Reset Password ครบถ้วนตาม AC-16..21 และ UI-05 ผ่าน 100%" | "ขอบคุณครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `031789a`) |
+| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | Pending (`feature/40-ui-shell-visual-qa`) | - | - | In Progress |
 | **Issue #41** | `test: E2E scenarios and complete regression suite` | Planned | - | - | Planned |
 | **Issue #42** | `docs: Lab 3 documentation completion and submission evidence` | Planned | - | - | Planned |
 | **Release** | `release: merge lab3-staging to main` | Planned | - | - | Planned |
@@ -225,7 +225,7 @@
 ---
 
 ### Issue #39 — Administrator User Management and Safeguards
-- **PR:** Pending (`feature/39-admin-user-management`)
+- **PR:** [PR #50](https://github.com/jiraphat-j/toktickit/pull/50)
 - **Author:** @jiraphat-j
 - **Reviewer:** @thanapornboont-star
 - **Review Activity:**
@@ -238,11 +238,31 @@
     6. Frontend `UserManagement.tsx` (`UI-05`, `AC-22`): Responsive user table, search/filter toolbar, Create/Edit modals, Password Reset modal, self-deactivation disabled safeguard.
     7. Integrate `UserManagement` in `App.tsx` navigation tab for Administrators.
   - **Reviewer Comment:**
-    > *In Progress*
+    > *"โดยรวม User Directory, User Creation พร้อม password complexity, Edit/Active status toggle, Safeguards (Self-deactivation lock & Last Active Admin lockout) และ Reset Password ครบถ้วนตาม AC-16..21 และ UI-05 ผ่าน 100%"*
   - **Author Response:**
-    > *In Progress*
-  - **Review Decision:** In Progress
-  - **Merge Action:** Pending
+    > *"ขอบคุณมากครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `031789a` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `feature/39-admin-user-management`
+
+---
+
+### Issue #40 — Cross-feature UI Shell, Visual QA, and Screenshots
+- **PR:** Pending (`feature/40-ui-shell-visual-qa`)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Implementation Summary:**
+    1. Cross-feature UI Shell verification: Tested role-based navigation headers (`REQUESTER`, `IT_STAFF`, `ADMINISTRATOR`), profile badges, session continuity, and logout behavior.
+    2. Component tests: Created `client/tests/lab-03/AppHeader.test.tsx` (6/6 tests pass) covering navigation tabs, role badges, brand redirection, and logout callback across all 3 roles.
+    3. Automated Visual QA Suite & Evidence Capture (`e2e/lab-03/visual-qa-screenshots.spec.ts` & `scripts/capture-lab3-screenshots.mjs`): 5/5 Playwright tests pass, capturing all 24 required visual QA screenshots in `artifacts/lab-03/screenshots/` across `01-auth/`, `02-requester/`, `03-staff/`, `04-admin/`, and `05-responsive/`.
+    4. Responsive Design & Layout Verification (AC-22, UI-01..05): Verified responsive layouts across Desktop (1280px), Tablet (768px), and Mobile (375px) viewports with zero horizontal overflow (`scrollWidth <= innerWidth`).
+  - **Reviewer Comment:**
+    > *Pending Review from @thanapornboont-star*
+  - **Author Response:**
+    > *Ready for Review & PR submission*
+  - **Review Decision:** Pending Review
+  - **Merge Action:** Pending PR
 
 
 
