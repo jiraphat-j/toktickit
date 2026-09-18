@@ -15,11 +15,11 @@
 | **Issue #34** | `feat: Database migration, User model, and seed data` | [PR #45](https://github.com/jiraphat-j/toktickit/pull/45) | "โดยรวม User Model, Role, migration, seed และ migration-seed tests วางโครงสร้างได้ดี โดยเฉพาะการใช้ bcrypt, idempotent upsert และการเพิ่ม Ticket/User relations" | ตรวจสอบความถูกต้องและรัน test migration-seed ผ่าน 100% เรียบร้อยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `8d5884a`) |
 | **Issue #35** | `feat: Authentication, password lifecycle, and session management` | [PR #46](https://github.com/jiraphat-j/toktickit/pull/46) | "Auth API, password lifecycle, session cookie และ test coverage ออกมาดีค่ะ แต่มี blocker ที่ควรแก้ก่อน Approve: 1. handleLoginSuccess() ตอนนี้ set แค่ currentUser แต่ render flow ยังเช็ก !currentRequester ก่อน currentUser 2. revalidateSession() ยังผูกกับ getStoredRequesterId() 3. PR นี้ยังมี flow ของ Dev Selector ค้างอยู่ตาม BR-24 ถ้าตั้งใจคง compatibility ชั่วคราวให้ระบุ scope ให้ชัดเจน 4. Test AUTH-07 ยังไม่มี case session หมดอายุจริง" | แก้ไขเรียบร้อยครบทั้ง 4 จุด: 1. ปรับ render flow ให้ currentUser มี priority สูงสุดเข้า authenticated shell ทันที 2. ให้ session cookie/server identity เป็น source of truth ในการ revalidate เสมอ 3. แยก scope ของ legacy dev selector ไว้อย่างชัดเจนพร้อมระบุว่าจะ retire ถาวรใน Step 5 (Issue #36) 4. เพิ่ม helper expireAllSessions() และ test case สำหรับ expired session ใน AUTH-07 พร้อมเพิ่ม component test App.auth.test.tsx | **Approved & Merged** by @thanapornboont-star (Merge commit `fc9dd58`) |
 | **Issue #36** | `feat: RBAC authorization layer and Requester regression` | [PR #47](https://github.com/jiraphat-j/toktickit/pull/47) | "BAC middleware, requester ownership isolation, forged requesterId protection และ Problem Appears Resolved test ทำได้ดีค่ะ" | ขอบพระคุณครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `3a0e6c6`) |
-| **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%" | ขอบคุณครับ ได้รับการ Approve และ Merge เรียบร้อยแล้วครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
-| **Issue #38** | `feat: Staff ticket operations, comments, and internal notes` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมาก... เพิ่ม automated API test ยืนยัน communication permission boundary" | เพิ่ม Automated API Tests ใน staff-ticket-detail.api.test.ts ครอบคลุม Communication Permission Boundary ครบถ้วน 5 เคส ผ่านครบ 34/34 tests | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
-| **Issue #39** | `feat: Administrator User Management and safeguards` | [PR #50](https://github.com/jiraphat-j/toktickit/pull/50) | "โดยรวม User Directory, User Creation พร้อม password complexity, Edit/Active status toggle, Safeguards (Self-deactivation lock & Last Active Admin lockout) และ Reset Password ครบถ้วนตาม AC-16..21 และ UI-05 ผ่าน 100%" | "ขอบคุณครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `031789a`) |
-| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | [PR #51](https://github.com/jiraphat-j/toktickit/pull/51) | "UI Shell, Responsive Design และ Screenshots สวยงามครบถ้วนตาม AC-22 และ UI-01..05" | จัดเตรียม Screenshot ครบทั้ง 24 ภาพ พร้อมทั้งชุดทดสอบ AppHeader และ Playwright visual QA ผ่าน 100% | **Approved & Merged** by @thanapornboont-star (Merge commit `5b18cd2`) |
-| **Issue #41** | `test: E2E scenarios and complete regression suite` | [PR #52](https://github.com/jiraphat-j/toktickit/pull/52) | "ชุดทดสอบ Playwright E2E ครอบคลุมทั้ง 3 flows (Auth, Staff, Admin) ละเอียดมากค่ะ โดยเฉพาะการตรวจ session cookie, back-navigation block, communication boundary และ admin guardrails เทสต์ทั้งระบบ 284 ข้อผ่าน 100% พร้อม merge ค่ะ" | ดำเนินการสร้าง E2E tests 3 ไฟล์หลัก ครอบคลุมทุก Acceptance Criteria และรัน Full Regression Suite ทั้งระบบผ่านครบ 100% เรียบร้อยครับ | **In Review / Pending Merge** |
+| **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "โดยรวม Staff Ticket Queue ทำได้ดีมากค่ะ ในส่วน -Backend มี RBAC requireAuth + requireRole("IT_STAFF", "ADMINISTRATOR") -Search ticket number / summary แบบ case-insensitive -Filter category / status / priority / owner พร้อม unassigned และ me -Sorting + pagination ทำครบและมี validation -Staff directory จำกัดเฉพาะ active IT Staff/Admin -Frontend มี responsive desktop table + mobile card และ filter/search controls -Test ครอบคลุม RBAC, filtering, sorting, pagination และ UI interaction" | ขอบคุณครับคนสวย กด merge ได้เลยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
+| **Issue #38** | `feat: Staff ticket operations, comments, and internal notes` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมากค่ะ ตอนนี้ยังไม่มีอะไรให้แก้ แต่ช่วยตรวจสอบเรื่อง Public Comments และ Internal Notes ใน StaffTicketDetail... รบกวนเพิ่ม tests อย่างน้อยตามนี้ได้ไไหมคะ: Requester สามารถสร้าง Public Comment ได้, Staff/Admin สามารถอ่าน/สร้าง Public Comment ได้, Requester ไม่สามารถอ่าน/สร้าง Internal Note (403), Staff/Admin สามารถสร้าง Internal Note ได้" | apply ให้ตาม comment แล้วครับช่วยตรวจสอบอีกรอบให้หน่อยนะครับ (เพิ่ม API tests 5 เคสใน staff-ticket-detail.api.test.ts ผ่านครบ 34/34 tests) | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
+| **Issue #39** | `feat: Administrator User Management and safeguards` | [PR #50](https://github.com/jiraphat-j/toktickit/pull/50) | "Administrator User Management ทำได้ครบและตรงตาม requirement ค่ะ: - Admin API ทั้ง 4 endpoints มี authentication + ADMINISTRATOR RBAC - User directory มี search, role/status filter และ pagination - Create User มี password complexity, duplicate email 409 และ mustChangePassword = true -Edit User รองรับข้อมูลหลักและ active status -มี self-deactivation guard และ Last Active Admin Lockout guard -Password reset hash ด้วย bcrypt และบังคับเปลี่ยน password ครั้งถัดไป -Server tests ครอบคลุม authorization, CRUD, duplicate email และ business-rule safeguards -Frontend มี User Table, Search/Filter, Create/Edit และ Reset Password UI พร้อม self-deactivation safeguard" | ขอบคุณครับ รบกวน merge ให้หน่อยครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `031789a`) |
+| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | [PR #51](https://github.com/jiraphat-j/toktickit/pull/51) | "โดยรวม Cross-feature UI Shell + Visual QA ทำได้ครบค่ะ Approvedเรียบร้อยแล้วนะคะ" | ขอบคุณครับ merge ให้ได้ลยครับ (จัดเตรียม Screenshot ครบ 24 ภาพ พร้อมชุดทดสอบ AppHeader และ Playwright visual QA ผ่าน 100%) | **Approved & Merged** by @thanapornboont-star (Merge commit `5b18cd2`) |
+| **Issue #41** | `test: E2E scenarios and complete regression suite` | [PR #52](https://github.com/jiraphat-j/toktickit/pull/52) | "- Authentication E2E ครอบคลุมทั้ง 3 roles, invalid/inactive login, first-login password change และ logout + browser back navigation<br>- Staff E2E ครอบคลุม Queue, Search/Filter, Ticket Detail, Claim/Reassign, IT Priority, Status Transition, Public Comments, Internal Notes และ Attachments<br>- มี E2E ตรวจ Requester ถูกบล็อก Internal Notes ทั้ง GET และ POST ด้วย 403<br>- Admin E2E ครอบคลุม User Management, Create/Edit, Duplicate Email, Reset Password และ Security Safeguards<br>- Lab 2 regression ถูกแยกเป็น /#dev scoped mode ทำให้ legacy Development Requester flow ไม่ปนกับ authenticated flow<br>- เพิ่ม credentials: "include" สำหรับ requester ticket APIs เพื่อรองรับ session cookie<br>- tests.md ระบุ Full Regression ผ่าน 100%: Server 173/173, Client 83/83, Playwright 28/28 รวม 284 tests และ TypeScript build ผ่านทั้งหมดค่ะ" | ขอบคุณมากครับ ได้รับการตรวจและ Approve บน GitHub เรียบร้อยแล้วครับ พร้อมดำเนินการ Merge เข้าสู่ lab3-staging | **Approved** by @thanapornboont-star (Pending Merge) |
 | **Issue #42** | `docs: Lab 3 documentation completion and submission evidence` | Planned | - | - | Planned |
 | **Release** | `release: merge lab3-staging to main` | Planned | - | - | Planned |
 
@@ -33,7 +33,7 @@
 | **Step 3** | `feat: migrate identity to User model and seed Lab 3 roles and data` | [PR #51](https://github.com/thanapornboont-star/toktickit/pull/51) | "ตรวจ PR #51 เรียบร้อยครับ ตัว migration ทำได้ยอดเยี่ยมมาก มีการย้ายข้อมูลจาก DevRequester เข้า User table โดยคง id เดิมและ sync sequence ให้ครบถ้วน ทำให้ข้อมูลเดิมไม่สูญหายและไม่เกิด regression กับเทสต์เดิมของ Lab 1-2 เลยครับ ตัว seed ก็ครอบคลุมทั้ง 3 role และรันซ้ำได้ปลอดภัย" | "ขอบคุณค่ะ" | **Approved & Merged** |
 | **Step 4** | `Sprint3/auth account entry` | [PR #52](https://github.com/thanapornboont-star/toktickit/pull/52) | "ตรวจ PR #52 เรียบร้อยครับ ระบบ Authentication และ First Password Change ทำได้รัดกุมมาก: มีการใช้ bcrypt และ session token ใน DB พร้อม expiration check, การล็อกอินตอบ error แบบ generic (401) ป้องกัน user enumeration และแยกเคสบัญชีถูกปิดใช้งาน (403) ถูกต้องตาม BR-01, BR-02, หน้า ChangePassword มี interactive checklist ตรวจสอบกฎรหัสผ่านแบบเรียลไทม์ และระบบใน App.tsx ดักไม่ให้เข้าหน้าอื่นก่อนเปลี่ยนรหัสผ่านได้สมบูรณ์, เทสต์ทั้งฝั่ง Server และ Client ผ่านครบ 100% โดยไม่กระทบโค้ดเดิม" | "ขอบคุณมากค่ะ โชคดีจังไม่ต้องแก้" | **Approved & Merged** |
 | **Step 5** | `feat(sprint3/wi4): RBAC enforcement, requester continuity, public comments, indicate-resolved` | [PR #53](https://github.com/thanapornboont-star/toktickit/pull/53) | "ตรวจ PR #53 เรียบร้อยครับ การวาง Authorization Boundary และการเชื่อมต่อ Requester Continuity ทำได้สมบูรณ์มาก: การบังคับตัวตนผ่าน Bearer token และการตัดสิทธิ์ field ที่ client พยายาม spoof (requesterId, ownerId, status) เป็นไปตาม BR-07 และ BR-10 ครบถ้วน, การตอบกลับด้วย 404 Not Found เมื่อ Requester เข้าถึงตั๋วคนอื่น ช่วยป้องกัน information disclosure ได้ถูกต้องตาม BR-09, ฟังก์ชัน Public Comments และ Problem Appears Resolved ทำงานได้ตาม AC-08, AC-09, Middleware authenticateSessionOrDev ช่วยให้โค้ดของเดิมใน Lab 2 ยังทำงานได้ครบถ้วนโดยไม่เกิด regression, เทสต์ทั้ง Server (53/53) และ Client (39/39) ผ่านครบ 100% เอกสาร tests.md และ reviewer.md อัปเดตเรียบร้อยครับ Approved ครับ" | "ขอบคุณอีกครั้งค่ะ" | **Approved & Merged** |
-| **Step 6** | `feat(sprint3/wi5): StaffTicketQueue component, search/filter toolbar, and tests` | [PR #54](https://github.com/thanapornboont-star/toktickit/pull/54) | "ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครอบคลุมตาม AC-12/AC-22: มี toolbar ค้นหาด้วย ticketNumber/summary, filter แยกหมวดหมู่/สถานะ/ความสำคัญ, responsive layout สำหรับ desktop table และ mobile card list, และมี automated tests ผ่านครบทั้ง 11 ข้อ ไม่พบ regression กับเทสต์เดิมครับ Approved ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
+| **Step 6** | `feat(sprint3/wi5): StaffTicketQueue component, search/filter toolbar, and tests` | [PR #54](https://github.com/thanapornboont-star/toktickit/pull/54) | "ตรวจโค้ด PR #54 เรียบร้อยครับ ตัวฟังก์ชันคิวตั๋ว IT Staff ทำได้ดีมาก ทั้งการค้นหา กรองสถานะ/IT Priority/ผู้รับผิดชอบ, การแบ่งหน้า และการแสดงผล responsive สลับตารางกับ mobile card เทสต์ผ่านครบถ้วนทั้ง Server (71/71) และ Client (50/50)" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 | **Step 7** | `feat(sprint3/wi6): Staff ticket operations, comments, and internal notes` | [PR #55](https://github.com/thanapornboont-star/toktickit/pull/55) | "- Base branch เข้า `lab3-staging` ถูกต้อง<br>- โค้ดตรงตามข้อกำหนด Work Item 6 (AC-10, AC-13 ถึง AC-16, BR-12, BR-15, BR-18)<br>- Backend มี State Machine เช็คสถานะตั๋วอย่างเข้มงวด และบล็อก Requester จาก Internal Notes (403 Forbidden)<br>- Frontend นำ `StaffTicketDetail` มาแทน placeholder ใน `App.tsx` ครบถ้วน แยกโทนสี Amber สำหรับ Internal Notes ชัดเจน<br>- Test ผ่าน 100% ทั้ง Server (104 tests) และ Client (58 tests) เอกสารอัปเดตเรียบร้อย พร้อม merge ครับ" | "ขอบคุณมากค่า" | **Approved & Merged** by @jiraphat-j |
 | **Step 8** | `feat(admin): implement administrator user management, business rule guards, and tests` | [PR #56](https://github.com/thanapornboont-star/toktickit/pull/56) | "- Base branch `lab3-staging` ถูกต้อง<br>- ระบบ User Management ครบ 4 endpoints (`GET`, `POST`, `PATCH`, `reset-password`) ตาม AC-16..19<br>- ป้องกัน Duplicate Email ด้วย 409 Conflict (BR-08)<br>- Safeguards ป้องกัน Admin deactivating own account (BR-20, SEC-05) และ Last Active Admin Lockout (BR-21, SEC-06)<br>- Frontend `UserManagement.tsx` มี User Table, Modals, Reset Password และปุ่ม Deactivate ปิดการใช้งานตนเองตาม UI-05<br>- Tests ผ่านครบถ้วนทั้ง Server และ Client พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 | **Step 9** | `Sprint3/responsive visual qa` | [PR #57](https://github.com/thanapornboont-star/toktickit/pull/57) | "- Base branch `lab3-staging` ถูกต้อง<br>- ทดสอบ AppHeader และ Role navigation สำหรับทุก Role<br>- ตรวจสอบ Responsive viewports (Desktop 1280px, Tablet 768px, Mobile 375px) ไม่พบ horizontal overflow<br>- จับภาพหลักฐาน Screenshot ครบถ้วนตามข้อกำหนด<br>- Tests ผ่านครบถ้วน พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
@@ -173,9 +173,17 @@
        - Client: `client/tests/lab-03/StaffTicketQueue.test.tsx` (9 tests covering `UI-03`, rendering, mobile cards, search, filters, sorting, empty states, and selection).
     9. Full regression: 100/100 server tests pass (100%), 61/61 client tests pass (100%).
   - **Reviewer Comment:**
-    > *"ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%"*
+    > *"โดยรวม Staff Ticket Queue ทำได้ดีมากค่ะ  
+    > ในส่วน  
+    > - Backend มี RBAC requireAuth + requireRole("IT_STAFF", "ADMINISTRATOR")  
+    > - Search ticket number / summary แบบ case-insensitive  
+    > - Filter category / status / priority / owner พร้อม unassigned และ me  
+    > - Sorting + pagination ทำครบและมี validation  
+    > - Staff directory จำกัดเฉพาะ active IT Staff/Admin  
+    > - Frontend มี responsive desktop table + mobile card และ filter/search controls  
+    > - Test ครอบคลุม RBAC, filtering, sorting, pagination และ UI interaction"*
   - **Author Response:**
-    > *"ขอบคุณมากครับ"*
+    > *"ขอบคุณครับคนสวย กด merge ได้เลยครับ"*
   - **Review Decision:** Approved by @thanapornboont-star
   - **Merge Action:** Merged commit `d2f99b3` into `lab3-staging` by @thanapornboont-star
   - **Branch Closed:** `feature/37-staff-ticket-queue`
@@ -240,9 +248,18 @@
     6. Frontend `UserManagement.tsx` (`UI-05`, `AC-22`): Responsive user table, search/filter toolbar, Create/Edit modals, Password Reset modal, self-deactivation disabled safeguard.
     7. Integrate `UserManagement` in `App.tsx` navigation tab for Administrators.
   - **Reviewer Comment:**
-    > *"โดยรวม User Directory, User Creation พร้อม password complexity, Edit/Active status toggle, Safeguards (Self-deactivation lock & Last Active Admin lockout) และ Reset Password ครบถ้วนตาม AC-16..21 และ UI-05 ผ่าน 100%"*
+    > *"Administrator User Management ทำได้ครบและตรงตาม requirement ค่ะ  
+    >   
+    > - Admin API ทั้ง 4 endpoints มี authentication + ADMINISTRATOR RBAC  
+    > - User directory มี search, role/status filter และ pagination  
+    > - Create User มี password complexity, duplicate email 409 และ mustChangePassword = true  
+    > - Edit User รองรับข้อมูลหลักและ active status  
+    > - มี self-deactivation guard และ Last Active Admin Lockout guard  
+    > - Password reset hash ด้วย bcrypt และบังคับเปลี่ยน password ครั้งถัดไป  
+    > - Server tests ครอบคลุม authorization, CRUD, duplicate email และ business-rule safeguards  
+    > - Frontend มี User Table, Search/Filter, Create/Edit และ Reset Password UI พร้อม self-deactivation safeguard"*
   - **Author Response:**
-    > *"ขอบคุณมากครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ"*
+    > *"ขอบคุณครับ รบกวน merge ให้หน่อยครับ"*
   - **Review Decision:** Approved by @thanapornboont-star
   - **Merge Action:** Merged commit `031789a` into `lab3-staging` by @thanapornboont-star
   - **Branch Closed:** `feature/39-admin-user-management`
@@ -260,9 +277,10 @@
     3. Automated Visual QA Suite & Evidence Capture (`e2e/lab-03/visual-qa-screenshots.spec.ts` & `scripts/capture-lab3-screenshots.mjs`): 5/5 Playwright tests pass, capturing all 24 required visual QA screenshots in `artifacts/lab-03/screenshots/` across `01-auth/`, `02-requester/`, `03-staff/`, `04-admin/`, and `05-responsive/`.
     4. Responsive Design & Layout Verification (AC-22, UI-01..05): Verified responsive layouts across Desktop (1280px), Tablet (768px), and Mobile (375px) viewports with zero horizontal overflow (`scrollWidth <= innerWidth`).
   - **Reviewer Comment:**
-    > *"UI Shell, Responsive Design และ Screenshots สวยงามครบถ้วนตาม AC-22 และ UI-01..05"*
+    > *"โดยรวม Cross-feature UI Shell + Visual QA ทำได้ครบค่ะ  
+    > Approvedเรียบร้อยแล้วนะคะ"*
   - **Author Response:**
-    > *"ขอบคุณมากครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ"*
+    > *"ขอบคุณครับ merge ให้ได้ลยครับ"*
   - **Review Decision:** Approved by @thanapornboont-star
   - **Merge Action:** Merged commit `5b18cd2` into `lab3-staging` by @thanapornboont-star
   - **Branch Closed:** `feature/40-ui-shell-visual-qa`
@@ -282,11 +300,17 @@
     5. Backward compatibility: Updated `e2e/lab-02/requester-ticket-flow.spec.ts` to activate scoped dev selector via `#dev`.
     6. Complete Regression Run (100% PASS): Server Vitest (15 files, 173 tests), Client Vitest (14 files, 83 tests), Playwright E2E (5 suites, 28 tests), and 0 TypeScript build errors.
   - **Reviewer Comment:**
-    > *"ชุดทดสอบ Playwright E2E ครอบคลุมทั้ง 3 flows (Auth, Staff, Admin) ละเอียดมากค่ะ โดยเฉพาะการตรวจ session cookie, back-navigation block, communication boundary และ admin guardrails เทสต์ทั้งระบบ 284 ข้อผ่าน 100% พร้อม merge ค่ะ"*
+    > *"- Authentication E2E ครอบคลุมทั้ง 3 roles, invalid/inactive login, first-login password change และ logout + browser back navigation  
+    > - Staff E2E ครอบคลุม Queue, Search/Filter, Ticket Detail, Claim/Reassign, IT Priority, Status Transition, Public Comments, Internal Notes และ Attachments  
+    > - มี E2E ตรวจ Requester ถูกบล็อก Internal Notes ทั้ง GET และ POST ด้วย 403  
+    > - Admin E2E ครอบคลุม User Management, Create/Edit, Duplicate Email, Reset Password และ Security Safeguards  
+    > - Lab 2 regression ถูกแยกเป็น /#dev scoped mode ทำให้ legacy Development Requester flow ไม่ปนกับ authenticated flow  
+    > - เพิ่ม credentials: "include" สำหรับ requester ticket APIs เพื่อรองรับ session cookie  
+    > - tests.md ระบุ Full Regression ผ่าน 100%: Server 173/173, Client 83/83, Playwright 28/28 รวม 284 tests และ TypeScript build ผ่านทั้งหมดค่ะ"*
   - **Author Response:**
-    > *"ขอบคุณมากครับ รัน regression ทั้งหมดผ่าน 100% เรียบร้อย พร้อม merge เข้า lab3-staging ครับ"*
+    > *"ขอบคุณมากครับ ได้รับการตรวจและ Approve บน GitHub เรียบร้อยแล้วครับ พร้อมดำเนินการ Merge เข้าสู่ lab3-staging"*
   - **Review Decision:** Approved by @thanapornboont-star
-  - **Merge Action:** Pending user merge into `lab3-staging`
+  - **Merge Action:** Pending merge into `lab3-staging` by user/partner
   - **Branch Closed:** `feature/41-e2e-scenarios-regression`
 
 
@@ -369,11 +393,7 @@
 - **Linked Issue:** Closes #44
 - **Review Activity:**
   - **My Review Comment:**
-    > *"ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครอบคลุมตาม AC-12/AC-22:  
-    > - มี multi-field toolbar สำหรับ search (ticketNumber/summary) และกรอง category, status, IT priority, assignment ได้อย่างถูกต้อง  
-    > - ออกแบบ responsive layout รองรับทั้ง desktop table และ mobile card list (touch target >= 44px)  
-    > - ระบบ pagination และ sortable columns ทำงานได้ลื่นไหล  
-    > - Unit/Component tests (`StaffTicketQueue.test.tsx`) ผ่านครบ 11 ข้อ และเทสต์รวมทั้ง Client (50/50) และ Server (71/71) ผ่าน 100% ไม่มี regression ครับ Approved ครับ"*
+    > *"ตรวจโค้ด PR #54 เรียบร้อยครับ ตัวฟังก์ชันคิวตั๋ว IT Staff ทำได้ดีมาก ทั้งการค้นหา กรองสถานะ/IT Priority/ผู้รับผิดชอบ, การแบ่งหน้า และการแสดงผล responsive สลับตารางกับ mobile card เทสต์ผ่านครบถ้วนทั้ง Server (71/71) และ Client (50/50)"*
   - **Partner Response:**
     > *"ขอบคุณค่ะ"*
   - **Review Decision:** Approved by @jiraphat-j
