@@ -1,55 +1,53 @@
-# TokTickIT — IT Service Desk & Support Ticketing System
+# TokTickIT — Enterprise IT Service Desk & Support Ticketing System
 
-TokTickIT is a full-stack web application designed for enterprise IT service desk ticketing, built for **CPE 334 (Software Engineering)** Lab 1 and Lab 2.
+TokTickIT is an enterprise full-stack web application designed for IT service desk ticketing, built with a secure multi-role architecture, strict role-based access control (RBAC), operational workflow state machines, and comprehensive automated test coverage.
 
 ---
 
-## 🚀 Key Features (Lab 2 Requester Experience)
+## 🚀 Key Features
 
-* **Development Requester Testing Context:** Context switching across active requesters with persistent `sessionStorage` session and Zen Green app shell (AC-24, AC-31, AC-35).
-* **Create Ticket Experience:** Comprehensive client-side form validation, atomic ticket numbering (`TKT-YYYY-XXXXXX`), idempotency caching, partial failure tolerance, and active attachment uploading up to 5 MB (AC-01..11, AC-34).
-* **My Tickets Dashboard:** Real-time search, multi-field AND filtering, sortable column headers (`ticketNumber`, `createdAt`, `updatedAt`), stable pagination, and responsive dual layouts (table on desktop, interactive cards on mobile) (AC-16..20, AC-26, AC-28, AC-29).
-* **Ticket Detail & Attachment Lifecycle:** Strict read-only detail view isolating IT staff controls, attachment downloads, and soft-removal confirmation modal requiring audit reasons (AC-12..15, AC-21, AC-22, AC-27, AC-32).
+* **Secure Authentication & Session Lifecycle:** Email and password authentication with bcrypt hashing, cryptographic HttpOnly signed session cookies, mandatory first-login password change with real-time complexity validation (>= 8 chars, uppercase, lowercase, digit, match), generic 401 error banners, and browser back-navigation prevention on logout.
+* **Role-Based Access Control (RBAC) & Ownership Isolation:** Strict server-enforced boundaries across 3 distinct roles: `REQUESTER`, `IT_STAFF`, and `ADMINISTRATOR`. Requester identity is securely derived from active sessions, cross-requester access returns `404 Not Found`, and unauthorized route/internal-note access returns `403 Forbidden`.
+* **Requester Experience:** Complete ticket lifecycle with client-side validation, atomic numbering (`TKT-YYYY-XXXXXX`), idempotency caching, multi-file attachment management (up to 5 MB with soft-removal audits), search/filter dashboard, "Problem Appears Resolved" indication, and public communication threads.
+* **IT Staff Operations & Queue:** Operational queue with substring search, multi-field filtering (category, status, IT priority, primary owner: unassigned/me/specific), sorting whitelist, pagination, and responsive dual layouts (desktop table >= 768px, mobile cards < 768px). Includes ticket claiming/reassignment, operational priority overrides, context-sensitive status transitions governed by a Finite State Machine, public comments, and private internal notes with Amber Warning styling.
+* **Administrator User Governance:** User management directory with search and role filtering, modal user creation with duplicate email rejection (`409 Conflict`), account activation/deactivation toggle, password reset modal, and critical security guards: Admin Self-Deactivation Guard and Last Active Admin Lockout Guard.
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** React 18, TypeScript, Vite, Bootstrap 5, Custom Zen Green CSS System
-* **Backend:** Node.js, Express, TypeScript, Multer
-* **Database & ORM:** PostgreSQL, Prisma ORM
-* **Testing:**
-  * **Unit & Component Tests:** Vitest, React Testing Library (`@testing-library/react`)
-  * **API & Integration Tests:** Supertest, Vitest
-  * **End-to-End Tests:** Playwright (`@playwright/test`) with Chromium across Desktop, Tablet, and Mobile viewports
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 18, TypeScript, Vite, Bootstrap 5, Zen Green Design System |
+| **Backend** | Node.js, Express, TypeScript, Multer, bcrypt |
+| **Database & ORM** | PostgreSQL, Prisma ORM |
+| **Testing** | Vitest, React Testing Library, Supertest, Playwright |
 
 ---
 
 ## 📋 Prerequisites
 
-Before running the application, ensure you have the following installed:
 * [Node.js](https://nodejs.org/) (v18 or higher)
-* [npm](https://www.npmjs.com/) (included with Node.js)
+* [npm](https://www.npmjs.com/) (v9 or higher)
 * [PostgreSQL](https://www.postgresql.org/) database server running locally or via Docker
 
 ---
 
 ## ⚙️ Environment Configuration
 
-1. **Frontend Environment:**
-   Copy `client/.env.example` to `client/.env`:
+1. **Frontend Environment (`client/.env`):**
    ```bash
    cp client/.env.example client/.env
    ```
    * `VITE_API_URL`: Base URL of the backend API (default: `http://localhost:3000`)
 
-2. **Backend Environment:**
-   Copy `server/.env.example` to `server/.env`:
+2. **Backend Environment (`server/.env`):**
    ```bash
    cp server/.env.example server/.env
    ```
    * `DATABASE_URL`: PostgreSQL connection string (default: `postgresql://toktickit:toktickit@localhost:5432/toktickit?schema=public`)
    * `PORT`: Express server port (default: `3000`)
+   * `SESSION_SECRET`: Cryptographic secret for signing session cookies
 
 ---
 
@@ -57,74 +55,63 @@ Before running the application, ensure you have the following installed:
 
 ### 1. Install Dependencies
 
-Install packages across the root, client, and server workspaces:
+Install packages across root and all workspaces:
 
 ```bash
-# Root and Playwright dependencies
 npm install
-
-# Client dependencies
 cd client && npm install
-
-# Server dependencies
 cd ../server && npm install
 ```
 
 ### 2. Database Migration & Seed
 
-Run Prisma migrations and seed initial reference data (Development Requesters, Categories, and Related Systems):
+Run Prisma migrations and seed reference data and initial users across all roles:
 
 ```bash
-# From repository root:
+# Run from repository root:
 npm run db:migrate
 npm run db:seed
 ```
 
 ### 3. Run Development Servers
 
-Run backend and frontend servers in separate terminals (or concurrently):
+```bash
+# Terminal 1 — Backend API (http://localhost:3000):
+npm run dev:server
 
-* **Backend Dev Server:**
-  ```bash
-  npm run dev:server
-  ```
-  *(Starts server at `http://localhost:3000` with `tsx watch`)*
-
-* **Frontend Dev Server:**
-  ```bash
-  npm run dev:client
-  ```
-  *(Starts Vite dev server at `http://localhost:5173`)*
+# Terminal 2 — Frontend Client (http://localhost:5173):
+npm run dev:client
+```
 
 ---
 
-## 🧪 Running Automated Tests
+## 🧪 Automated Testing (100% Passing — 284/284 Tests)
 
-All test suites can be executed directly from the repository root:
+All automated test suites can be executed directly from the repository root:
 
-* **Run All Tests (Unit, Component, API, and E2E):**
+* **Full Regression Test Suite (284 tests passed):**
   ```bash
   npm run test:all
   ```
 
-* **Server API & Integration Tests (43 tests passing):**
+* **Server API, Security & Integration Suite (173 tests passed):**
   ```bash
   npm run test:server
   ```
 
-* **Client Component & Unit Tests (37 tests passing):**
+* **Client Component & Unit Suite (83 tests passed):**
   ```bash
   npm run test:client
   ```
 
-* **Playwright End-to-End Tests (6 tests passing):**
+* **Playwright Browser End-to-End Suite (28 tests passed):**
   ```bash
   npm run test:e2e
   ```
 
-* **Capture Visual QA Screenshots:**
+* **Automated Visual QA Screenshot Suite (24 figures across viewports):**
   ```bash
-  npx playwright test e2e/lab-02/visual-qa-screenshots.spec.ts
+  npx playwright test e2e/lab-03/visual-qa-screenshots.spec.ts
   ```
 
 ---
@@ -134,47 +121,34 @@ All test suites can be executed directly from the repository root:
 ```text
 toktickit/
 ├── artifacts/
-│   └── lab-02/
-│       └── screenshots/         # Automated responsive visual QA screenshots
-│           ├── create-ticket/   # Form states (initial, validation, submitting, success, failure)
-│           ├── my-tickets/      # Desktop table, mobile cards, empty, no-results
-│           └── ticket-detail/   # Read-only detail and attachment lifecycle
-├── client/                      # React + Vite frontend
+│   └── lab-03/screenshots/     # Automated responsive visual QA screenshots (24 figures)
+├── client/                      # React + TypeScript frontend application
 │   ├── src/
-│   │   ├── components/          # Reusable Zen Green components
-│   │   │   ├── AppHeader.tsx
-│   │   │   ├── AttachmentSection.tsx
-│   │   │   ├── CreateTicket.tsx
-│   │   │   ├── MyTickets.tsx
-│   │   │   ├── RequesterSelector.tsx
-│   │   │   └── RequesterTicketDetail.tsx
-│   │   ├── styles/
-│   │   │   └── zen-green.css    # Unified Zen Green design system tokens & media queries
-│   │   ├── api.ts               # Frontend API client & contract types
-│   │   └── App.tsx              # Main application container & view router
-│   └── tests/                   # Component & unit test suites
+│   │   ├── components/          # UI components (Login, StaffTicketQueue, StaffTicketDetail, UserManagement, etc.)
+│   │   ├── styles/              # Zen Green design system tokens & responsive CSS
+│   │   ├── api.ts               # API client and TypeScript contract interfaces
+│   │   └── App.tsx              # Main application shell & role-based routing
+│   └── tests/                   # Client component & unit test suites (83 tests passed)
 ├── docs/
-│   └── lab-02/                  # Lab 2 specification & audit documentation
-│       ├── ai-use.md            # LLM prompts, reflections, and governance record
-│       ├── api-spec.md          # REST API contracts & error schemas
-│       ├── reviewer.md          # Peer review logs, comments, approvals, and merge proofs
-│       ├── specification.md     # Business rules (BR-01..34) & Acceptance Criteria (AC-01..36)
-│       ├── tests.md             # Traceability matrix and test execution summary
-│       └── ui-spec.md           # Zen Green design guidelines & visual checklist
+│   └── lab-03/                  # Specifications, test plan, reviewer records & AI usage logs
+│       ├── specification.md     # Functional requirements, business rules & acceptance criteria
+│       ├── api-spec.md          # REST API contracts & error catalog
+│       ├── ui-spec.md           # Zen Green UI specification & responsive checklist
+│       ├── tests.md             # Test plan & 100% traceability matrix
+│       ├── reviewer.md          # Peer review records & verification log
+│       └── ai-use.md            # AI prompts & reflections
 ├── e2e/
-│   └── lab-02/                  # Playwright E2E test suites
-│       ├── requester-ticket-flow.spec.ts  # E2E-01: complete user journey
-│       ├── responsive-a11y.spec.ts        # E2E-02: desktop/tablet/mobile zero-overflow & a11y
-│       └── visual-qa-screenshots.spec.ts  # Automated visual QA screenshot generator
-├── server/                      # Express + TypeScript backend
-│   ├── prisma/                  # Prisma schema, migrations & idempotent seed script
-│   ├── src/
-│   │   ├── app.ts               # Express application, routes & validation logic
-│   │   ├── index.ts             # HTTP server entry point
-│   │   └── prisma.ts            # Prisma client singleton
-│   └── tests/                   # Integration and API test suites
-├── package.json                 # Root project configuration & test runner scripts
-├── playwright.config.ts         # Playwright multi-server configuration
-├── PROJECT_STRUCTURE.md         # Detailed file guide & responsibilities
-└── README.md                    # Project overview & documentation
+│   └── lab-03/                  # Playwright browser end-to-end test suites (28 tests passed)
+│       ├── authentication.spec.ts         # Authentication, session lifecycle & back-nav guard
+│       ├── staff-ticket-flow.spec.ts      # Queue, claim, priority, status workflow & notes
+│       ├── user-administration.spec.ts    # Admin CRUD, duplicate email & security safeguards
+│       └── visual-qa-screenshots.spec.ts  # Multi-viewport responsive screenshot capture
+├── server/                      # Express + TypeScript backend application
+│   ├── prisma/                  # Database schema, migrations & seed scripts
+│   ├── src/                     # Controllers, routes, RBAC middleware, state machine
+│   └── tests/                   # Server API, security & integration test suites (173 tests passed)
+├── package.json                 # Root npm scripts & workspace configuration
+├── playwright.config.ts         # Playwright multi-browser/viewport configuration
+├── PROJECT_STRUCTURE.md         # Comprehensive architectural file guide
+└── README.md                    # Project overview & operational documentation
 ```

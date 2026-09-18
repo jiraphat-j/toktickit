@@ -13,6 +13,12 @@ datasource db {
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
+enum Role {
+  REQUESTER
+  IT_STAFF
+  ADMINISTRATOR
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -21,11 +27,41 @@ enum Priority {
 
 enum TicketStatus {
   NEW
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_REQUESTER
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
 }
 
 // ---------------------------------------------------------------------------
-// Lab 2 Models
+// Lab 3 Core Models
 // ---------------------------------------------------------------------------
+model User {
+  id                     Int                     @id @default(autoincrement())
+  email                  String                  @unique
+  passwordHash           String
+  fullName               String
+  role                   Role                    @default(REQUESTER)
+  isActive               Boolean                 @default(true)
+  mustChangePassword     Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @default(now()) @updatedAt
+
+  requestedTickets       Ticket[]                @relation("TicketRequester")
+  ownedTickets           Ticket[]                @relation("TicketOwner")
+  publicComments         PublicComment[]
+  internalNotes          InternalNote[]
+  ticketCreationRequests TicketCreationRequest[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// Legacy DevRequester kept for backward compatibility until Step 5
 model DevRequester {
   id                     Int                     @id @default(autoincrement())
   fullName               String
@@ -33,8 +69,6 @@ model DevRequester {
   isActive               Boolean                 @default(true)
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @default(now()) @updatedAt
-  tickets                Ticket[]
-  ticketCreationRequests TicketCreationRequest[]
 
   @@index([isActive])
 }
@@ -62,27 +96,35 @@ model RelatedSystem {
 }
 
 model Ticket {
-  id                Int                    @id @default(autoincrement())
-  ticketNumber      String                 @unique
-  requesterId       Int
-  requester         DevRequester           @relation(fields: [requesterId], references: [id])
-  categoryId        Int
-  category          Category               @relation(fields: [categoryId], references: [id])
-  relatedSystemId   Int
-  relatedSystem     RelatedSystem          @relation(fields: [relatedSystemId], references: [id])
-  summary           String
-  description       String
-  requestedPriority Priority
-  itPriority        Priority?
-  currentStatus     TicketStatus           @default(NEW)
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @default(now()) @updatedAt
-  attachments       Attachment[]
-  creationRequest   TicketCreationRequest?
+  id                     Int                     @id @default(autoincrement())
+  ticketNumber           String                  @unique
+  requesterId            Int
+  requester              User                    @relation("TicketRequester", fields: [requesterId], references: [id])
+  primaryOwnerId         Int?
+  primaryOwner           User?                   @relation("TicketOwner", fields: [primaryOwnerId], references: [id])
+  categoryId             Int
+  category               Category                @relation(fields: [categoryId], references: [id])
+  relatedSystemId        Int
+  relatedSystem          RelatedSystem           @relation(fields: [relatedSystemId], references: [id])
+  summary                String
+  description            String
+  requestedPriority      Priority
+  itPriority             Priority                @default(MEDIUM)
+  currentStatus          TicketStatus            @default(NEW)
+  problemAppearsResolved Boolean                 @default(false)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @default(now()) @updatedAt
+
+  attachments            Attachment[]
+  publicComments         PublicComment[]
+  internalNotes          InternalNote[]
+  creationRequest        TicketCreationRequest?
 
   @@index([requesterId, createdAt])
   @@index([requesterId, updatedAt])
+  @@index([primaryOwnerId])
   @@index([currentStatus])
+  @@index([itPriority])
   @@index([categoryId])
   @@index([createdAt])
 }
@@ -90,7 +132,7 @@ model Ticket {
 model Attachment {
   id               Int       @id @default(autoincrement())
   ticketId         Int
-  ticket           Ticket    @relation(fields: [ticketId], references: [id])
+  ticket           Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   originalFileName String
   storedFileName   String    @unique
   mimeType         String
@@ -103,13 +145,39 @@ model Attachment {
   @@index([ticketId])
 }
 
+model PublicComment {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([authorId])
+}
+
+model InternalNote {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([authorId])
+}
+
 model TicketCreationRequest {
   id                 String       @id // value from Idempotency-Key
   requesterId        Int
-  requester          DevRequester @relation(fields: [requesterId], references: [id])
+  requester          User         @relation(fields: [requesterId], references: [id])
   requestFingerprint String
   ticketId           Int          @unique
-  ticket             Ticket       @relation(fields: [ticketId], references: [id])
+  ticket             Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   createdAt          DateTime     @default(now())
   expiresAt          DateTime
 
