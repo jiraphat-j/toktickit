@@ -172,6 +172,7 @@ export async function createTicket(
       "X-Dev-Requester-Id": requesterId.toString(),
       "Idempotency-Key": idempotencyKey,
     },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
@@ -203,6 +204,7 @@ export async function uploadTicketAttachment(
     headers: {
       "X-Dev-Requester-Id": requesterId.toString(),
     },
+    credentials: "include",
     body: formData,
   });
 
@@ -242,6 +244,7 @@ export async function fetchMyTickets(
     headers: {
       "X-Dev-Requester-Id": requesterId.toString(),
     },
+    credentials: "include",
   });
 
   if (!res.ok) {
@@ -270,6 +273,7 @@ export async function fetchTicketDetail(
     headers: {
       "X-Dev-Requester-Id": requesterId.toString(),
     },
+    credentials: "include",
   });
 
   if (!res.ok) {

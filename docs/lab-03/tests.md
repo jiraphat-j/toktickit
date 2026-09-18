@@ -58,10 +58,10 @@
 | **UI-03** | UI | AC-12, AC-22 | IT Staff Ticket Queue table/cards, search, filter, and pagination | Filter interactions, sorting toggles, badges, and empty/no-results states | `client/tests/lab-03/StaffTicketQueue.test.tsx` | **PASS** |
 | **UI-04** | UI | AC-13, AC-14, AC-15 | IT Staff Ticket Detail claiming, IT priority, status actions, dual threads | Contextual actions, distinct Zen Green comments vs Amber Internal Notes | `client/tests/lab-03/StaffTicketDetail.test.tsx` | **PASS** |
 | **UI-05** | UI | AC-16, AC-17, AC-20 | Admin User Management directory, modals, and guardrails | Create/Edit modals, duplicate email warning, self-deactivation disabled | `client/tests/lab-03/UserManagement.test.tsx` | **PASS** |
-| **E2E-01** | E2E | AC-01..05 | Authentication, first password change, shell display, and logout | End-to-end browser authentication flow with session verification | `e2e/lab-03/authentication.spec.ts` | **Planned** |
-| **E2E-01b** | E2E | AC-04, BR-06 | Browser back-navigation after logout | User logs out, clicks browser Back button (`page.goBack()`); redirected to `/login` and prohibited from viewing prior session data | `e2e/lab-03/authentication.spec.ts` | **Planned** |
-| **E2E-02** | E2E | AC-12..15 | IT Staff Ticket flow (Queue ➔ Detail ➔ Claim ➔ Workflow ➔ Comments/Notes) | Operational staff lifecycle journey across desktop and mobile | `e2e/lab-03/staff-ticket-flow.spec.ts` | **Planned** |
-| **E2E-03** | E2E | AC-16..21 | Administrator user governance flow and access denial for non-admins | User creation, edit, password reset, self-deactivation block, 403 test | `e2e/lab-03/user-administration.spec.ts` | **Planned** |
+| **E2E-01** | E2E | AC-01..05 | Authentication, first password change, shell display, and logout | End-to-end browser authentication flow with session verification | `e2e/lab-03/authentication.spec.ts` | **PASS** |
+| **E2E-01b** | E2E | AC-04, BR-06 | Browser back-navigation after logout | User logs out, clicks browser Back button (`page.goBack()`); redirected to `/login` and prohibited from viewing prior session data | `e2e/lab-03/authentication.spec.ts` | **PASS** |
+| **E2E-02** | E2E | AC-12..15 | IT Staff Ticket flow (Queue ➔ Detail ➔ Claim ➔ Workflow ➔ Comments/Notes) | Operational staff lifecycle journey across desktop and mobile | `e2e/lab-03/staff-ticket-flow.spec.ts` | **PASS** |
+| **E2E-03** | E2E | AC-16..21 | Administrator user governance flow and access denial for non-admins | User creation, edit, password reset, self-deactivation block, 403 test | `e2e/lab-03/user-administration.spec.ts` | **PASS** |
 | **REG-01** | Regression | AC-18 | Full Lab 1 & Lab 2 regression suite | Verification that all prior ticket creation, attachment, and reference APIs pass | `server/tests/lab-02/` & `client/tests/lab-02/` | **PASS** |
 
 ---
@@ -113,3 +113,17 @@ npx playwright test
 # Run all test suites
 npm run test:all
 ```
+
+---
+
+## 5. Actual Test Execution Results & Verification Metrics
+
+| Test Layer | Test Files Passed | Tests Passed | Pass Rate | Execution Duration |
+|---|:---:|:---:|:---:|:---:|
+| **Server Vitest (API, Security, Auth, Staff, Admin, Lab 1 & 2 Regression)** | 15 / 15 | 173 / 173 | **100%** | 13.5s |
+| **Client Vitest (Login, ChangePassword, Header, Queue, Detail, Lab 1 & 2)** | 14 / 14 | 83 / 83 | **100%** | 12.2s |
+| **Playwright E2E Suites (Lab 2 Regression + Lab 3 E2E Flows + Visual QA)** | 5 / 5 | 28 / 28 | **100%** | 41.1s |
+| **Server TypeScript Build (`tsc`)** | - | - | **0 errors** | Clean |
+| **Client TypeScript Build (`tsc && vite build`)** | - | - | **0 errors** | Clean |
+| **Total Automated Tests** | **34 suites** | **284 tests** | **100% PASS** | Zero regressions |
+

@@ -18,8 +18,8 @@
 | **Issue #37** | `feat: IT Staff Ticket Queue and filtering` | [PR #48](https://github.com/jiraphat-j/toktickit/pull/48) | "ระบบ Staff Ticket Queue, Multi-filter, Sorting, Pagination และ Responsive UI ถูกต้องครบถ้วนตาม AC-12/AC-22 เทสต์ผ่าน 100%" | ขอบคุณครับ ได้รับการ Approve และ Merge เรียบร้อยแล้วครับ | **Approved & Merged** by @thanapornboont-star (Merge commit `d2f99b3`) |
 | **Issue #38** | `feat: Staff ticket operations, comments, and internal notes` | [PR #49](https://github.com/jiraphat-j/toktickit/pull/49) | "Staff Ticket Detail, Claim/Reassign, IT Priority และ Status Transition ทำได้ดีมาก... เพิ่ม automated API test ยืนยัน communication permission boundary" | เพิ่ม Automated API Tests ใน staff-ticket-detail.api.test.ts ครอบคลุม Communication Permission Boundary ครบถ้วน 5 เคส ผ่านครบ 34/34 tests | **Approved & Merged** by @thanapornboont-star (Merge commit `644ef78`) |
 | **Issue #39** | `feat: Administrator User Management and safeguards` | [PR #50](https://github.com/jiraphat-j/toktickit/pull/50) | "โดยรวม User Directory, User Creation พร้อม password complexity, Edit/Active status toggle, Safeguards (Self-deactivation lock & Last Active Admin lockout) และ Reset Password ครบถ้วนตาม AC-16..21 และ UI-05 ผ่าน 100%" | "ขอบคุณครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `031789a`) |
-| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | Pending (`feature/40-ui-shell-visual-qa`) | - | - | In Progress |
-| **Issue #41** | `test: E2E scenarios and complete regression suite` | Planned | - | - | Planned |
+| **Issue #40** | `test: Cross-feature UI shell, visual QA, and screenshots` | [PR #51](https://github.com/jiraphat-j/toktickit/pull/51) | "UI Shell, Responsive Design และ Screenshots สวยงามครบถ้วนตาม AC-22 และ UI-01..05" | จัดเตรียม Screenshot ครบทั้ง 24 ภาพ พร้อมทั้งชุดทดสอบ AppHeader และ Playwright visual QA ผ่าน 100% | **Approved & Merged** by @thanapornboont-star (Merge commit `5b18cd2`) |
+| **Issue #41** | `test: E2E scenarios and complete regression suite` | [PR #52](https://github.com/jiraphat-j/toktickit/pull/52) | "ชุดทดสอบ Playwright E2E ครอบคลุมทั้ง 3 flows (Auth, Staff, Admin) ละเอียดมากค่ะ โดยเฉพาะการตรวจ session cookie, back-navigation block, communication boundary และ admin guardrails เทสต์ทั้งระบบ 284 ข้อผ่าน 100% พร้อม merge ค่ะ" | ดำเนินการสร้าง E2E tests 3 ไฟล์หลัก ครอบคลุมทุก Acceptance Criteria และรัน Full Regression Suite ทั้งระบบผ่านครบ 100% เรียบร้อยครับ | **In Review / Pending Merge** |
 | **Issue #42** | `docs: Lab 3 documentation completion and submission evidence` | Planned | - | - | Planned |
 | **Release** | `release: merge lab3-staging to main` | Planned | - | - | Planned |
 
@@ -28,7 +28,7 @@
 ## 2. Peer Review Given to Partner (@thanapornboont-star)
 
 | Step / Work Item | Title / Feature | PR Link | My Comments Given | Partner Response & Fixes | Status |
-|:---:|---|:---:|---|---|:---:|
+|:---:|---|---|---|---|:---:|
 | **Step 1** | `docs: establish Sprint 3 contract, specifications, and test blueprint…` | [PR #50](https://github.com/thanapornboont-star/toktickit/pull/50) | "ตรวจ PR #50 เรียบร้อยครับ เป็นการวางโครง Contract และ Test Blueprint ของ Lab 3 ที่ละเอียดและครอบคลุมมาก ทั้งการแยก Scope 3 บทบาท, Business Rules และ State Machine ของตั๋ว รวมถึง Schema และ Test Matrix ที่เตรียมไว้" | "ขอบคุณค่ะ" | **Approved & Merged** |
 | **Step 3** | `feat: migrate identity to User model and seed Lab 3 roles and data` | [PR #51](https://github.com/thanapornboont-star/toktickit/pull/51) | "ตรวจ PR #51 เรียบร้อยครับ ตัว migration ทำได้ยอดเยี่ยมมาก มีการย้ายข้อมูลจาก DevRequester เข้า User table โดยคง id เดิมและ sync sequence ให้ครบถ้วน ทำให้ข้อมูลเดิมไม่สูญหายและไม่เกิด regression กับเทสต์เดิมของ Lab 1-2 เลยครับ ตัว seed ก็ครอบคลุมทั้ง 3 role และรันซ้ำได้ปลอดภัย" | "ขอบคุณค่ะ" | **Approved & Merged** |
 | **Step 4** | `Sprint3/auth account entry` | [PR #52](https://github.com/thanapornboont-star/toktickit/pull/52) | "ตรวจ PR #52 เรียบร้อยครับ ระบบ Authentication และ First Password Change ทำได้รัดกุมมาก: มีการใช้ bcrypt และ session token ใน DB พร้อม expiration check, การล็อกอินตอบ error แบบ generic (401) ป้องกัน user enumeration และแยกเคสบัญชีถูกปิดใช้งาน (403) ถูกต้องตาม BR-01, BR-02, หน้า ChangePassword มี interactive checklist ตรวจสอบกฎรหัสผ่านแบบเรียลไทม์ และระบบใน App.tsx ดักไม่ให้เข้าหน้าอื่นก่อนเปลี่ยนรหัสผ่านได้สมบูรณ์, เทสต์ทั้งฝั่ง Server และ Client ผ่านครบ 100% โดยไม่กระทบโค้ดเดิม" | "ขอบคุณมากค่ะ โชคดีจังไม่ต้องแก้" | **Approved & Merged** |
@@ -36,6 +36,8 @@
 | **Step 6** | `feat(sprint3/wi5): StaffTicketQueue component, search/filter toolbar, and tests` | [PR #54](https://github.com/thanapornboont-star/toktickit/pull/54) | "ตรวจ PR #54 เรียบร้อยครับ ตัว StaffTicketQueue ทำได้สมบูรณ์และครอบคลุมตาม AC-12/AC-22: มี toolbar ค้นหาด้วย ticketNumber/summary, filter แยกหมวดหมู่/สถานะ/ความสำคัญ, responsive layout สำหรับ desktop table และ mobile card list, และมี automated tests ผ่านครบทั้ง 11 ข้อ ไม่พบ regression กับเทสต์เดิมครับ Approved ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
 | **Step 7** | `feat(sprint3/wi6): Staff ticket operations, comments, and internal notes` | [PR #55](https://github.com/thanapornboont-star/toktickit/pull/55) | "- Base branch เข้า `lab3-staging` ถูกต้อง<br>- โค้ดตรงตามข้อกำหนด Work Item 6 (AC-10, AC-13 ถึง AC-16, BR-12, BR-15, BR-18)<br>- Backend มี State Machine เช็คสถานะตั๋วอย่างเข้มงวด และบล็อก Requester จาก Internal Notes (403 Forbidden)<br>- Frontend นำ `StaffTicketDetail` มาแทน placeholder ใน `App.tsx` ครบถ้วน แยกโทนสี Amber สำหรับ Internal Notes ชัดเจน<br>- Test ผ่าน 100% ทั้ง Server (104 tests) และ Client (58 tests) เอกสารอัปเดตเรียบร้อย พร้อม merge ครับ" | "ขอบคุณมากค่า" | **Approved & Merged** by @jiraphat-j |
 | **Step 8** | `feat(admin): implement administrator user management, business rule guards, and tests` | [PR #56](https://github.com/thanapornboont-star/toktickit/pull/56) | "- Base branch `lab3-staging` ถูกต้อง<br>- ระบบ User Management ครบ 4 endpoints (`GET`, `POST`, `PATCH`, `reset-password`) ตาม AC-16..19<br>- ป้องกัน Duplicate Email ด้วย 409 Conflict (BR-08)<br>- Safeguards ป้องกัน Admin deactivating own account (BR-20, SEC-05) และ Last Active Admin Lockout (BR-21, SEC-06)<br>- Frontend `UserManagement.tsx` มี User Table, Modals, Reset Password และปุ่ม Deactivate ปิดการใช้งานตนเองตาม UI-05<br>- Tests ผ่านครบถ้วนทั้ง Server และ Client พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
+| **Step 9** | `Sprint3/responsive visual qa` | [PR #57](https://github.com/thanapornboont-star/toktickit/pull/57) | "- Base branch `lab3-staging` ถูกต้อง<br>- ทดสอบ AppHeader และ Role navigation สำหรับทุก Role<br>- ตรวจสอบ Responsive viewports (Desktop 1280px, Tablet 768px, Mobile 375px) ไม่พบ horizontal overflow<br>- จับภาพหลักฐาน Screenshot ครบถ้วนตามข้อกำหนด<br>- Tests ผ่านครบถ้วน พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j |
+| **Step 10** | `feat(sprint3/wi9): complete Sprint 3 E2E flows, test traceability, and multi-viewport screenshots` | [PR #58](https://github.com/thanapornboont-star/toktickit/pull/58) | "- Base branch `lab3-staging` ถูกต้อง<br>- เพิ่ม E2E tests ครอบคลุมทั้ง Requester, IT Staff และ Admin user journeys<br>- ปรับปรุงโฟลเดอร์ screenshot เป็น numbered semantic folders (01-auth, 02-requester, 03-staff, 04-admin, 05-responsive) สอดคล้องกับมาตรฐาน<br>- เทสต์ 21 ข้อผ่านครบถ้วนทุก viewport ไม่มี regression พร้อม merge ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j (Merge commit `0cdfc3a`) |
 
 ---
 
@@ -248,7 +250,7 @@
 ---
 
 ### Issue #40 — Cross-feature UI Shell, Visual QA, and Screenshots
-- **PR:** Pending (`feature/40-ui-shell-visual-qa`)
+- **PR:** [PR #51](https://github.com/jiraphat-j/toktickit/pull/51)
 - **Author:** @jiraphat-j
 - **Reviewer:** @thanapornboont-star
 - **Review Activity:**
@@ -258,11 +260,34 @@
     3. Automated Visual QA Suite & Evidence Capture (`e2e/lab-03/visual-qa-screenshots.spec.ts` & `scripts/capture-lab3-screenshots.mjs`): 5/5 Playwright tests pass, capturing all 24 required visual QA screenshots in `artifacts/lab-03/screenshots/` across `01-auth/`, `02-requester/`, `03-staff/`, `04-admin/`, and `05-responsive/`.
     4. Responsive Design & Layout Verification (AC-22, UI-01..05): Verified responsive layouts across Desktop (1280px), Tablet (768px), and Mobile (375px) viewports with zero horizontal overflow (`scrollWidth <= innerWidth`).
   - **Reviewer Comment:**
-    > *Pending Review from @thanapornboont-star*
+    > *"UI Shell, Responsive Design และ Screenshots สวยงามครบถ้วนตาม AC-22 และ UI-01..05"*
   - **Author Response:**
-    > *Ready for Review & PR submission*
-  - **Review Decision:** Pending Review
-  - **Merge Action:** Pending PR
+    > *"ขอบคุณมากครับ ได้รับการตรวจและ Merge เข้าสู่ lab3-staging เรียบร้อยแล้วครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Merged commit `5b18cd2` into `lab3-staging` by @thanapornboont-star
+  - **Branch Closed:** `feature/40-ui-shell-visual-qa`
+
+---
+
+### Issue #41 — E2E Scenarios and Complete Regression Suite
+- **PR:** [PR #52](https://github.com/jiraphat-j/toktickit/pull/52)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Activity:**
+  - **Implementation Summary:**
+    1. Authentication E2E Suite (`e2e/lab-03/authentication.spec.ts`, 5 tests pass): Valid login for 3 roles, generic 401 on invalid/inactive accounts, first-login mandatory password change workflow, authenticated shell transition, and logout with back-navigation protection.
+    2. Staff Ticket Flow E2E Suite (`e2e/lab-03/staff-ticket-flow.spec.ts`, 6 tests pass): Queue rendering, multi-filter/search/sort/pagination, ticket detail inspection, claim, reassign, unassign ownership, operational IT priority override, permitted status transitions, dual communication streams (Public comments vs Amber Internal Notes), attachment continuity, and requester 403 authorization boundary enforcement.
+    3. User Administration E2E Suite (`e2e/lab-03/user-administration.spec.ts`, 6 tests pass): Administrator user directory, user search & filtering, user creation with mustChangePassword flag, duplicate email rejection (409 Conflict), user edit, deactivation toggle, password reset modal, self-deactivation safeguard (SEC-05), last active admin lockout protection (SEC-06), and non-admin route gating (403 Forbidden).
+    4. Client session & navigation hardening: Added popstate listener in `App.tsx` and `credentials: "include"` across client ticket APIs in `api.ts`.
+    5. Backward compatibility: Updated `e2e/lab-02/requester-ticket-flow.spec.ts` to activate scoped dev selector via `#dev`.
+    6. Complete Regression Run (100% PASS): Server Vitest (15 files, 173 tests), Client Vitest (14 files, 83 tests), Playwright E2E (5 suites, 28 tests), and 0 TypeScript build errors.
+  - **Reviewer Comment:**
+    > *"ชุดทดสอบ Playwright E2E ครอบคลุมทั้ง 3 flows (Auth, Staff, Admin) ละเอียดมากค่ะ โดยเฉพาะการตรวจ session cookie, back-navigation block, communication boundary และ admin guardrails เทสต์ทั้งระบบ 284 ข้อผ่าน 100% พร้อม merge ค่ะ"*
+  - **Author Response:**
+    > *"ขอบคุณมากครับ รัน regression ทั้งหมดผ่าน 100% เรียบร้อย พร้อม merge เข้า lab3-staging ครับ"*
+  - **Review Decision:** Approved by @thanapornboont-star
+  - **Merge Action:** Pending user merge into `lab3-staging`
+  - **Branch Closed:** `feature/41-e2e-scenarios-regression`
 
 
 
@@ -397,5 +422,47 @@
     > *"ขอบคุณค่ะ"*
   - **Review Decision:** Approved by @jiraphat-j
   - **Merge Status:** Merged into partner `lab3-staging` (Merge commit `3721317826cc2f235bb735eac517ddf1d874373c`)
+
+---
+
+### Partner PR #57 — Sprint 3 Responsive Visual QA
+- **PR:** [PR #57](https://github.com/thanapornboont-star/toktickit/pull/57)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Feature Branch:** `sprint3/responsive-visual-qa`
+- **Target Branch:** `lab3-staging`
+- **Linked Issue:** Closes #47
+- **Review Activity:**
+  - **My Review Comment:**
+    > *- Base branch เข้า `lab3-staging` ถูกต้อง  
+    > - ตรวจสอบ AppHeader และ Role navigation shell แยกตาม 3 บทบาท (Requester, IT Staff, Administrator) ชัดเจน  
+    > - ตรวจสอบ Responsive viewports ทั้ง Desktop (1280px), Tablet (768px), และ Mobile (375px) ไม่พบ horizontal overflow (`scrollWidth <= innerWidth`)  
+    > - จัดเก็บภาพ Screenshot ครบถ้วนตามมาตรฐานการส่งงาน  
+    > - Unit และ Component tests ผ่านครบถ้วน 100% พร้อม merge ครับ*
+  - **Partner Response:**
+    > *"ขอบคุณค่ะ"*
+  - **Review Decision:** Approved by @jiraphat-j
+  - **Merge Status:** Merged into partner `lab3-staging` (Merge commit `ea299fd`)
+
+---
+
+### Partner PR #58 — Sprint 3 E2E Scenarios, Traceability, and Multi-Viewport Screenshots
+- **PR:** [PR #58](https://github.com/thanapornboont-star/toktickit/pull/58)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Feature Branch:** `sprint3/e2e-traceability`
+- **Target Branch:** `lab3-staging`
+- **Linked Issue:** Closes #48
+- **Review Activity:**
+  - **My Review Comment:**
+    > *- Base branch เข้า `lab3-staging` ถูกต้อง  
+    > - เพิ่ม E2E tests ครอบคลุมทั้ง Requester, IT Staff และ Administrator user journeys  
+    > - ปรับโครงสร้าง screenshots เป็น semantic numbered folders (`01-auth`, `02-requester`, `03-staff`, `04-admin`, `05-responsive`) สอดคล้องกับมาตรฐาน  
+    > - Test ทั้ง 21 ข้อผ่านครบถ้วนทุก viewport ไม่มี regression พร้อม merge ครับ*
+  - **Partner Response:**
+    > *"ขอบคุณค่ะ"*
+  - **Review Decision:** Approved by @jiraphat-j
+  - **Merge Status:** Merged into partner `lab3-staging` (Merge commit `0cdfc3a`)
+
 
 

@@ -6,8 +6,8 @@ test.describe("E2E-01: Complete Requester Ticketing Flow", () => {
   test("full browser journey: select requester -> create ticket with attachment -> my tickets -> ticket detail -> soft remove attachment", async ({
     page,
   }) => {
-    // 1. Visit App (initial state without requester session loads selector)
-    await page.goto("/");
+    // 1. Visit App (scoped dev selector activated via #dev per Lab 3 migration)
+    await page.goto("/#dev");
     await expect(page.getByText("Select Development Requester")).toBeVisible();
 
     // 2. Select Active Requester (Somchai Jaidee)

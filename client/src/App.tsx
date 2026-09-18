@@ -109,12 +109,21 @@ export default function App() {
     }
 
     revalidateSession();
+
+    const handlePopState = () => {
+      revalidateSession();
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // AC-01, AC-05: Login success directly establishes authenticated session
   const handleLoginSuccess = (user: AuthUser) => {
     if (typeof document !== "undefined") {
       document.cookie = "toktickit_auth=1; path=/";
+    }
+    if (typeof window !== "undefined" && window.history) {
+      window.history.pushState({ auth: true }, "", window.location.href);
     }
     setCurrentUser(user);
     setCurrentRequester(null);
