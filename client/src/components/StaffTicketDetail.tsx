@@ -18,6 +18,7 @@ import {
   createInternalNote,
 } from "../api.js";
 import { AttachmentSection, formatDate } from "./AttachmentSection.js";
+import { ActionsTaken } from "./ActionsTaken.js";
 
 export interface StaffTicketDetailProps {
   ticketId: number;
@@ -467,6 +468,13 @@ export function StaffTicketDetail({ ticketId, currentUser, onBack }: StaffTicket
           </div>
         </div>
       </div>
+
+      {/* Actions Taken Section (Lab 4 Work Item 5 / Issue #59) */}
+      <ActionsTaken
+        ticketId={ticket.id}
+        currentUser={currentUser}
+        onActionLogged={loadData}
+      />
 
       {/* Attachments Section (Lab 2 continuity) */}
       <div className="mb-4">

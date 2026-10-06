@@ -18,8 +18,8 @@
 | **Issue #55** | `docs: Sprint 4 engineering contract and specification` | [PR #66](https://github.com/jiraphat-j/toktickit/pull/66) | "โดยรวม Engineering Contract / Specification / Test Blueprint วางโครงสร้างได้ดีค่ะ ApprovecและMergeให้เลยนะคะ" | "ขอบคุณที่สละเวลา review ครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `706e7b5`) |
 | **Issue #56** | `docs: Test DD and acceptance traceability plan` | [PR #67](https://github.com/jiraphat-j/toktickit/pull/67) | "ตรวจ PR #67 เรียบร้อยค่ะ โดยรวม Test DD / Traceability วางโครงสร้างมาดีครับ มีการ map AC-01 ถึง AC-14 และแยก test ID ตาม Migration, Actions Taken, Security/RBAC, Workflow, Dashboard, UI และ E2E ไว้ชัดเจน<br><br>แต่มีจุดที่อยากให้แก้ดังนี้:<br><br>1. `docs/lab-04/ai-use.md` ตรง `## My Reflection` ตอนนี้ยังเป็น placeholder ว่าจะเขียนหลังพัฒนาทุกขั้นตอนเสร็จ รบกวนเติม reflection ที่สะท้อนการใช้ specification/test agent และสิ่งที่ผู้ทำ review หรือแก้ไขเองให้เรียบร้อย<br><br>2. ใน AI-use ระบุว่า Test DD มี 35 test cases และ traceability AC-01 ถึง AC-14 ครบ 100% แล้ว แต่ PR นี้ยังเป็น Test Plan ก่อน implementation ดังนั้นรบกวนตรวจ `tests.md` ให้ coverage ตรงกับ requirement ของ Lab 4 จริง ๆ โดยเฉพาะ migration/regression, performance-smoke, responsive/UI style และ security/authorization และอย่าให้คำว่า 100% สื่อว่าเป็นผล execution ที่ผ่านแล้วค่ะ<br><br>ช่วยตรวจสอบอีกทีด้วยนะคะ"<br><br>**Approval Comment:** "ตรวจสอบแล้วค่ะ ขอบคุณที่แก้นะคะ" | "แก้ไขตามคำแนะนำทั้ง 2 ข้อเรียบร้อยแล้วครับ:<br>1. เติม My Reflection ใน docs/lab-04/ai-use.md สะท้อนบทบาทการกำกับ AI, การตรวจทาน test coverage, และการปรับแก้<br>2. ปรับปรุง docs/lab-04/tests.md ให้ครอบคลุม 10 Test Types ตาม Section 10 ของเอกสารแล็บ โดยเพิ่ม Performance-Smoke tests (SMOKE-01, SMOKE-02), แยก UI Style (STYLE-01) และ Responsive tests (RESP-01) ชัดเจน, และปรับคำว่า 100% ให้ระบุชัดเจนว่าเป็น 100% Planned Requirements Coverage ก่อน implementation จริงครับ รบกวนตรวจทานอีกครั้งนะครับ ขอบคุณครับ!" | **Approved & Merged** by @thanapornboont-star (Merge commit `ab2e8e6`) |
 | **Issue #57** | `feat: Database migration, ActionTaken model, and seed data` | [PR #68](https://github.com/jiraphat-j/toktickit/pull/68) | "ตรวจ PR #68 เรียบร้อยค่ะ โครงสร้าง Database Layer, Migration และ Seed Data ของ Issue #57 จัดการได้ถูกต้องและรัดกุมมากค่ะ:<br><br>1. **Prisma Schema & Relations**:<br>   - โมเดล `ActionTaken` มีฟิลด์ครบถ้วนตามสเปก และผูก Relation กับ `Ticket` (Cascade) และ `User` (Restrict) ได้ถูกต้องตามหลัก Data Integrity<br>   - มีการทำ Indexes บน `ticketId`, `performedById`, และ `actionDateTime` รองรับการ Query คิวและ Dashboard ในรอบถัดไป<br>2. **Migration & Backward Compatibility**:<br>   - Custom SQL Migration เป็นแบบ Non-destructive ไม่กระทบข้อมูลเดิมของ Lab 1–3 (Zero Data Loss)<br>3. **Idempotent Seed Data & Automated Tests**:<br>   - ตัว Seed จำลองข้อมูลได้สมจริง ครอบคลุมทั้งเคสที่ตั๋วมีหลาย Actions โดยเจ้าหน้าที่ต่างคนกัน (สอดคล้องกับ BR-02), มี Action เดียว, และไม่มี Action (รองรับ Resolution Gate)<br>   - มีเทสต์ครอบคลุม `MIG-01`, `MIG-02` และ `SEED-01` ครบถ้วน รันผ่าน 100%<br><br>โดยรวมเรียบร้อยสมบูรณ์ **Approved & พร้อม Merge** ได้เลยค่ะ!" | "ขอบคุณครับ mege ให้หน่อยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `b55df1c`) |
-| **Issue #58** | `feat: Actions Taken REST APIs and authorization` | `[Link PR #??]` | — | — | In Progress |
-| **Issue #59** | `feat: Actions Taken UI on Ticket Detail` | `[Link PR #??]` | — | — | Planned |
+| **Issue #58** | `feat: Actions Taken REST APIs and authorization` | [PR #69](https://github.com/jiraphat-j/toktickit/pull/69) | "ตรวจ PR #69 เรียบร้อยค่ะ การพัฒนา REST APIs, Security RBAC, และ Concurrency Control ของ Issue #58 จัดการได้ถูกต้อง รัดกุม<br><br>1. **Actions Taken REST APIs & Validation**:<br>   - มีการตรวจสอบ Validation ครบถ้วนทั้ง description, result, การบังคับ `followUpNote` เมื่อมี follow-up และการตรวจจับวันที่ในอนาคต<br>   - ล็อก `performedById` จาก Authenticated Session อัตโนมัติ ป้องกันการ Spoofing ข้อมูล<br>2. **Security & Zero Leakage**:<br>   - กักกันสิทธิ์ Requester ด้วย HTTP 404 เมื่อพยายามดูตั๋วที่ไม่ใช่ของตนเอง (Zero Leakage) และบล็อกคำขอเขียนด้วย HTTP 403 อย่างเคร่งครัด<br>3. **Optimistic Concurrency Control**:<br>   - จัดการ State เมื่อมีการแก้ไขชนกันด้วย HTTP 409 Conflict และแนบ `currentUpdatedAt` กลับมาตรงตามสเปก<br>4. **Integration Tests**:<br>   - ครอบคลุมทั้ง Happy Path, Field Validations, RBAC, Concurrency และ Performance-Smoke (SMOKE-02 < 150ms) รันผ่านครบ 100%" | "merge ให้ได้เลยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `727b989`) |
+| **Issue #59** | `feat: Actions Taken UI on Ticket Detail` | `[Link PR #??]` | — | — | In Progress |
 | **Issue #60** | `feat: Ticket workflow, resolution gate, and status transitions` | `[Link PR #??]` | — | — | Planned |
 | **Issue #61** | `feat: IT Staff operational dashboard API and UI` | `[Link PR #??]` | — | — | Planned |
 | **Issue #62** | `feat: Requester role dashboard API and UI` | `[Link PR #??]` | — | — | Planned |
@@ -109,6 +109,31 @@
     > *"ขอบคุณครับ mege ให้หน่อยครับ"*
   - **Merge Action:** Merged into `lab4-staging` with commit `b55df1c1b59264e58c453dbfc67c1737288f5104` by @thanapornboont-star
   - **Branch Closed:** `feature/57-db-migration-seed`
+
+---
+
+### Issue #58 — feat: Actions Taken REST APIs and authorization
+- **Issue:** [#58](https://github.com/jiraphat-j/toktickit/issues/58)
+- **PR:** [PR #69](https://github.com/jiraphat-j/toktickit/pull/69)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Decision:** `APPROVED` (Submitted at 2026-10-06T08:17:57Z)
+- **Review Activity:**
+  - **Reviewer Comment (Verbatim 100% from GitHub PR #69):**
+    > *"ตรวจ PR #69 เรียบร้อยค่ะ การพัฒนา REST APIs, Security RBAC, และ Concurrency Control ของ Issue #58 จัดการได้ถูกต้อง รัดกุม*  
+    > *1. **Actions Taken REST APIs & Validation**:*  
+    > *   - มีการตรวจสอบ Validation ครบถ้วนทั้ง description, result, การบังคับ `followUpNote` เมื่อมี follow-up และการตรวจจับวันที่ในอนาคต*  
+    > *   - ล็อก `performedById` จาก Authenticated Session อัตโนมัติ ป้องกันการ Spoofing ข้อมูล*  
+    > *2. **Security & Zero Leakage**:*  
+    > *   - กักกันสิทธิ์ Requester ด้วย HTTP 404 เมื่อพยายามดูตั๋วที่ไม่ใช่ของตนเอง (Zero Leakage) และบล็อกคำขอเขียนด้วย HTTP 403 อย่างเคร่งครัด*  
+    > *3. **Optimistic Concurrency Control**:*  
+    > *   - จัดการ State เมื่อมีการแก้ไขชนกันด้วย HTTP 409 Conflict และแนบ `currentUpdatedAt` กลับมาตรงตามสเปก*  
+    > *4. **Integration Tests**:*  
+    > *   - ครอบคลุมทั้ง Happy Path, Field Validations, RBAC, Concurrency และ Performance-Smoke (SMOKE-02 < 150ms) รันผ่านครบ 100%"*
+  - **Author Response (Verbatim 100% from GitHub PR #69):**
+    > *"merge ให้ได้เลยครับ"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `727b9897e0fe8208cbefde887476187560f07d7c` by @thanapornboont-star
+  - **Branch Closed:** `feature/58-actions-taken-api`
 
 ---
 
