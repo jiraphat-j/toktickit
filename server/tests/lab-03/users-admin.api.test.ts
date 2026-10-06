@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import { app } from "../../src/app.js";
 import { getPrisma } from "../../src/prisma.js";
@@ -39,6 +39,14 @@ describe("Lab 3 Admin User Management & Safeguards (Issue #39)", () => {
     adminCookie = `toktickit_session=${createSession(ad.id)}`;
     staffCookie = `toktickit_session=${createSession(st.id)}`;
     requesterCookie = `toktickit_session=${createSession(reqUser.id)}`;
+  });
+
+  afterAll(async () => {
+    const prisma = getPrisma();
+    await prisma.user.deleteMany({
+      where: { email: { endsWith: "@example.com" } },
+    });
+    await prisma.$disconnect();
   });
 
   // -------------------------------------------------------------------------
@@ -133,7 +141,7 @@ describe("Lab 3 Admin User Management & Safeguards (Issue #39)", () => {
 
     it("searches users by name or email keyword (case-insensitive)", async () => {
       const res = await request(app)
-        .get(`/api/admin/users?search=${encodeURIComponent(adminUser.email.slice(0, 5))}`)
+        .get(`/api/admin/users?search=${encodeURIComponent(adminUser.email.slice(0, 5))}&pageSize=50`)
         .set("Cookie", adminCookie);
 
       expect(res.status).toBe(200);
