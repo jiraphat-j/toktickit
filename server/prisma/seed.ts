@@ -283,8 +283,102 @@ async function main() {
         });
       }
     }
+
+    // 6. Seed Actions Taken (Lab 4 idempotent seed)
+    if (t.ticketNumber === "TKT-2026-000002") {
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: ticket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["thanaporn.b@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 2),
+            description: "Inspected Wi-Fi Access Point 4B physically on Floor 4",
+            result: "Found minor packet loss on 5GHz channel; restarted radio interface.",
+            followUpRequired: true,
+            followUpNote: "Monitor RF interference telemetry over next 24 hours.",
+            attachmentNotes: "AP-4B-status-led.jpg",
+          },
+        });
+      }
+    } else if (t.ticketNumber === "TKT-2026-000003") {
+      // Multiple actions (3) by different IT Staff members (BR-02: multi-staff attribution)
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: ticket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["komsan.s@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 5),
+            description: "Ran hardware diagnostics and memory check via UEFI utility.",
+            result: "RAM passed with zero errors, SSD SMART status indicates normal health.",
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: "uefi_diag_report.txt",
+          },
+        });
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["thanaporn.b@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 3),
+            description: "Booted into Safe Mode and analyzed Windows Minidump crash file.",
+            result: "Identified corrupted third-party network filter driver (sysvpn.sys).",
+            followUpRequired: true,
+            followUpNote: "Requires reinstall of certified enterprise VPN client version 5.1.",
+            attachmentNotes: null,
+          },
+        });
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["manee.t@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 1),
+            description: "Removed conflicting driver and applied corporate Windows patch KB5034123.",
+            result: "System booted into normal mode cleanly without BSOD crash.",
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: "patch_apply_log.log",
+          },
+        });
+      }
+    } else if (t.ticketNumber === "TKT-2026-000005") {
+      // Resolved ticket requires at least 1 Action Taken (Resolution Gate requirement)
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: ticket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["manee.t@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 12),
+            description: "Replaced worn laptop battery with OEM 65Wh replacement pack.",
+            result: "Battery calibrated; runtime restored to 6.5 hours under standard workload.",
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: "battery_health_report.png",
+          },
+        });
+      }
+    } else if (t.ticketNumber === "TKT-2026-000006") {
+      // Closed ticket has 1 Action Taken
+      const existingActions = await prisma.actionTaken.count({ where: { ticketId: ticket.id } });
+      if (existingActions === 0) {
+        await prisma.actionTaken.create({
+          data: {
+            ticketId: ticket.id,
+            performedById: seededUsers["komsan.s@toktickit.local"].id,
+            actionDateTime: new Date(Date.now() - 3600 * 1000 * 24),
+            description: "Generated 24-hour guest Wi-Fi portal access voucher.",
+            result: "Voucher credentials handed to event coordinator; test connection verified.",
+            followUpRequired: false,
+            followUpNote: null,
+            attachmentNotes: null,
+          },
+        });
+      }
+    }
   }
-  console.log("✓ Successfully seeded Tickets with Public Comments and Internal Notes.");
+  console.log("✓ Successfully seeded Tickets with Public Comments, Internal Notes, and Actions Taken.");
 }
 
 main()
