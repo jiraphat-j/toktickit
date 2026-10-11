@@ -7,6 +7,8 @@ import path from "path";
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import { getPrisma } from "./prisma.js";
+import { TicketStatus } from "@prisma/client";
+import { isPermittedStatusTransition, PERMITTED_STATUS_TRANSITIONS } from "./status-transition.js";
 import {
   authRouter,
   requireAuth,
@@ -977,73 +979,105 @@ app.patch(
 // Lab 3 RBAC & Ticket Workflow Endpoints (Issue #36)
 // ---------------------------------------------------------------------------
 
-// POST /api/tickets/:id/resolve-indication (REQ-03, AC-08, BR-10)
-app.post(
-  "/api/tickets/:id/resolve-indication",
-  authenticateSessionOrDev,
-  async (req: RequesterRequest, res: Response) => {
-    const prisma = getPrisma();
-    const currentUserId = req.user?.id || req.devRequester?.id;
-    const ticketId = parseInt(req.params.id, 10);
+// POST & PATCH /api/tickets/:id/resolve-indication & /api/tickets/:id/indicate-resolved (REQ-03, AC-08, BR-10, BR-14, WF-04)
+const handleResolveIndication = async (req: RequesterRequest, res: Response) => {
+  const prisma = getPrisma();
+  const currentUserId = req.user?.id || req.devRequester?.id;
+  const ticketId = parseInt(req.params.id, 10);
 
-    if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
-      res.status(400).json({
-        error: {
-          code: "BAD_REQUEST",
-          message: "Invalid ticket ID parameter.",
-        },
-      });
-      return;
-    }
-
-    if (req.user && req.user.role !== "REQUESTER") {
-      res.status(403).json({
-        error: {
-          code: "FORBIDDEN",
-          message: "Only ticket requesters can indicate problem resolution.",
-        },
-      });
-      return;
-    }
-
-    try {
-      const ticket = await prisma.ticket.findUnique({
-        where: { id: ticketId },
-      });
-
-      if (!ticket || ticket.requesterId !== currentUserId) {
-        res.status(404).json({
-          error: {
-            code: "NOT_FOUND",
-            message: "Ticket not found.",
-          },
-        });
-        return;
-      }
-
-      const resolved = typeof req.body?.resolved === "boolean" ? req.body.resolved : true;
-      const updated = await prisma.ticket.update({
-        where: { id: ticketId },
-        data: {
-          problemAppearsResolved: resolved,
-        },
-        select: {
-          id: true,
-          problemAppearsResolved: true,
-          updatedAt: true,
-        },
-      });
-
-      res.status(200).json(updated);
-    } catch (error) {
-      res.status(500).json({
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update problem resolution indicator.",
-        },
-      });
-    }
+  if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid ticket ID parameter.",
+      },
+    });
+    return;
   }
+
+  if (req.user && req.user.role !== "REQUESTER") {
+    res.status(403).json({
+      error: {
+        code: "FORBIDDEN",
+        message: "Only ticket requesters can indicate problem resolution.",
+      },
+    });
+    return;
+  }
+
+  try {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket || ticket.requesterId !== currentUserId) {
+      res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Ticket not found.",
+        },
+      });
+      return;
+    }
+
+    const resolved =
+      typeof req.body?.resolved === "boolean"
+        ? req.body.resolved
+        : typeof req.body?.indicated === "boolean"
+        ? req.body.indicated
+        : true;
+
+    const updated = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        problemAppearsResolved: resolved,
+      },
+      select: {
+        id: true,
+        ticketNumber: true,
+        currentStatus: true,
+        problemAppearsResolved: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      id: updated.id,
+      ticketId: updated.id,
+      ticketNumber: updated.ticketNumber,
+      problemAppearsResolved: updated.problemAppearsResolved,
+      requesterIndicatedResolved: updated.problemAppearsResolved,
+      currentStatus: updated.currentStatus,
+      status: updated.currentStatus,
+      updatedAt: updated.updatedAt.toISOString(),
+      ticket: {
+        id: updated.id,
+        currentStatus: updated.currentStatus,
+        status: updated.currentStatus,
+        problemAppearsResolved: updated.problemAppearsResolved,
+        requesterIndicatedResolved: updated.problemAppearsResolved,
+        updatedAt: updated.updatedAt.toISOString(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update problem resolution indicator.",
+      },
+    });
+  }
+};
+
+app.post(
+  ["/api/tickets/:id/resolve-indication", "/api/tickets/:id/indicate-resolved"],
+  authenticateSessionOrDev,
+  handleResolveIndication
+);
+app.patch(
+  ["/api/tickets/:id/resolve-indication", "/api/tickets/:id/indicate-resolved"],
+  authenticateSessionOrDev,
+  handleResolveIndication
 );
 
 // GET /api/tickets/:id/comments (AC-09, BR-16, COM-01)
@@ -1691,9 +1725,9 @@ app.patch(
   }
 );
 
-// PATCH /api/staff/tickets/:id/status (AC-15, BR-15, STF-07, STF-08)
+// PATCH /api/staff/tickets/:id/status & /api/tickets/:id/status (AC-06, AC-07, AC-12, BR-11, BR-13, BR-15, BR-19, WF-01..05)
 app.patch(
-  "/api/staff/tickets/:id/status",
+  ["/api/staff/tickets/:id/status", "/api/tickets/:id/status"],
   requireAuth,
   requireRole("IT_STAFF", "ADMINISTRATOR"),
   async (req: RequesterRequest, res: Response) => {
@@ -1707,7 +1741,7 @@ app.patch(
       return;
     }
 
-    const { status } = req.body || {};
+    const { status, clientUpdatedAt, expectedUpdatedAt } = req.body || {};
     const allowedStatuses = [
       "NEW",
       "OPEN",
@@ -1729,7 +1763,7 @@ app.patch(
     try {
       const ticket = await prisma.ticket.findUnique({
         where: { id: ticketId },
-        select: { id: true, currentStatus: true },
+        select: { id: true, ticketNumber: true, currentStatus: true, updatedAt: true },
       });
 
       if (!ticket) {
@@ -1739,20 +1773,25 @@ app.patch(
         return;
       }
 
-      const STATUS_TRANSITIONS: Record<string, string[]> = {
-        NEW: ["OPEN", "IN_PROGRESS", "CANCELLED"],
-        OPEN: ["IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
-        IN_PROGRESS: ["WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
-        WAITING_FOR_REQUESTER: ["IN_PROGRESS", "RESOLVED", "CANCELLED"],
-        RESOLVED: ["CLOSED", "REOPENED"],
-        CLOSED: ["REOPENED"],
-        REOPENED: ["OPEN", "IN_PROGRESS", "RESOLVED", "CANCELLED"],
-        CANCELLED: ["REOPENED"],
-      };
+      // Optimistic concurrency control (BR-12, BR-19, AC-08, AC-12)
+      const clientVersion = clientUpdatedAt || expectedUpdatedAt;
+      if (clientVersion) {
+        const clientTime = new Date(clientVersion).getTime();
+        const serverTime = ticket.updatedAt.getTime();
+        if (isNaN(clientTime) || Math.abs(clientTime - serverTime) > 1000) {
+          res.status(409).json({
+            error: {
+              code: "CONFLICT",
+              message: "Ticket has been modified by another user. Please refresh and retry.",
+              currentUpdatedAt: ticket.updatedAt.toISOString(),
+            },
+          });
+          return;
+        }
+      }
 
-      const permitted = STATUS_TRANSITIONS[ticket.currentStatus] || [];
-
-      if (!permitted.includes(status)) {
+      // State machine validation
+      if (!isPermittedStatusTransition(ticket.currentStatus as TicketStatus, status as TicketStatus)) {
         res.status(400).json({
           error: {
             code: "ILLEGAL_STATUS_TRANSITION",
@@ -1762,6 +1801,22 @@ app.patch(
         return;
       }
 
+      // Resolution Gate Enforcement (BR-13, AC-06, AC-07, WF-01, WF-02)
+      if (status === "RESOLVED") {
+        const actionsCount = await prisma.actionTaken.count({
+          where: { ticketId },
+        });
+        if (actionsCount === 0) {
+          res.status(400).json({
+            error: {
+              code: "RESOLUTION_GATE_FAILED",
+              message: "At least one Action Taken must be logged before resolving this ticket.",
+            },
+          });
+          return;
+        }
+      }
+
       const updated = await prisma.ticket.update({
         where: { id: ticketId },
         data: { currentStatus: status as any },
@@ -1769,8 +1824,17 @@ app.patch(
 
       res.status(200).json({
         id: updated.id,
+        ticketNumber: updated.ticketNumber,
         currentStatus: updated.currentStatus,
+        status: updated.currentStatus,
         updatedAt: updated.updatedAt.toISOString(),
+        ticket: {
+          id: updated.id,
+          ticketNumber: updated.ticketNumber,
+          currentStatus: updated.currentStatus,
+          status: updated.currentStatus,
+          updatedAt: updated.updatedAt.toISOString(),
+        },
       });
     } catch (error) {
       res.status(500).json({
