@@ -87,13 +87,13 @@ Every Acceptance Criterion (`AC-01` through `AC-14`) defined in `docs/lab-04/spe
 | **UI-WF-01** | UI Component | AC-06, AC-07 | Status transition controls show only permitted options | Buttons dynamically match matrix; Resolve disabled with tooltip if 0 actions | `client/tests/lab-04/TicketWorkflow.test.tsx` | **PASS** |
 | **UI-DASH-01** | UI Component | AC-10, AC-11 | Staff Dashboard metric cards and drill-down links | Clicking Unassigned card passes filter parameters to Ticket Queue | `client/tests/lab-04/StaffDashboard.test.tsx` | **PASS** |
 | **UI-DASH-02** | UI Component | AC-09, AC-11 | Requester Dashboard metric cards and links | Clicking card navigates to My Tickets with appropriate filter | `client/tests/lab-04/RequesterDashboard.test.tsx` | **PASS** |
-| **E2E-01** | E2E | AC-01, AC-04 | Full Actions Taken lifecycle flow | IT Staff creates action ➔ Requester views read-only action | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
-| **E2E-02** | E2E | AC-06, AC-07 | Ticket resolution workflow with gate enforcement | Staff attempts resolve (blocked) ➔ adds action ➔ resolve succeeds | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
-| **E2E-03** | E2E | AC-09, AC-10 | Role dashboards & interactive drill-down | Verifies card counts, drill-downs, and responsive layout across viewports | `e2e/lab-04/dashboards.spec.ts` | Planned |
+| **E2E-01** | E2E | AC-01, AC-04 | Full Actions Taken lifecycle flow | IT Staff creates action ➔ Requester views read-only action | `e2e/lab-04/actions-taken-flow.spec.ts` | **PASS** |
+| **E2E-02** | E2E | AC-06, AC-07 | Ticket resolution workflow with gate enforcement | Staff attempts resolve (blocked) ➔ adds action ➔ resolve succeeds | `e2e/lab-04/ticket-resolution.spec.ts` | **PASS** |
+| **E2E-03** | E2E | AC-09, AC-10 | Role dashboards & interactive drill-down | Verifies card counts, drill-downs, and responsive layout across viewports | `e2e/lab-04/dashboards.spec.ts` | **PASS** |
 | **E2E-RESP-01**| E2E / Responsive | AC-13 | Zero horizontal overflow across all 3 viewports | `scrollWidth <= innerWidth` on 1280px, 768px, and 375px viewports | `scripts/capture-lab4-screenshots.mjs` | **PASS** |
-| **REG-01** | Regression | AC-14 | Complete Server Regression Suite (Labs 1, 2, 3) | All prior API, Auth, RBAC, and Admin tests continue to pass 100% | `npm --prefix server test` | Planned |
-| **REG-02** | Regression | AC-14 | Complete Client Regression Suite (Labs 1, 2, 3) | All prior UI components and forms continue to pass 100% | `npm --prefix client test` | Planned |
-| **REG-03** | Regression | AC-14 | Playwright E2E Regression Suite | All existing E2E journeys run cleanly | `npx playwright test` | Planned |
+| **REG-01** | Regression | AC-14 | Complete Server Regression Suite (Labs 1, 2, 3) | All prior API, Auth, RBAC, and Admin tests continue to pass 100% | `npm --prefix server test` | **PASS** |
+| **REG-02** | Regression | AC-14 | Complete Client Regression Suite (Labs 1, 2, 3) | All prior UI components and forms continue to pass 100% | `npm --prefix client test` | **PASS** |
+| **REG-03** | Regression | AC-14 | Playwright E2E Regression Suite | All existing E2E journeys run cleanly | `npx playwright test` | **PASS** |
 
 ---
 
