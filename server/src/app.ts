@@ -2649,5 +2649,240 @@ app.patch("/api/tickets/:ticketId/actions-taken/:id", requireAuth, requireRole("
 app.put("/api/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
 app.put("/api/tickets/:ticketId/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
 
+// ---------------------------------------------------------------------------
+// Lab 4: Role Operational Dashboards (FR-07..10, BR-16..18, AC-09..11, DASH-STF-01..02, DASH-SEC-01)
+// ---------------------------------------------------------------------------
+
+// 1. GET /api/dashboard/staff — IT Staff Operational Queue Dashboard
+app.get(
+  "/api/dashboard/staff",
+  requireAuth,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const currentUserId = req.user!.id;
+      const terminalStatuses: TicketStatus[] = ["RESOLVED", "CLOSED", "CANCELLED"];
+
+      // 1. Operational Counts
+      const [
+        unassignedCount,
+        myTicketsCount,
+        criticalHighCount,
+        myActionsCount,
+        allStatusCounts,
+        allPriorityCounts,
+        recentUpdated24hCount,
+      ] = await Promise.all([
+        // Unassigned active tickets
+        prisma.ticket.count({
+          where: {
+            primaryOwnerId: null,
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // Tickets assigned to current authenticated user
+        prisma.ticket.count({
+          where: {
+            primaryOwnerId: currentUserId,
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // High priority active tickets
+        prisma.ticket.count({
+          where: {
+            itPriority: "HIGH",
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // Actions performed by current user
+        prisma.actionTaken.count({
+          where: {
+            performedById: currentUserId,
+          },
+        }),
+        // Status counts breakdown
+        prisma.ticket.groupBy({
+          by: ["currentStatus"],
+          _count: { _all: true },
+        }),
+        // Priority counts breakdown
+        prisma.ticket.groupBy({
+          by: ["itPriority"],
+          _count: { _all: true },
+        }),
+        // Recently updated in past 24 hours
+        prisma.ticket.count({
+          where: {
+            updatedAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+          },
+        }),
+      ]);
+
+      // Map status breakdown object
+      const allStatuses: TicketStatus[] = [
+        "NEW",
+        "OPEN",
+        "IN_PROGRESS",
+        "WAITING_FOR_REQUESTER",
+        "RESOLVED",
+        "CLOSED",
+        "REOPENED",
+        "CANCELLED",
+      ];
+      const statusBreakdown: Record<string, number> = {};
+      allStatuses.forEach((st) => {
+        statusBreakdown[st] = 0;
+      });
+      allStatusCounts.forEach((sc) => {
+        statusBreakdown[sc.currentStatus] = sc._count._all;
+      });
+
+      // Map priority breakdown object
+      const priorityBreakdown: Record<string, number> = {
+        LOW: 0,
+        MEDIUM: 0,
+        HIGH: 0,
+        CRITICAL: 0,
+      };
+      allPriorityCounts.forEach((pc) => {
+        if (pc.itPriority) {
+          priorityBreakdown[pc.itPriority] = pc._count._all;
+        }
+      });
+
+      // 2. Recent Tickets (top 10 ordered by updatedAt desc)
+      const recentTickets = await prisma.ticket.findMany({
+        take: 10,
+        orderBy: { updatedAt: "desc" },
+        select: {
+          id: true,
+          ticketNumber: true,
+          summary: true,
+          currentStatus: true,
+          itPriority: true,
+          updatedAt: true,
+          primaryOwner: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
+        },
+      });
+
+      // 3. Current User's Recent Actions (top 5 ordered by actionDateTime desc)
+      const myRecentActions = await prisma.actionTaken.findMany({
+        where: { performedById: currentUserId },
+        take: 5,
+        orderBy: [{ actionDateTime: "desc" }, { id: "desc" }],
+        select: {
+          id: true,
+          ticketId: true,
+          actionDateTime: true,
+          description: true,
+          result: true,
+          ticket: {
+            select: {
+              ticketNumber: true,
+            },
+          },
+        },
+      });
+
+      // Formatted response satisfying Section 3.2 & Section 4.2 of API specification
+      res.status(200).json({
+        metrics: {
+          unassignedCount,
+          myTicketsCount,
+          criticalHighCount,
+          myActionsCount,
+          // Aliases for section 4.2 spec compatibility:
+          unassigned: unassignedCount,
+          myAssigned: myTicketsCount,
+          new: statusBreakdown["NEW"] || 0,
+          open: statusBreakdown["OPEN"] || 0,
+          inProgress: statusBreakdown["IN_PROGRESS"] || 0,
+          waitingForRequester: statusBreakdown["WAITING_FOR_REQUESTER"] || 0,
+          recentlyUpdated: recentUpdated24hCount,
+          priorityCounts: {
+            high: priorityBreakdown["HIGH"] || 0,
+            medium: priorityBreakdown["MEDIUM"] || 0,
+            low: priorityBreakdown["LOW"] || 0,
+          },
+        },
+        statusBreakdown,
+        priorityBreakdown,
+        recentTickets: recentTickets.map((t) => ({
+          id: t.id,
+          ticketNumber: t.ticketNumber,
+          summary: t.summary,
+          currentStatus: t.currentStatus,
+          status: t.currentStatus,
+          itPriority: t.itPriority,
+          primaryOwner: t.primaryOwner
+            ? { id: t.primaryOwner.id, fullName: t.primaryOwner.fullName }
+            : null,
+          owner: t.primaryOwner
+            ? { id: t.primaryOwner.id, name: t.primaryOwner.fullName }
+            : null,
+          updatedAt: t.updatedAt.toISOString(),
+        })),
+        myRecentActions: myRecentActions.map((a) => ({
+          id: a.id,
+          ticketId: a.ticketId,
+          ticketNumber: a.ticket.ticketNumber,
+          actionDateTime: a.actionDateTime.toISOString(),
+          description: a.description,
+          result: a.result,
+        })),
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve IT Staff dashboard metrics." },
+      });
+    }
+  }
+);
+
+// 2. GET /api/dashboard/admin — Admin Dashboard (operational + user accounts summary)
+app.get(
+  "/api/dashboard/admin",
+  requireAuth,
+  requireRole("ADMINISTRATOR"),
+  async (_req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const [totalUsers, activeUsers, inactiveUsers, requestersCount, staffCount, adminCount] = await Promise.all([
+        prisma.user.count(),
+        prisma.user.count({ where: { isActive: true } }),
+        prisma.user.count({ where: { isActive: false } }),
+        prisma.user.count({ where: { role: "REQUESTER" } }),
+        prisma.user.count({ where: { role: "IT_STAFF" } }),
+        prisma.user.count({ where: { role: "ADMINISTRATOR" } }),
+      ]);
+
+      res.status(200).json({
+        userAccounts: {
+          totalUsers,
+          activeUsers,
+          inactiveUsers,
+          roles: {
+            requesters: requestersCount,
+            itStaff: staffCount,
+            administrators: adminCount,
+          },
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve Admin dashboard metrics." },
+      });
+    }
+  }
+);
+
 export default app;
 
