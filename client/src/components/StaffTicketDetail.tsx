@@ -16,6 +16,7 @@ import {
   createTicketComment,
   fetchInternalNotes,
   createInternalNote,
+  fetchActionsTaken,
 } from "../api.js";
 import { AttachmentSection, formatDate } from "./AttachmentSection.js";
 import { ActionsTaken } from "./ActionsTaken.js";
@@ -48,6 +49,7 @@ export function StaffTicketDetail({ ticketId, currentUser, onBack }: StaffTicket
   const [updatingStatus, setUpdatingStatus] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string>("");
   const [actionSuccess, setActionSuccess] = useState<string>("");
+  const [actionsCount, setActionsCount] = useState<number>(0);
 
   // Comments state
   const [comments, setComments] = useState<TicketComment[]>([]);
@@ -65,16 +67,18 @@ export function StaffTicketDetail({ ticketId, currentUser, onBack }: StaffTicket
     setLoading(true);
     setError("");
     try {
-      const [ticketData, staffList, commentsList, notesList] = await Promise.all([
+      const [ticketData, staffList, commentsList, notesList, actionsList] = await Promise.all([
         fetchTicketDetail(currentUser.id, ticketId),
         fetchStaffMembers().catch(() => []),
         fetchTicketComments(ticketId).catch(() => []),
         fetchInternalNotes(ticketId).catch(() => []),
+        fetchActionsTaken(ticketId).catch(() => []),
       ]);
       setTicket(ticketData);
       setStaffMembers(staffList);
       setComments(commentsList);
       setInternalNotes(notesList);
+      setActionsCount(Array.isArray(actionsList) ? actionsList.length : 0);
     } catch (err: any) {
       setError(err.message || "Failed to load ticket details.");
     } finally {
@@ -449,21 +453,40 @@ export function StaffTicketDetail({ ticketId, currentUser, onBack }: StaffTicket
                 {allowedTransitions.length === 0 ? (
                   <span className="text-muted small">No permitted transitions from {ticket.currentStatus}</span>
                 ) : (
-                  allowedTransitions.map((target) => (
-                    <button
-                      key={target}
-                      type="button"
-                      className="btn btn-sm btn-outline-success"
-                      onClick={() => handleStatusTransition(target)}
-                      disabled={updatingStatus}
-                      data-testid={`transition-to-${target.toLowerCase()}`}
-                      style={{ minHeight: 44, minWidth: 80, fontWeight: 600 }}
-                    >
-                      → {target.replace(/_/g, " ")}
-                    </button>
-                  ))
+                  allowedTransitions.map((target) => {
+                    const isResolve = target === "RESOLVED";
+                    const isBlockedByGate = isResolve && actionsCount === 0;
+                    return (
+                      <button
+                        key={target}
+                        type="button"
+                        className={`btn btn-sm ${isBlockedByGate ? "btn-outline-secondary" : "btn-outline-success"}`}
+                        onClick={() => handleStatusTransition(target)}
+                        disabled={updatingStatus || isBlockedByGate}
+                        data-testid={`transition-to-${target.toLowerCase()}`}
+                        title={
+                          isBlockedByGate
+                            ? "At least one Action Taken must be logged before resolving this ticket (Resolution Gate)"
+                            : `Transition ticket status to ${target.replace(/_/g, " ")}`
+                        }
+                        style={{ minHeight: 44, minWidth: 80, fontWeight: 600 }}
+                      >
+                        → {target.replace(/_/g, " ")}
+                      </button>
+                    );
+                  })
                 )}
               </div>
+              {allowedTransitions.includes("RESOLVED") && actionsCount === 0 && (
+                <div
+                  className="mt-2 p-2 rounded small border d-flex align-items-center"
+                  style={{ backgroundColor: "#FEF3C7", borderColor: "#FDE68A", color: "#92400E" }}
+                  data-testid="resolution-gate-warning"
+                >
+                  <span className="me-1">⚠️</span>
+                  <span><strong>Resolution Gate:</strong> At least 1 Action Taken must be logged before resolving this ticket.</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

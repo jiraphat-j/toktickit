@@ -654,7 +654,8 @@ export async function updateTicketStatus(
     let errorMsg = `Failed to update ticket status (${res.status})`;
     try {
       const data = await res.json();
-      if (data.error?.message) errorMsg = data.error.message;
+      if (typeof data.error === "string") errorMsg = data.error;
+      else if (data.error?.message) errorMsg = data.error.message;
       else if (data.message) errorMsg = data.message;
     } catch {}
     throw new Error(errorMsg);

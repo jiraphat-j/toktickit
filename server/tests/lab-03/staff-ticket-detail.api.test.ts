@@ -279,6 +279,15 @@ describe("Lab 3 Staff Ticket Detail & Operations API Tests (STF-05..08, AC-13..1
         },
       });
       flowTicketId = t.id;
+
+      await prisma.actionTaken.create({
+        data: {
+          ticketId: t.id,
+          description: "Initial diagnostic verification for workflow lifecycle",
+          result: "Ready for state progression",
+          performedById: staffUserId,
+        },
+      });
     });
 
     it("STF-08: rejects illegal transition NEW -> RESOLVED with 400 ILLEGAL_STATUS_TRANSITION", async () => {
