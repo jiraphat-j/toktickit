@@ -66,17 +66,33 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           )}
 
           {role === "IT_STAFF" && (
-            <button
-              type="button"
-              className={`zen-nav-item ${activeTab === "queue" ? "active" : ""}`}
-              onClick={() => onTabChange("queue")}
-            >
-              Ticket Queue
-            </button>
+            <>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "queue" ? "active" : ""}`}
+                onClick={() => onTabChange("queue")}
+              >
+                Ticket Queue
+              </button>
+            </>
           )}
 
           {role === "ADMINISTRATOR" && (
             <>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
               <button
                 type="button"
                 className={`zen-nav-item ${activeTab === "users" ? "active" : ""}`}

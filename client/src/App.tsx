@@ -21,6 +21,7 @@ import { ChangePassword } from "./components/ChangePassword.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
 import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 import { UserManagement } from "./components/UserManagement.js";
+import { StaffDashboard } from "./components/StaffDashboard.js";
 
 export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
@@ -29,7 +30,7 @@ export default function App() {
   // Scoped Lab 2 Dev Requester (Retained strictly for legacy Lab 2 test suite backward compatibility)
   const [currentRequester, setCurrentRequester] = useState<DevRequester | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"my-tickets" | "create-ticket" | "queue" | "users">("my-tickets");
+  const [activeTab, setActiveTab] = useState<"my-tickets" | "create-ticket" | "queue" | "users" | "dashboard">("my-tickets");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
 
   // Check if authenticated session cookie exists in browser
@@ -169,7 +170,7 @@ export default function App() {
     setSelectedTicketId(null);
   };
 
-  const handleTabChange = (tab: "my-tickets" | "create-ticket" | "queue" | "users") => {
+  const handleTabChange = (tab: "my-tickets" | "create-ticket" | "queue" | "users" | "dashboard") => {
     setActiveTab(tab);
     setSelectedTicketId(null);
   };
@@ -281,6 +282,19 @@ export default function App() {
                 }}
               />
             )
+          )}
+
+          {activeTab === "dashboard" && (
+            <StaffDashboard
+              currentUser={currentUser}
+              onSelectTicket={(ticketId) => {
+                setSelectedTicketId(ticketId);
+                setActiveTab("queue");
+              }}
+              onNavigateQueue={() => {
+                setActiveTab("queue");
+              }}
+            />
           )}
 
           {activeTab === "users" && (

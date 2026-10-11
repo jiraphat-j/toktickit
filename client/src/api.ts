@@ -1020,6 +1020,78 @@ export async function updateActionTaken(
   return data.action || data;
 }
 
+// ---------------------------------------------------------------------------
+// Lab 4: Staff Dashboard Types and API (Issue #61)
+// ---------------------------------------------------------------------------
+export interface StaffDashboardMetrics {
+  unassignedCount: number;
+  myTicketsCount: number;
+  criticalHighCount: number;
+  myActionsCount: number;
+  unassigned?: number;
+  myAssigned?: number;
+  new?: number;
+  open?: number;
+  inProgress?: number;
+  waitingForRequester?: number;
+  recentlyUpdated?: number;
+  priorityCounts?: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
+
+export interface StaffDashboardTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  status?: TicketStatus;
+  itPriority: Priority;
+  primaryOwner?: { id: number; fullName: string } | null;
+  owner?: { id: number; name: string } | null;
+  updatedAt: string;
+}
+
+export interface StaffDashboardAction {
+  id: number;
+  ticketId: number;
+  ticketNumber: string;
+  actionDateTime: string;
+  description: string;
+  result: string;
+}
+
+export interface StaffDashboardData {
+  metrics: StaffDashboardMetrics;
+  statusBreakdown: Record<string, number>;
+  priorityBreakdown: Record<string, number>;
+  recentTickets: StaffDashboardTicket[];
+  myRecentActions: StaffDashboardAction[];
+}
+
+export async function fetchStaffDashboard(): Promise<StaffDashboardData> {
+  const res = await fetch(`${API_URL}/api/dashboard/staff`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch staff dashboard (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.status = res.status;
+    throw err;
+  }
+
+  return await res.json();
+}
+
+
 
 
 
