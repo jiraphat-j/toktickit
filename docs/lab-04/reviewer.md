@@ -22,7 +22,7 @@
 | **Issue #59** | `feat: Actions Taken UI on Ticket Detail` | [PR #70](https://github.com/jiraphat-j/toktickit/pull/70) | "ตรวจ PR #70 รอบสองเรียบร้อยค่ะ<br><br>1. **Actions Taken UI & Layout (UI-ACT-01, AC-01)**:<br>   - แสดงผลแบบ Dual Layout รองรับทั้ง Desktop Table (≥992px) และ Mobile Card Stack (<768px) ป้องกันปัญหาหน้าจอล้นแนวนอนได้อย่างดี<br>   - ใช้โทนสีและดีไซน์ตรงตามเอกลักษณ์ของ Zen Green Design System สวยงามและกลมกลืนกับระบบเดิม<br><br>2. **Form Validation & Performer Attribution (UI-ACT-02, UI-ACT-03, BR-04, BR-07)**:<br>   - Modal Form มีคุณสมบัติตามมาตรฐาน ARIA Accessibility<br>   - มี Client-Side Validation ตรวจสอบความยาว Description (5–2000 chars), Result (2–2000 chars) และบังคับกรอก `followUpNote` เมื่อติ๊กเลือก Follow-up ได้ถูกต้อง<br>   - ล็อกชื่อและบทบาทของผู้ปฏิบัติงาน (`performedBy`) จาก Session ในแบบ Read-only ป้องกันการแก้ไขตัวตน<br><br>3. **Concurrency Conflict Handling (409 Conflict)**:<br>   - จัดการ State เมื่อมีการแก้ไขชนกันด้วยการแสดง Alert แจ้งเตือน และรีเฟรชข้อมูลล่าสุดให้อัตโนมัติ<br><br>4. **Automated Component Verification**:<br>   - ชุดทดสอบ Vitest ใน `ActionsTaken.test.tsx` (7 tests) ครอบคลุม UI-ACT-01 ถึง UI-ACT-04, Concurrency และ Safe Failure Retry ครบถ้วน รันผ่าน 100% ปราศจาก Regression<br><br>โดยรวมงานเรียบร้อยสมบูรณ์ทุกจุด **Approved & พร้อม Merge**" | "ขอบคุณครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `42d8642`) |
 | **Issue #60** | `feat: Ticket workflow, resolution gate, and status transitions` | [PR #71](https://github.com/jiraphat-j/toktickit/pull/71) | "ตรวจ PR #71 เรียบร้อยค่ะ โครงสร้างระบบ Ticket Workflow, Resolution Gate และ State Transitions ของ Issue #60 ทำได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **State Machine & Status Transitions**:<br>   - บังคับใช้ Matrix การเปลี่ยนสถานะตาม Engineering Contract อย่างเคร่งครัด พร้อมส่ง 400 ILLEGAL_STATUS_TRANSITION เมื่อมีการข้ามขั้นตอน<br><br>2. **Resolution Gate (Zero Actions Guard)**:<br>   - มีการป้องกันทั้งระดับ Backend (คืน 400 RESOLUTION_GATE_FAILED) และระดับ Frontend UI (Disable ปุ่ม Resolve + แสดง Warning Banner สีเหลืองอำพัน)<br><br>3. **Advisory Resolution & Concurrency**:<br>   - การกดแจ้งปัญหาเสร็จสิ้นของ Requester เป็นเพียง Advisory Flag ไม่เปลี่ยนสถานะจริง และมี Concurrency Control คืน 409 Conflict ป้องกันการเขียนทับ<br><br>4. **Integration Tests & Zero Regression**:<br>   - เทสต์ครอบคลุมทุก AC ทั้ง API (13 tests) และ UI (6 tests) รันผ่านครบ 100%<br><br>โดยรวมยอดเยี่ยมมากค่ะ **Approved & พร้อม Merge**" | "ขอบคุณครับกด merge ได้เลยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `375dd51`) |
 | **Issue #61** | `feat: IT Staff operational dashboard API and UI` | [PR #72](https://github.com/jiraphat-j/toktickit/pull/72) | "ตรวจ PR #72 เรียบร้อยค่ะ ระบบ IT Staff Operational Dashboard ของ Issue #61 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **Dashboard APIs & Metrics**:<br>   - การคำนวณตัวชี้วัด (Unassigned, My Assigned, High/Critical, My Actions) ถูกต้องตามสเปก และมี Data Isolation กั้นสิทธิ์ Requester ด้วย 403 Forbidden ชัดเจน<br>2. **Operational UI & Drill-downs**:<br>   - หน้ารวมแดชบอร์ดมีทั้ง Metric Cards, Status/Priority Breakdown และตาราง Recent Tickets พร้อมปุ่ม Drill-down ไปยัง Queue ได้สะดวก<br>   - ใช้โทนสี Zen Green สวยงาม และรองรับ State ข้อผิดพลาดพร้อมปุ่ม Retry<br>3. **Automated Test Suite**:<br>   - ชุดทดสอบครอบคลุมทั้ง API และ Component ผ่าน 100% (319/319 tests) ปราศจาก regression<br><br>โดยรวมยอดเยี่ยมมากค่ะ **Approved & พร้อม Merge** ให้ได้เลยค่ะ" | "ขอบคุณครับ merge ได้เลยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `ad54303`) |
-| **Issue #62** | `feat: Requester role dashboard API and UI` | `[Link PR #??]` | — | — | Planned |
+| **Issue #62** | `feat: Requester role dashboard API and UI` | [PR #73](https://github.com/jiraphat-j/toktickit/pull/73) | "ตรวจ PR #73 เรียบร้อยค่ะ ระบบ Requester Role Dashboard ของ Issue #62 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **Dashboard API & Zero Leakage**:<br>   - กักกันสิทธิ์ข้อมูล (Data Isolation) ให้ Requester เห็นเฉพาะตั๋วของตนเอง 100% ตัวเลขสรุปสถิติ (Open, Waiting, Recently Resolved) คำนวณถูกต้องตาม Business Rules<br>2. **User-Friendly UI & Navigation**:<br>   - หน้ารวมแดชบอร์ดมี Welcome Banner, Metric Cards พร้อมปุ่ม Drill-down, ส่วน Attention Required แจ้งเตือนตั๋วที่รอการตอบกลับ และตาราง Recent Tickets สวยงามตามธีม Zen Green<br>   - เชื่อมต่อการนำทางใน AppHeader และ App.tsx สลับ Dashboard ตามบทบาทของผู้ใช้ได้อย่างลงตัว<br>3. **Automated Tests & Zero Regression**:<br>   - ชุดทดสอบครอบคลุมทั้ง API และ Component ผ่าน 100% (333/333 tests) ปราศจาก regression" | "ขอบคุณครับ merge ให้ได้เลยงับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `b8c2c33`) |
 | **Issue #63** | `test: Zen Green UI consistency, responsive audits, and screenshots` | `[Link PR #??]` | — | — | Planned |
 | **Issue #64** | `test: Playwright E2E scenarios and complete full regression suite` | `[Link PR #??]` | — | — | Planned |
 | **Issue #65** | `docs: Lab 4 documentation completion, verbatim peer review, and submission evidence` | `[Link PR #??]` | — | — | Planned |
@@ -41,7 +41,8 @@
 | **Phase 3 / Step 5** | `sprint4/actions-taken-ui` | [PR #75](https://github.com/thanapornboont-star/toktickit/pull/75) | "ตรวจ PR #75 เรียบร้อยครับ การพัฒนา Work Item 5 (Actions Taken UI Component & Integration) ทำได้ประณีตและครอบคลุมทุก Use Case มากครับ:<br><br>1. **Component Architecture & Reusability**:<br>   * `ActionsTakenSection` ออกแบบ Props ให้รองรับ `isReadOnly` ได้ยืดหยุ่น ทำให้ reuse ข้ามระหว่าง `TicketDetail` (Requester) และ `StaffTicketDetail` (Staff/Admin) ได้อย่างสะอาดตา<br>   * มีการแยก State การเปิด Modal ทั้งกรณี Create ใหม่ และ Edit ข้อมูลเดิมที่ populate ค่าเดิมกลับเข้าฟอร์มอย่างครบถ้วน<br>2. **Form Validation & Business Rules Enforcement (BR-01 ถึง BR-06, AC-01 ถึง AC-04)**:<br>   * บังคับ Validation ตัวอักษร 3–2000 ตัวทั้ง Description และ Result<br>   * กฎ Follow-up Note ทำงานถูกต้อง: บังคับกรอกทันทีที่เลือกเช็กบอกซ์ `isFollowUpRequired` และเคลียร์ค่าออกเมื่อไม่ต้องการ<br>   * ดักจับการเลือกเวลาในอนาคตเกิน 5 นาที ป้องกันความผิดพลาดของข้อมูลก่อนส่งไปยังเซิร์ฟเวอร์<br>   * ฝั่ง Requester ถูกจำกัดเป็น Read-only ไม่มีปุ่มเพิ่มหรือแก้ไขปรากฏขึ้น ตามข้อกำหนด BR-06<br>3. **User Experience & Styling**:<br>   * ตารางจัด Layout และ Badge สถานะอ่านง่าย (แยกสี Follow-up, Staff/Admin role badge)<br>   * จัดการ State ระหว่างโหลด (`isLoading`) และ Empty State เมื่อไม่มีข้อมูลได้เรียบร้อย พร้อมแจ้งเตือน Feedback การบันทึก<br>4. **Client Unit Tests (UI-01, UI-02)**:<br>   * ครอบคลุมการจำลองทั้ง Staff Persona (การเปิด Modal, Validation, บันทึก) และ Requester Persona (Read-only Verification) ผ่าน React Testing Library อย่างครบถ้วน<br><br>โดยรวมโค้ดเรียบร้อยและทำงานสอดคล้องกับ API ก่อนหน้าอย่างสมบูรณ์ **Approved & พร้อม Merge** ครับ" | "ขอบใจจ้าาาา" | **Approved & Merged** (Merge commit `93d022d`) |
 | **Phase 4 / Step 6** | `feat(ui): implement Ticket Status Workflow & Resolution UI Controls (#66)` | [PR #76](https://github.com/thanapornboont-star/toktickit/pull/76) | "ตรวจ PR #76 เรียบร้อยครับ Vitest บน branch จริงผ่าน 14/14 test files (79 tests passed) ครบถ้วนครับ:<br><br>1. **State Machine UI Enforcement (BR-09, AC-05, AC-06)**:<br>   - ตรวจสอบ `PERMITTED_STATUS_TRANSITIONS` ในตัวเลือก Dropdown ได้ถูกต้อง ไม่อนุญาตให้ผู้ใช้เลือกข้ามสถานะที่ไม่ได้รับอนุญาต เช่น จาก `NEW` จะมีให้เลือกเฉพาะ `OPEN`, `IN_PROGRESS` และ `CANCELLED` เท่านั้น<br><br>2. **Advisory Resolution Banner & Formal Resolution (BR-10, BR-11, AC-07)**:<br>   - แบนเนอร์ `requesterIndicatedResolved` ปรับปรุง UI ให้เห็นชัดเจน และมีปุ่ม \"Formally Resolve Ticket\" อิงตามสถานะที่อนุญาตให้เปลี่ยนเป็น `RESOLVED` ได้จริง<br>   - เมื่อกด Resolve ระบบจะเรียกฟังก์ชันอัปเดตไปยังสถานะ `RESOLVED` โดยตรงพร้อมดึง timestamp ปัจจุบันไปตรวจสอบ<br><br>3. **Optimistic Concurrency Control (BR-12, AC-08)**:<br>   - ใน `client/src/api.ts` ฟังก์ชัน `updateTicketStatus` รองรับการส่ง `clientUpdatedAt` และกระจาย `error.status = 409` ออกมาให้ UI ใช้งานได้<br>   - ใน `server/src/routes/staff.ts` มีการดักจับ timestamp diff > 1000ms แล้วคืนค่า HTTP `409 CONFLICT` อย่างรัดกุม<br>   - `StaffTicketDetail.tsx` จัดการแจ้งเตือนผู้ใช้งานเมื่อเกิด Conflict 409 ได้ชัดเจน เพื่อป้องกันการเขียนทับข้อมูลโดยไม่ตั้งใจ<br><br>4. **Component Unit Tests (UI-03a, UI-03b, UI-03c)**:<br>   - ครอบคลุมทั้งกฎ State Machine, พฤติกรรม Advisory Banner + Resolution Button และการจัดการ Concurrency Error 409<br><br>**Approved & พร้อม Merge** ครับ" | "ขอบคุณค่ะ หวังว่าไม่มีอะไรผิดพลาดต่อไปนะคะ" | **Approved & Merged** (Merge commit `1e29b5c`) |
 | **Phase 5 / Step 8** | `feat(ui): implement IT Staff & Requester Dashboards UI (#67)` | [PR #77](https://github.com/thanapornboont-star/toktickit/pull/77) | "ตรวจ PR #77 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรัน Vitest บน branch จริงผ่าน 16/16 test files (89 tests passed) ครบถ้วนครับ:<br><br>1. **Dashboard Architecture & Shell Navigation (`App.tsx`, `App.css`)**:<br>   - เพิ่ม View `dashboard` รองรับทุก Role พร้อมการนำทางที่ราบรื่น (Smooth Navigation)<br>   - การผูก Callback นำทาง (`onViewTicket`, `onCreateTicket`, `onNavigateQueue`) ทำงานเชื่อมต่อไปยังหน้ารายละเอียดและคิวงานได้อย่างไร้รอยต่อ<br>2. **Requester Dashboard UI (FR-06, BR-13, BR-14, AC-09)**:<br>   - Metric Cards จัดวางอ่านง่าย ครอบคลุมทั้ง Total Open, In Progress, Waiting และ Recently Resolved<br>   - ตารางตั๋วล่าสุดแสดงสถานะชัดเจน พร้อม Empty State และปุ่ม Action ที่นำทางไปยัง Create Ticket หรือ My Tickets ได้ทันที<br>3. **IT Staff & Admin Dashboard UI (FR-07, FR-08, BR-15, AC-10)**:<br>   - Operational Counters ชัดเจน แยกหมวดหมู่ตั๋วตามสถานะ, ตั๋วที่ยังไม่มีผู้รับผิดชอบ (Unassigned), ตั๋วที่ตนเองดูแล (My Assigned), และการจำแนกตามระดับความสำคัญ (Priority Breakdown)<br>   - ฝั่ง Administrator แสดง User Account Statistics เสริมตาม Role ได้ถูกต้องสมบูรณ์<br>4. **Integration & Component Unit Tests (UI-04)**:<br>   - ชุดทดสอบทั้ง `RequesterDashboard.test.tsx` (5 tests) และ `StaffDashboard.test.tsx` (5 tests) ครอบคลุมการจำลอง API Metrics, การกด Action ปุ่มนำทาง และการแยกแสดงผลตาม Role<br><br>โค้ดออกแบบเป็นระเบียบ ทำงานร่วมกับ API ใน PR ก่อนหน้าได้สมบูรณ์แบบ และผ่านการทดสอบจริงทั้งหมด พร้อม **Approved & พร้อม Merge**ครับ" | "ขอบพระคุณที่กรุณาค่ะ" | **Approved & Merged** (Merge commit `47d5c77`) |
-| **Phase 6 / Step 9-10**| Final Hardening & Release Readiness | `[Link Partner PR]` | — | — | Planned |
+| **Phase 6 / Step 9** | `feat(ui): Zen Green polish, responsive layouts, touch targets, and accessibility (#68)` | [PR #78](https://github.com/thanapornboont-star/toktickit/pull/78) | "ตรวจ PR #78 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรัน Vitest บน branch จริงผ่านครบทั้ง 17/17 test files (94 tests passed) ครับ:<br><br>1. **Zen Green Design System & WCAG AA Contrast**:<br>   - ปรับแต่ง Palette สี Badges ของสถานะและระดับความสำคัญให้อ่านง่าย ชัดเจน และสอดรับกับโทนสีหลักของระบบ<br>   - การปรับสี `.text-muted` ช่วยเพิ่มอัตราส่วนความเปรียบต่าง (Contrast Ratio) ให้ผ่านเกณฑ์ WCAG AA ได้เป็นอย่างดี<br><br>2. **Mobile Touch Targets & Responsive Layouts (AC-12)**:<br>   - บังคับขนาดสัมผัสขั้นต่ำ 44x44px บนอุปกรณ์มือถือสำหรับปุ่ม (`.btn`, `.btn-sm`) และลิงก์เมนูหลัก (`.main-nav a`) ตรงตามแนวทาง Mobile Usability<br>   - การจัดการ Overflow ด้วย `.table-responsive` ควบคู่กับ Smooth Scrolling บน iOS ช่วยป้องกันปัญหาตารางล้นขอบจอได้อย่างมีประสิทธิภาพ<br><br>3. **Keyboard Accessibility & Focus Indicators**:<br>   - การระบุ Focus Ring ชัดเจนด้วย Zen Green outline และเงา ช่วยให้การควบคุมผ่านคีย์บอร์ดมีความชัดเจน ไม่สูญเสีย Focus Indicator<br>   - Metric Cards มีคุณสมบัติ `role=\"button\"` และ `tabIndex=\"0\"` รองรับการเข้าถึงด้วยคีย์บอร์ดสมบูรณ์<br><br>4. **Integration Test Suite (`ResponsiveVisualQA.test.tsx`)**:<br>   - ทดสอบครอบคลุมทั้ง ARIA Landmarks, Heading Hierarchy, Responsive Container Wrappers และ Keyboard Focus Navigation ได้อย่างรอบคอบ<br><br>ภาพรวมการขัดเกลา UI และ Accessibility ทำได้ประณีตและได้มาตรฐานสากล **Approved & พร้อม Merge** ครับ" | "ขอบคุณค่า" | **Approved & Merged** (Merge commit `a78ffd2`) |
+| **Phase 6 / Step 10**| Final Hardening & Release Readiness | `[Link Partner PR]` | — | — | Planned |
 
 ---
 
@@ -217,6 +218,29 @@
     > *"ขอบคุณครับ merge ได้เลยครับ"*
   - **Merge Action:** Merged into `lab4-staging` with commit `ad54303c734b22c7eb1135272a74cbb5c814b77f` by @thanapornboont-star
   - **Branch Closed:** `feature/61-staff-dashboard`
+
+---
+
+### Issue #62 — feat: Requester role dashboard API and UI
+- **Issue:** [#62](https://github.com/jiraphat-j/toktickit/issues/62)
+- **PR:** [PR #73](https://github.com/jiraphat-j/toktickit/pull/73)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Decision:** `APPROVED` (Submitted at 2026-10-11T05:22:52Z)
+- **Review Activity:**
+  - **Reviewer Approval Comment (Verbatim 100% from GitHub PR #73):**
+    > *"ตรวจ PR #73 เรียบร้อยค่ะ ระบบ Requester Role Dashboard ของ Issue #62 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:*  
+    > *1. **Dashboard API & Zero Leakage**:*  
+    > *   - กักกันสิทธิ์ข้อมูล (Data Isolation) ให้ Requester เห็นเฉพาะตั๋วของตนเอง 100% ตัวเลขสรุปสถิติ (Open, Waiting, Recently Resolved) คำนวณถูกต้องตาม Business Rules*  
+    > *2. **User-Friendly UI & Navigation**:*  
+    > *   - หน้ารวมแดชบอร์ดมี Welcome Banner, Metric Cards พร้อมปุ่ม Drill-down, ส่วน Attention Required แจ้งเตือนตั๋วที่รอการตอบกลับ และตาราง Recent Tickets สวยงามตามธีม Zen Green*  
+    > *   - เชื่อมต่อการนำทางใน AppHeader และ App.tsx สลับ Dashboard ตามบทบาทของผู้ใช้ได้อย่างลงตัว*  
+    > *3. **Automated Tests & Zero Regression**:*  
+    > *   - ชุดทดสอบครอบคลุมทั้ง API และ Component ผ่าน 100% (333/333 tests) ปราศจาก regression"*
+  - **Author Response (Verbatim 100% from GitHub PR #73):**
+    > *"ขอบคุณครับ merge ให้ได้เลยงับ"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `b8c2c33bf86544b422647ec81ccdb6f61a5e0a57` by @thanapornboont-star
+  - **Branch Closed:** `feature/62-requester-dashboard`
 
 ---
 
@@ -423,5 +447,38 @@
     > *"ขอบพระคุณที่กรุณาค่ะ"*
   - **Merge Action:** Merged into `lab4-staging` with commit `47d5c775f5f6f3eb86c3f5083402d0d5f2d4d863` by @jiraphat-j
   - **Branch Closed:** `sprint4/role-dashboards-ui`
+
+---
+
+### Partner PR #78 — feat(ui): Zen Green polish, responsive layouts, touch targets, and accessibility (#68)
+- **PR:** [PR #78](https://github.com/thanapornboont-star/toktickit/pull/78)
+- **Author:** @thanapornboont-star
+- **Reviewer:** @jiraphat-j
+- **Review Decision:** `APPROVED` (Submitted at 2026-10-11T05:05:51Z)
+- **Review Activity:**
+  - **My Review Comment (Verbatim 100% from GitHub PR #78):**
+    > *"ตรวจ PR #78 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรัน Vitest บน branch จริงผ่านครบทั้ง 17/17 test files (94 tests passed) ครับ:*  
+    >  
+    > *1. **Zen Green Design System & WCAG AA Contrast**:*  
+    > *   - ปรับแต่ง Palette สี Badges ของสถานะและระดับความสำคัญให้อ่านง่าย ชัดเจน และสอดรับกับโทนสีหลักของระบบ*  
+    > *   - การปรับสี `.text-muted` ช่วยเพิ่มอัตราส่วนความเปรียบต่าง (Contrast Ratio) ให้ผ่านเกณฑ์ WCAG AA ได้เป็นอย่างดี*  
+    >  
+    > *2. **Mobile Touch Targets & Responsive Layouts (AC-12)**:*  
+    > *   - บังคับขนาดสัมผัสขั้นต่ำ 44x44px บนอุปกรณ์มือถือสำหรับปุ่ม (`.btn`, `.btn-sm`) และลิงก์เมนูหลัก (`.main-nav a`) ตรงตามแนวทาง Mobile Usability*  
+    > *   - การจัดการ Overflow ด้วย `.table-responsive` ควบคู่กับ Smooth Scrolling บน iOS ช่วยป้องกันปัญหาตารางล้นขอบจอได้อย่างมีประสิทธิภาพ*  
+    >  
+    > *3. **Keyboard Accessibility & Focus Indicators**:*  
+    > *   - การระบุ Focus Ring ชัดเจนด้วย Zen Green outline และเงา ช่วยให้การควบคุมผ่านคีย์บอร์ดมีความชัดเจน ไม่สูญเสีย Focus Indicator*  
+    > *   - Metric Cards มีคุณสมบัติ `role="button"` และ `tabIndex="0"` รองรับการเข้าถึงด้วยคีย์บอร์ดสมบูรณ์*  
+    >  
+    > *4. **Integration Test Suite (`ResponsiveVisualQA.test.tsx`)**:*  
+    > *   - ทดสอบครอบคลุมทั้ง ARIA Landmarks, Heading Hierarchy, Responsive Container Wrappers และ Keyboard Focus Navigation ได้อย่างรอบคอบ*  
+    >  
+    > *ภาพรวมการขัดเกลา UI และ Accessibility ทำได้ประณีตและได้มาตรฐานสากล **Approved & พร้อม Merge** ครับ"*
+  - **Partner Response (Verbatim 100% from GitHub PR #78):**
+    > *"ขอบคุณค่า"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `a78ffd276407370103e891aad533468868238555` by @jiraphat-j
+  - **Branch Closed:** `sprint4/responsive-visual-qa`
+
 
 

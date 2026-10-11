@@ -19,6 +19,7 @@ import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
+import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 import { UserManagement } from "./components/UserManagement.js";
 import { StaffDashboard } from "./components/StaffDashboard.js";
 import { RequesterDashboard } from "./components/RequesterDashboard.js";
