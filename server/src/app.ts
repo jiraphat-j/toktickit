@@ -2884,5 +2884,178 @@ app.get(
   }
 );
 
+// 3. GET /api/dashboard/requester — Requester Dashboard (operational summary & attention-required tickets)
+app.get(
+  "/api/dashboard/requester",
+  requireAuth,
+  requireRole("REQUESTER", "ADMINISTRATOR"),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const currentUserId = req.user!.id;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const openStatuses: TicketStatus[] = [
+        "NEW",
+        "OPEN",
+        "IN_PROGRESS",
+        "WAITING_FOR_REQUESTER",
+        "REOPENED",
+      ];
+
+      const [
+        totalOpenTickets,
+        waitingForRequesterCount,
+        inProgressCount,
+        recentlyResolvedCount,
+        recentlyUpdatedCount,
+        closedCount,
+        resolvedCount,
+        attentionTickets,
+        recentTickets,
+        recentlyResolvedTickets,
+      ] = await Promise.all([
+        // 1. Total Open Tickets
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: openStatuses },
+          },
+        }),
+        // 2. Waiting for Requester Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "WAITING_FOR_REQUESTER",
+          },
+        }),
+        // 3. In Progress Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "IN_PROGRESS",
+          },
+        }),
+        // 4. Recently Resolved (RESOLVED or CLOSED updated within last 7 days)
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: ["RESOLVED", "CLOSED"] },
+            updatedAt: { gte: sevenDaysAgo },
+          },
+        }),
+        // 5. Recently Updated (any status updated within last 7 days)
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            updatedAt: { gte: sevenDaysAgo },
+          },
+        }),
+        // 6. Closed Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "CLOSED",
+          },
+        }),
+        // 7. Resolved Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "RESOLVED",
+          },
+        }),
+        // 8. Attention Required Tickets (WAITING_FOR_REQUESTER)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "WAITING_FOR_REQUESTER",
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+        // 9. Recent Tickets (top 5 by updatedAt)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+        // 10. Recently Resolved Tickets (top 5 by updatedAt)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: ["RESOLVED", "CLOSED"] },
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+      ]);
+
+      const mapTicket = (t: any) => ({
+        id: t.id,
+        ticketNumber: t.ticketNumber,
+        summary: t.summary,
+        currentStatus: t.currentStatus,
+        status: t.currentStatus,
+        itPriority: t.itPriority,
+        requestedPriority: t.requestedPriority,
+        updatedAt: t.updatedAt.toISOString(),
+      });
+
+      res.status(200).json({
+        metrics: {
+          totalOpenTickets,
+          totalOpen: totalOpenTickets,
+          waitingForRequesterCount,
+          waitingForRequester: waitingForRequesterCount,
+          inProgress: inProgressCount,
+          recentlyUpdatedCount,
+          recentlyUpdated: recentlyUpdatedCount,
+          recentlyResolvedCount,
+          recentlyResolved: recentlyResolvedCount,
+          closed: closedCount,
+          resolved: resolvedCount,
+        },
+        attentionTickets: attentionTickets.map(mapTicket),
+        recentTickets: recentTickets.map(mapTicket),
+        recentlyResolvedTickets: recentlyResolvedTickets.map(mapTicket),
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve Requester dashboard metrics." },
+      });
+    }
+  }
+);
+
 export default app;
 

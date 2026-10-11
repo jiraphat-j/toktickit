@@ -4,7 +4,7 @@ import { DevRequester, AuthUser } from "../api.js";
 interface AppHeaderProps {
   currentRequester?: DevRequester | null;
   currentUser?: AuthUser | null;
-  activeTab: "my-tickets" | "create-ticket" | "queue" | "users";
+  activeTab: "my-tickets" | "create-ticket" | "queue" | "users" | "dashboard";
   onTabChange: (tab: any) => void;
   onChangeRequester?: () => void;
   onLogout?: () => void;
@@ -48,6 +48,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <nav className="zen-nav" aria-label="Main Navigation">
           {(!role || role === "REQUESTER") && (
             <>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
               <button
                 type="button"
                 className={`zen-nav-item ${activeTab === "my-tickets" ? "active" : ""}`}
