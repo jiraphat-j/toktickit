@@ -19,9 +19,9 @@ import { RequesterTicketDetail } from "./components/RequesterTicketDetail.js";
 import { Login } from "./components/Login.js";
 import { ChangePassword } from "./components/ChangePassword.js";
 import { StaffTicketQueue } from "./components/StaffTicketQueue.js";
-import { StaffTicketDetail } from "./components/StaffTicketDetail.js";
 import { UserManagement } from "./components/UserManagement.js";
 import { StaffDashboard } from "./components/StaffDashboard.js";
+import { RequesterDashboard } from "./components/RequesterDashboard.js";
 
 export default function App() {
   // Lab 3 Authenticated User identity (Source of Truth)
@@ -285,16 +285,34 @@ export default function App() {
           )}
 
           {activeTab === "dashboard" && (
-            <StaffDashboard
-              currentUser={currentUser}
-              onSelectTicket={(ticketId) => {
-                setSelectedTicketId(ticketId);
-                setActiveTab("queue");
-              }}
-              onNavigateQueue={() => {
-                setActiveTab("queue");
-              }}
-            />
+            currentUser.role === "REQUESTER" ? (
+              <RequesterDashboard
+                currentUser={currentUser}
+                onSelectTicket={(ticketId) => {
+                  setSelectedTicketId(ticketId);
+                  setActiveTab("my-tickets");
+                }}
+                onCreateTicket={() => {
+                  setActiveTab("create-ticket");
+                  setSelectedTicketId(null);
+                }}
+                onNavigateMyTickets={() => {
+                  setActiveTab("my-tickets");
+                  setSelectedTicketId(null);
+                }}
+              />
+            ) : (
+              <StaffDashboard
+                currentUser={currentUser}
+                onSelectTicket={(ticketId) => {
+                  setSelectedTicketId(ticketId);
+                  setActiveTab("queue");
+                }}
+                onNavigateQueue={() => {
+                  setActiveTab("queue");
+                }}
+              />
+            )
           )}
 
           {activeTab === "users" && (

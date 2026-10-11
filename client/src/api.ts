@@ -1091,7 +1091,57 @@ export async function fetchStaffDashboard(): Promise<StaffDashboardData> {
   return await res.json();
 }
 
+// ---------------------------------------------------------------------------
+// Lab 4: Requester Dashboard Types and API (Issue #62 / FR-10, BR-16, AC-09)
+// ---------------------------------------------------------------------------
+export interface RequesterDashboardMetrics {
+  totalOpenTickets: number;
+  totalOpen: number;
+  waitingForRequesterCount: number;
+  waitingForRequester: number;
+  recentlyUpdatedCount: number;
+  recentlyUpdated: number;
+  recentlyResolvedCount: number;
+  recentlyResolved: number;
+  inProgress?: number;
+  closed?: number;
+  resolved?: number;
+}
 
+export interface RequesterDashboardTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  status?: TicketStatus;
+  itPriority?: Priority;
+  requestedPriority?: Priority;
+  updatedAt: string;
+}
 
+export interface RequesterDashboardData {
+  metrics: RequesterDashboardMetrics;
+  attentionTickets: RequesterDashboardTicket[];
+  recentTickets: RequesterDashboardTicket[];
+  recentlyResolvedTickets?: RequesterDashboardTicket[];
+}
 
+export async function fetchRequesterDashboard(): Promise<RequesterDashboardData> {
+  const res = await fetch(`${API_URL}/api/dashboard/requester`, {
+    credentials: "include",
+  });
 
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch requester dashboard (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.status = res.status;
+    throw err;
+  }
+
+  return await res.json();
+}
