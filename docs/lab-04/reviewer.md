@@ -24,7 +24,7 @@
 | **Issue #61** | `feat: IT Staff operational dashboard API and UI` | [PR #72](https://github.com/jiraphat-j/toktickit/pull/72) | "ตรวจ PR #72 เรียบร้อยค่ะ ระบบ IT Staff Operational Dashboard ของ Issue #61 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **Dashboard APIs & Metrics**:<br>   - การคำนวณตัวชี้วัด (Unassigned, My Assigned, High/Critical, My Actions) ถูกต้องตามสเปก และมี Data Isolation กั้นสิทธิ์ Requester ด้วย 403 Forbidden ชัดเจน<br>2. **Operational UI & Drill-downs**:<br>   - หน้ารวมแดชบอร์ดมีทั้ง Metric Cards, Status/Priority Breakdown และตาราง Recent Tickets พร้อมปุ่ม Drill-down ไปยัง Queue ได้สะดวก<br>   - ใช้โทนสี Zen Green สวยงาม และรองรับ State ข้อผิดพลาดพร้อมปุ่ม Retry<br>3. **Automated Test Suite**:<br>   - ชุดทดสอบครอบคลุมทั้ง API และ Component ผ่าน 100% (319/319 tests) ปราศจาก regression<br><br>โดยรวมยอดเยี่ยมมากค่ะ **Approved & พร้อม Merge** ให้ได้เลยค่ะ" | "ขอบคุณครับ merge ได้เลยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `ad54303`) |
 | **Issue #62** | `feat: Requester role dashboard API and UI` | [PR #73](https://github.com/jiraphat-j/toktickit/pull/73) | "ตรวจ PR #73 เรียบร้อยค่ะ ระบบ Requester Role Dashboard ของ Issue #62 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **Dashboard API & Zero Leakage**:<br>   - กักกันสิทธิ์ข้อมูล (Data Isolation) ให้ Requester เห็นเฉพาะตั๋วของตนเอง 100% ตัวเลขสรุปสถิติ (Open, Waiting, Recently Resolved) คำนวณถูกต้องตาม Business Rules<br>2. **User-Friendly UI & Navigation**:<br>   - หน้ารวมแดชบอร์ดมี Welcome Banner, Metric Cards พร้อมปุ่ม Drill-down, ส่วน Attention Required แจ้งเตือนตั๋วที่รอการตอบกลับ และตาราง Recent Tickets สวยงามตามธีม Zen Green<br>   - เชื่อมต่อการนำทางใน AppHeader และ App.tsx สลับ Dashboard ตามบทบาทของผู้ใช้ได้อย่างลงตัว<br>3. **Automated Tests & Zero Regression**:<br>   - ชุดทดสอบครอบคลุมทั้ง API และ Component ผ่าน 100% (333/333 tests) ปราศจาก regression" | "ขอบคุณครับ merge ให้ได้เลยงับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `b8c2c33`) |
 | **Issue #63** | `test: Zen Green UI consistency, responsive audits, and screenshots` | [PR #74](https://github.com/jiraphat-j/toktickit/pull/74) | "ตรวจ PR #74 เรียบร้อยค่ะ งานตรวจสอบ Zen Green UI Consistency, Responsive Audits และ Evidence Screenshots ของ Issue #63 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์มากค่ะ:<br><br>1. **Accessibility & Responsive QA**:<br>   - ชุดทดสอบ Vitest ใน `ResponsiveVisualQA.test.tsx` ครอบคลุมทั้ง ARIA Landmarks, Keyboard Navigation, Touch Targets (44x44px), และ Responsive View Switcher<br>2. **Evidence Artifacts**:<br>   - สคริปต์ Playwright จับภาพหลักฐานอัตโนมัติครบถ้วนทั้ง 32 ภาพ และยืนยัน Zero Horizontal Overflow ข้ามทุก Viewport (1280px, 768px, 375px)<br>3. **Bug Fix & Regression Guard**:<br>   - แก้ไข import `StaffTicketDetail` ใน `App.tsx` เรียบร้อย ผลเทสต์รวมผ่านครบ 100% (339/339 tests)<br><br>โดยรวมยอดเยี่ยมมากค่ะ **Approved & พร้อม Merge**" | "ขอบคุณครับรบกวน merge ให้หน่อยครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `9e37bc9`) |
-| **Issue #64** | `test: Playwright E2E scenarios and complete full regression suite` | `[Link PR #??]` | — | — | Planned |
+| **Issue #64** | `test: Playwright E2E scenarios and complete full regression suite` | [PR #75](https://github.com/jiraphat-j/toktickit/pull/75) | "ตรวจ PR #75 เรียบร้อยค่ะ ชุดทดสอบ Playwright E2E และการทดสอบ Full Regression Suite ของ Issue #64 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์ค่ะ:<br><br>1. **E2E Scenarios**:<br>   - ครอบคลุมครบทั้ง 3 โฟลว์หลัก: Actions Taken Lifecycle, Resolution Gate + API Bypass Defense, และ Role Dashboards พร้อม Drill-down<br>2. **Security & Responsive Audits**:<br>   - ตรวจสอบการกั้นสิทธิ์ RBAC 403 Forbidden และความปลอดภัย Zero Leakage รวมถึงการันตี Zero Horizontal Overflow บนทุก Viewport (1280px, 768px, 375px)<br>3. **Full Regression Results**:<br>   - ปรับปรุง Seed ให้รันซ้ำได้อย่างแน่นอน (Deterministic) และผลเทสต์รวมผ่านครบ 100% (377/377 tests) ปราศจากข้อผิดพลาด" | "merge ให้ได้เลยครับ ขอบคุณครับ" | **Approved & Merged** by @thanapornboont-star (Merge commit `3a84e3c`) |
 | **Issue #65** | `docs: Lab 4 documentation completion, verbatim peer review, and submission evidence` | `[Link PR #??]` | — | — | Planned |
 | **Release** | `release: merge lab4-staging to main` | `[Link Release PR]` | — | — | Planned |
 
@@ -42,7 +42,8 @@
 | **Phase 4 / Step 6** | `feat(ui): implement Ticket Status Workflow & Resolution UI Controls (#66)` | [PR #76](https://github.com/thanapornboont-star/toktickit/pull/76) | "ตรวจ PR #76 เรียบร้อยครับ Vitest บน branch จริงผ่าน 14/14 test files (79 tests passed) ครบถ้วนครับ:<br><br>1. **State Machine UI Enforcement (BR-09, AC-05, AC-06)**:<br>   - ตรวจสอบ `PERMITTED_STATUS_TRANSITIONS` ในตัวเลือก Dropdown ได้ถูกต้อง ไม่อนุญาตให้ผู้ใช้เลือกข้ามสถานะที่ไม่ได้รับอนุญาต เช่น จาก `NEW` จะมีให้เลือกเฉพาะ `OPEN`, `IN_PROGRESS` และ `CANCELLED` เท่านั้น<br><br>2. **Advisory Resolution Banner & Formal Resolution (BR-10, BR-11, AC-07)**:<br>   - แบนเนอร์ `requesterIndicatedResolved` ปรับปรุง UI ให้เห็นชัดเจน และมีปุ่ม \"Formally Resolve Ticket\" อิงตามสถานะที่อนุญาตให้เปลี่ยนเป็น `RESOLVED` ได้จริง<br>   - เมื่อกด Resolve ระบบจะเรียกฟังก์ชันอัปเดตไปยังสถานะ `RESOLVED` โดยตรงพร้อมดึง timestamp ปัจจุบันไปตรวจสอบ<br><br>3. **Optimistic Concurrency Control (BR-12, AC-08)**:<br>   - ใน `client/src/api.ts` ฟังก์ชัน `updateTicketStatus` รองรับการส่ง `clientUpdatedAt` และกระจาย `error.status = 409` ออกมาให้ UI ใช้งานได้<br>   - ใน `server/src/routes/staff.ts` มีการดักจับ timestamp diff > 1000ms แล้วคืนค่า HTTP `409 CONFLICT` อย่างรัดกุม<br>   - `StaffTicketDetail.tsx` จัดการแจ้งเตือนผู้ใช้งานเมื่อเกิด Conflict 409 ได้ชัดเจน เพื่อป้องกันการเขียนทับข้อมูลโดยไม่ตั้งใจ<br><br>4. **Component Unit Tests (UI-03a, UI-03b, UI-03c)**:<br>   - ครอบคลุมทั้งกฎ State Machine, พฤติกรรม Advisory Banner + Resolution Button และการจัดการ Concurrency Error 409<br><br>**Approved & พร้อม Merge** ครับ" | "ขอบคุณค่ะ หวังว่าไม่มีอะไรผิดพลาดต่อไปนะคะ" | **Approved & Merged** (Merge commit `1e29b5c`) |
 | **Phase 5 / Step 8** | `feat(ui): implement IT Staff & Requester Dashboards UI (#67)` | [PR #77](https://github.com/thanapornboont-star/toktickit/pull/77) | "ตรวจ PR #77 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรัน Vitest บน branch จริงผ่าน 16/16 test files (89 tests passed) ครบถ้วนครับ:<br><br>1. **Dashboard Architecture & Shell Navigation (`App.tsx`, `App.css`)**:<br>   - เพิ่ม View `dashboard` รองรับทุก Role พร้อมการนำทางที่ราบรื่น (Smooth Navigation)<br>   - การผูก Callback นำทาง (`onViewTicket`, `onCreateTicket`, `onNavigateQueue`) ทำงานเชื่อมต่อไปยังหน้ารายละเอียดและคิวงานได้อย่างไร้รอยต่อ<br>2. **Requester Dashboard UI (FR-06, BR-13, BR-14, AC-09)**:<br>   - Metric Cards จัดวางอ่านง่าย ครอบคลุมทั้ง Total Open, In Progress, Waiting และ Recently Resolved<br>   - ตารางตั๋วล่าสุดแสดงสถานะชัดเจน พร้อม Empty State และปุ่ม Action ที่นำทางไปยัง Create Ticket หรือ My Tickets ได้ทันที<br>3. **IT Staff & Admin Dashboard UI (FR-07, FR-08, BR-15, AC-10)**:<br>   - Operational Counters ชัดเจน แยกหมวดหมู่ตั๋วตามสถานะ, ตั๋วที่ยังไม่มีผู้รับผิดชอบ (Unassigned), ตั๋วที่ตนเองดูแล (My Assigned), และการจำแนกตามระดับความสำคัญ (Priority Breakdown)<br>   - ฝั่ง Administrator แสดง User Account Statistics เสริมตาม Role ได้ถูกต้องสมบูรณ์<br>4. **Integration & Component Unit Tests (UI-04)**:<br>   - ชุดทดสอบทั้ง `RequesterDashboard.test.tsx` (5 tests) และ `StaffDashboard.test.tsx` (5 tests) ครอบคลุมการจำลอง API Metrics, การกด Action ปุ่มนำทาง และการแยกแสดงผลตาม Role<br><br>โค้ดออกแบบเป็นระเบียบ ทำงานร่วมกับ API ใน PR ก่อนหน้าได้สมบูรณ์แบบ และผ่านการทดสอบจริงทั้งหมด พร้อม **Approved & พร้อม Merge**ครับ" | "ขอบพระคุณที่กรุณาค่ะ" | **Approved & Merged** (Merge commit `47d5c77`) |
 | **Phase 6 / Step 9** | `feat(ui): Zen Green polish, responsive layouts, touch targets, and accessibility (#68)` | [PR #78](https://github.com/thanapornboont-star/toktickit/pull/78) | "ตรวจ PR #78 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรัน Vitest บน branch จริงผ่านครบทั้ง 17/17 test files (94 tests passed) ครับ:<br><br>1. **Zen Green Design System & WCAG AA Contrast**:<br>   - ปรับแต่ง Palette สี Badges ของสถานะและระดับความสำคัญให้อ่านง่าย ชัดเจน และสอดรับกับโทนสีหลักของระบบ<br>   - การปรับสี `.text-muted` ช่วยเพิ่มอัตราส่วนความเปรียบต่าง (Contrast Ratio) ให้ผ่านเกณฑ์ WCAG AA ได้เป็นอย่างดี<br><br>2. **Mobile Touch Targets & Responsive Layouts (AC-12)**:<br>   - บังคับขนาดสัมผัสขั้นต่ำ 44x44px บนอุปกรณ์มือถือสำหรับปุ่ม (`.btn`, `.btn-sm`) และลิงก์เมนูหลัก (`.main-nav a`) ตรงตามแนวทาง Mobile Usability<br>   - การจัดการ Overflow ด้วย `.table-responsive` ควบคู่กับ Smooth Scrolling บน iOS ช่วยป้องกันปัญหาตารางล้นขอบจอได้อย่างมีประสิทธิภาพ<br><br>3. **Keyboard Accessibility & Focus Indicators**:<br>   - การระบุ Focus Ring ชัดเจนด้วย Zen Green outline และเงา ช่วยให้การควบคุมผ่านคีย์บอร์ดมีความชัดเจน ไม่สูญเสีย Focus Indicator<br>   - Metric Cards มีคุณสมบัติ `role=\"button\"` และ `tabIndex=\"0\"` รองรับการเข้าถึงด้วยคีย์บอร์ดสมบูรณ์<br><br>4. **Integration Test Suite (`ResponsiveVisualQA.test.tsx`)**:<br>   - ทดสอบครอบคลุมทั้ง ARIA Landmarks, Heading Hierarchy, Responsive Container Wrappers และ Keyboard Focus Navigation ได้อย่างรอบคอบ<br><br>ภาพรวมการขัดเกลา UI และ Accessibility ทำได้ประณีตและได้มาตรฐานสากล **Approved & พร้อม Merge** ครับ" | "ขอบคุณค่า" | **Approved & Merged** (Merge commit `a78ffd2`) |
-| **Phase 6 / Step 10**| Final Hardening & Release Readiness | `[Link Partner PR]` | — | — | Planned |
+| **Phase 6 / Step 10**| `feat(e2e): implement Playwright E2E suites and traceability (Issue #69)` | [PR #79](https://github.com/thanapornboont-star/toktickit/pull/79) | "ตรวจ PR #79 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรันชุดทดสอบบน branch จริงผ่านครบทั้ง 17/17 test files (94 tests passed) สมบูรณ์มากครับ:<br><br>1. **State & Concurrency Synchronization (`staff.ts`, `StaffTicketDetail.tsx`)**:<br>   - การคืนค่า `updatedAt` กลับมาใน response ของ API แก้ไข owner และ priority พร้อมอัปเดตลง state ของหน้าจอ เป็นการแก้ไขปัญหา Concurrency Desync ที่ตรงจุด ทำให้การส่ง timestamp ไปเช็กในขั้นตอนเปลี่ยนสถานะ (Status Transition) แม่นยำ ไม่เกิด False Positive 409 Conflict<br><br>2. **Actions Taken E2E Flow (E2E-01, AC-01 ถึง AC-04)**:<br>   - ทดสอบครอบคลุมทั้ง Validation กฎ Follow-up note (BR-04), การระบุตัวผู้ปฏิบัติงานอัตโนมัติ (BR-02, BR-03) และการตีกรอบสิทธิ์ของ Requester ให้เป็น Read-only ได้อย่างสมบูรณ์<br><br>3. **Ticket Resolution & Concurrency E2E (E2E-02, AC-05, AC-07, AC-08)**:<br>   - ตรวจสอบ Advisory Flag อย่างรัดกุม โดยยืนยันว่าการกดของ Requester จะไม่เปลี่ยนสถานะตั๋วโดยพลการ<br>   - จำลองการเกิด 409 Conflict จาก Network Interception และตรวจสอบการแสดง Error Alert ฝั่ง Client ได้อย่างถูกต้อง<br><br>4. **Multi-Role Dashboards & Responsive QA (E2E-03, AC-09 ถึง AC-12)**:<br>   - ครอบคลุมการแสดงผล Metrics Cards, Drill-down navigation และทดสอบ Zero Horizontal Overflow ข้ามทั้ง Desktop, Tablet และ Mobile viewports อย่างรอบคอบ<br><br>5. **Screenshot Automation Script**:<br>   - สคริปต์ `capture-lab4-screenshots.mjs` เตรียมการสำหรับการเก็บภาพหลักฐานส่งมอบงาน Lab 4 ไว้อย่างเป็นระบบ<br><br>ชุดการทดสอบ E2E และการซิงค์ Concurrency state ทำได้ยอดเยี่ยมมาก **Approved & พร้อม Merge** ครับ" | "ขอบคุณค่ะ" | **Approved & Merged** by @jiraphat-j (Merge commit `278d761`) |
+| **Phase 6 / Step 11**| `feat(release): finalize visual evidence, test traceability, and submission pack (Issue #70)` | [PR #81](https://github.com/thanapornboont-star/toktickit/pull/81) | "ตรวจ PR #81 เรียบร้อยครับ การรวบรวมหลักฐานและแพ็กเกจส่งมอบงานรอบ Release Integration (Issue #70) ทำได้อย่างสมบูรณ์แบบและเป็นมืออาชีพมากครับ:<br><br>1. **Visual Evidence & Screenshots Coverage**:<br>   - บันทึกภาพ Screenshot หลักฐานการทำงานครบทั้ง 32 ภาพ แบ่งหมวดหมู่อย่างเป็นระเบียบตาม Acceptance Gates (Staff Dashboard 10 ภาพ, Actions Taken 16 ภาพ, Requester Dashboard 3 ภาพ, และ Multi-viewport Responsive 3 ภาพ)<br>   - ครอบคลุมทั้งกรณีใช้งานปกติ (Happy Path), กรณีเกิดข้อผิดพลาด (Validation/Error states) และการจำกัดสิทธิ์ (Role Authorization Boundaries)<br><br>2. **Automated Capture & Type Safety Configuration**:<br>   - การปรับสคริปต์จับภาพมาเป็น Playwright Test Spec (`capture-screenshots.spec.ts`) ช่วยให้กระบวนการทำซ้ำมีความเสถียรและทำงานร่วมกับ CI ได้ราบรื่น<br>   - การเพิ่ม `e2e/tsconfig.json` จัดการ Type Definitions ของ Node และ Playwright ได้อย่างถูกต้อง หมดปัญหา TypeScript diagnostics ใน IDE<br><br>3. **Test Traceability Closure (`tests.md`)**:<br>   - มีการสรุปตัวเลขสถิติการทดสอบแบบ Full Regression ครบทุกระดับอย่างโปร่งใส รวมทั้งสิ้น 258/258 Tests (Server 143, Client 94, Playwright E2E 21) ผ่าน 100% โดยไม่มีข้อผิดพลาด<br><br>4. **Submission Pack Documentation (`lab-04-submission-template.md`)**:<br>   - โครงสร้างเอกสารมี Mermaid Roadmap และตารางสรุป Work Items #61–#70 ครบถ้วน พร้อมสำหรับการจัดทำเล่มรายงานขั้นสุดท้าย<br><br>งานทุกส่วนเสร็จสิ้นตามเกณฑ์ของ Lab 4 ครบถ้วน 100% **Approved & พร้อม Merge** เข้าแล้วครับ" | "แต้งกิ้วค่ะ" | **Approved & Merged** by @jiraphat-j (Merge commit `1633d7a`) |
 
 ---
 
@@ -264,6 +265,28 @@
     > *"ขอบคุณครับรบกวน merge ให้หน่อยครับ"*
   - **Merge Action:** Merged into `lab4-staging` with commit `9e37bc904a499a4e72ad31ebb13a2096160bd792` by @thanapornboont-star
   - **Branch Closed:** `feature/63-visual-qa-responsive`
+
+---
+
+### Issue #64 — test: Playwright E2E scenarios and complete full regression suite
+- **Issue:** [#64](https://github.com/jiraphat-j/toktickit/issues/64)
+- **PR:** [PR #75](https://github.com/jiraphat-j/toktickit/pull/75)
+- **Author:** @jiraphat-j
+- **Reviewer:** @thanapornboont-star
+- **Review Decision:** `APPROVED` (Submitted at 2026-10-11T10:00:40Z)
+- **Review Activity:**
+  - **Reviewer Approval Comment (Verbatim 100% from GitHub PR #75):**
+    > *"ตรวจ PR #75 เรียบร้อยค่ะ ชุดทดสอบ Playwright E2E และการทดสอบ Full Regression Suite ของ Issue #64 จัดการได้ถูกต้อง รัดกุม และสมบูรณ์ค่ะ:*  
+    > *1. **E2E Scenarios**:*  
+    > *   - ครอบคลุมครบทั้ง 3 โฟลว์หลัก: Actions Taken Lifecycle, Resolution Gate + API Bypass Defense, และ Role Dashboards พร้อม Drill-down*  
+    > *2. **Security & Responsive Audits**:*  
+    > *   - ตรวจสอบการกั้นสิทธิ์ RBAC 403 Forbidden และความปลอดภัย Zero Leakage รวมถึงการันตี Zero Horizontal Overflow บนทุก Viewport (1280px, 768px, 375px)*  
+    > *3. **Full Regression Results**:*  
+    > *   - ปรับปรุง Seed ให้รันซ้ำได้อย่างแน่นอน (Deterministic) และผลเทสต์รวมผ่านครบ 100% (377/377 tests) ปราศจากข้อผิดพลาด"*
+  - **Author Response (Verbatim 100% from GitHub PR #75):**
+    > *"merge ให้ได้เลยครับ ขอบคุณครับ"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `3a84e3c391cbdc3c05f92b1d084eb75b69eabd22` by @thanapornboont-star
+  - **Branch Closed:** `feature/64-e2e-regression`
 
 ---
 
@@ -503,5 +526,72 @@
   - **Merge Action:** Merged into `lab4-staging` with commit `a78ffd276407370103e891aad533468868238555` by @jiraphat-j
   - **Branch Closed:** `sprint4/responsive-visual-qa`
 
+---
 
+### Partner PR #79 — feat(e2e): implement Playwright E2E suites and traceability (Issue #69)
+- **PR:** [PR #79](https://github.com/thanapornboont-star/toktickit/pull/79)
+- **Repository:** https://github.com/thanapornboont-star/toktickit
+- **Feature Branch**: `sprint4/e2e-traceability`
+- **Target Branch**: `lab4-staging`
+- **Author**: @thanapornboont-star
+- **Reviewer**: @jiraphat-j
+- **Review Decision**: `APPROVED` (Submitted at 2026-10-11T10:31:03Z)
+- **Review Activity:**
+  - **My Review Comment (Verbatim 100% from GitHub PR #79):**
+    > *"ตรวจ PR #79 เรียบร้อยครับ มีการตรวจสอบโค้ดอย่างละเอียดและทดสอบรันชุดทดสอบบน branch จริงผ่านครบทั้ง 17/17 test files (94 tests passed) สมบูรณ์มากครับ:*  
+    >  
+    > *1. **State & Concurrency Synchronization (`staff.ts`, `StaffTicketDetail.tsx`)**:*  
+    > *   - การคืนค่า `updatedAt` กลับมาใน response ของ API แก้ไข owner และ priority พร้อมอัปเดตลง state ของหน้าจอ เป็นการแก้ไขปัญหา Concurrency Desync ที่ตรงจุด ทำให้การส่ง timestamp ไปเช็กในขั้นตอนเปลี่ยนสถานะ (Status Transition) แม่นยำ ไม่เกิด False Positive 409 Conflict*  
+    >  
+    > *2. **Actions Taken E2E Flow (E2E-01, AC-01 ถึง AC-04)**:*  
+    > *   - ทดสอบครอบคลุมทั้ง Validation กฎ Follow-up note (BR-04), การระบุตัวผู้ปฏิบัติงานอัตโนมัติ (BR-02, BR-03) และการตีกรอบสิทธิ์ของ Requester ให้เป็น Read-only ได้อย่างสมบูรณ์*  
+    >  
+    > *3. **Ticket Resolution & Concurrency E2E (E2E-02, AC-05, AC-07, AC-08)**:*  
+    > *   - ตรวจสอบ Advisory Flag อย่างรัดกุม โดยยืนยันว่าการกดของ Requester จะไม่เปลี่ยนสถานะตั๋วโดยพลการ*  
+    > *   - จำลองการเกิด 409 Conflict จาก Network Interception และตรวจสอบการแสดง Error Alert ฝั่ง Client ได้อย่างถูกต้อง*  
+    >  
+    > *4. **Multi-Role Dashboards & Responsive QA (E2E-03, AC-09 ถึง AC-12)**:*  
+    > *   - ครอบคลุมการแสดงผล Metrics Cards, Drill-down navigation และทดสอบ Zero Horizontal Overflow ข้ามทั้ง Desktop, Tablet และ Mobile viewports อย่างรอบคอบ*  
+    >  
+    > *5. **Screenshot Automation Script**:*  
+    > *   - สคริปต์ `capture-lab4-screenshots.mjs` เตรียมการสำหรับการเก็บภาพหลักฐานส่งมอบงาน Lab 4 ไว้อย่างเป็นระบบ*  
+    >  
+    > *ชุดการทดสอบ E2E และการซิงค์ Concurrency state ทำได้ยอดเยี่ยมมาก **Approved & พร้อม Merge** ครับ"*
+  - **Partner Response (Verbatim 100% from GitHub PR #79):**
+    > *"ขอบคุณค่ะ"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `278d7616b23d9b4b9b942e61a6c0c2dbb554b73e` by @jiraphat-j
+  - **Branch Closed:** `sprint4/e2e-traceability`
 
+---
+
+### Partner PR #81 — feat(release): finalize visual evidence, test traceability, and submission pack (Issue #70)
+- **PR:** [PR #81](https://github.com/thanapornboont-star/toktickit/pull/81)
+- **Repository:** https://github.com/thanapornboont-star/toktickit
+- **Feature Branch**: `sprint4/release-integration`
+- **Target Branch**: `lab4-staging`
+- **Author**: @thanapornboont-star
+- **Reviewer**: @jiraphat-j
+- **Review Decision**: `APPROVED` (Submitted at 2026-10-12T14:26:00Z)
+- **Review Activity:**
+  - **My Review Comment (Verbatim 100% from GitHub PR #81):**
+    > *"ตรวจ PR #81 เรียบร้อยครับ การรวบรวมหลักฐานและแพ็กเกจส่งมอบงานรอบ Release Integration (Issue #70) ทำได้อย่างสมบูรณ์แบบและเป็นมืออาชีพมากครับ:*  
+    >  
+    > *1. **Visual Evidence & Screenshots Coverage**:*  
+    > *   - บันทึกภาพ Screenshot หลักฐานการทำงานครบทั้ง 32 ภาพ แบ่งหมวดหมู่อย่างเป็นระเบียบตาม Acceptance Gates (Staff Dashboard 10 ภาพ, Actions Taken 16 ภาพ, Requester Dashboard 3 ภาพ, และ Multi-viewport Responsive 3 ภาพ)*  
+    > *   - ครอบคลุมทั้งกรณีใช้งานปกติ (Happy Path), กรณีเกิดข้อผิดพลาด (Validation/Error states) และการจำกัดสิทธิ์ (Role Authorization Boundaries)*  
+    >  
+    > *2. **Automated Capture & Type Safety Configuration**:*  
+    > *   - การปรับสคริปต์จับภาพมาเป็น Playwright Test Spec (`capture-screenshots.spec.ts`) ช่วยให้กระบวนการทำซ้ำมีความเสถียรและทำงานร่วมกับ CI ได้ราบรื่น*  
+    > *   - การเพิ่ม `e2e/tsconfig.json` จัดการ Type Definitions ของ Node และ Playwright ได้อย่างถูกต้อง หมดปัญหา TypeScript diagnostics ใน IDE*  
+    >  
+    > *3. **Test Traceability Closure (`tests.md`)**:*  
+    > *   - มีการสรุปตัวเลขสถิติการทดสอบแบบ Full Regression ครบทุกระดับอย่างโปร่งใส รวมทั้งสิ้น 258/258 Tests (Server 143, Client 94, Playwright E2E 21) ผ่าน 100% โดยไม่มีข้อผิดพลาด*  
+    >  
+    > *4. **Submission Pack Documentation (`lab-04-submission-template.md`)**:*  
+    > *   - โครงสร้างเอกสารมี Mermaid Roadmap และตารางสรุป Work Items #61–#70 ครบถ้วน พร้อมสำหรับการจัดทำเล่มรายงานขั้นสุดท้าย*  
+    >  
+    > *งานทุกส่วนเสร็จสิ้นตามเกณฑ์ของ Lab 4 ครบถ้วน 100% **Approved & พร้อม Merge** เข้าแล้วครับ"*
+  - **Partner Response (Verbatim 100% from GitHub PR #81):**
+    > *"แต้งกิ้วค่ะ"*
+  - **Merge Action:** Merged into `lab4-staging` with commit `1633d7abe0a3da953741beacaddb1f1146ae2837` by @jiraphat-j
+  - **Branch Closed:** `sprint4/release-integration`
