@@ -4,7 +4,7 @@ import { DevRequester, AuthUser } from "../api.js";
 interface AppHeaderProps {
   currentRequester?: DevRequester | null;
   currentUser?: AuthUser | null;
-  activeTab: "my-tickets" | "create-ticket" | "queue" | "users";
+  activeTab: "my-tickets" | "create-ticket" | "queue" | "users" | "dashboard";
   onTabChange: (tab: any) => void;
   onChangeRequester?: () => void;
   onLogout?: () => void;
@@ -50,6 +50,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <>
               <button
                 type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
                 className={`zen-nav-item ${activeTab === "my-tickets" ? "active" : ""}`}
                 onClick={() => onTabChange("my-tickets")}
               >
@@ -66,17 +73,33 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           )}
 
           {role === "IT_STAFF" && (
-            <button
-              type="button"
-              className={`zen-nav-item ${activeTab === "queue" ? "active" : ""}`}
-              onClick={() => onTabChange("queue")}
-            >
-              Ticket Queue
-            </button>
+            <>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "queue" ? "active" : ""}`}
+                onClick={() => onTabChange("queue")}
+              >
+                Ticket Queue
+              </button>
+            </>
           )}
 
           {role === "ADMINISTRATOR" && (
             <>
+              <button
+                type="button"
+                className={`zen-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                onClick={() => onTabChange("dashboard")}
+              >
+                Dashboard
+              </button>
               <button
                 type="button"
                 className={`zen-nav-item ${activeTab === "users" ? "active" : ""}`}

@@ -55,6 +55,7 @@ model User {
   publicComments         PublicComment[]
   internalNotes          InternalNote[]
   ticketCreationRequests TicketCreationRequest[]
+  actionsPerformed       ActionTaken[]           @relation("ActionsPerformed")
 
   @@index([email])
   @@index([role])
@@ -119,6 +120,7 @@ model Ticket {
   publicComments         PublicComment[]
   internalNotes          InternalNote[]
   creationRequest        TicketCreationRequest?
+  actionsTaken           ActionTaken[]
 
   @@index([requesterId, createdAt])
   @@index([requesterId, updatedAt])
@@ -182,4 +184,24 @@ model TicketCreationRequest {
   expiresAt          DateTime
 
   @@index([expiresAt])
+}
+
+model ActionTaken {
+  id               Int      @id @default(autoincrement())
+  ticketId         Int
+  ticket           Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actionDateTime   DateTime @default(now())
+  description      String
+  result           String
+  performedById    Int
+  performedBy      User     @relation("ActionsPerformed", fields: [performedById], references: [id], onDelete: Restrict)
+  followUpRequired Boolean  @default(false)
+  followUpNote     String?
+  attachmentNotes  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+
+  @@index([ticketId])
+  @@index([performedById])
+  @@index([actionDateTime])
 }

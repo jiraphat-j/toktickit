@@ -7,6 +7,8 @@ import path from "path";
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import { getPrisma } from "./prisma.js";
+import { TicketStatus } from "@prisma/client";
+import { isPermittedStatusTransition, PERMITTED_STATUS_TRANSITIONS } from "./status-transition.js";
 import {
   authRouter,
   requireAuth,
@@ -977,73 +979,105 @@ app.patch(
 // Lab 3 RBAC & Ticket Workflow Endpoints (Issue #36)
 // ---------------------------------------------------------------------------
 
-// POST /api/tickets/:id/resolve-indication (REQ-03, AC-08, BR-10)
-app.post(
-  "/api/tickets/:id/resolve-indication",
-  authenticateSessionOrDev,
-  async (req: RequesterRequest, res: Response) => {
-    const prisma = getPrisma();
-    const currentUserId = req.user?.id || req.devRequester?.id;
-    const ticketId = parseInt(req.params.id, 10);
+// POST & PATCH /api/tickets/:id/resolve-indication & /api/tickets/:id/indicate-resolved (REQ-03, AC-08, BR-10, BR-14, WF-04)
+const handleResolveIndication = async (req: RequesterRequest, res: Response) => {
+  const prisma = getPrisma();
+  const currentUserId = req.user?.id || req.devRequester?.id;
+  const ticketId = parseInt(req.params.id, 10);
 
-    if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
-      res.status(400).json({
-        error: {
-          code: "BAD_REQUEST",
-          message: "Invalid ticket ID parameter.",
-        },
-      });
-      return;
-    }
-
-    if (req.user && req.user.role !== "REQUESTER") {
-      res.status(403).json({
-        error: {
-          code: "FORBIDDEN",
-          message: "Only ticket requesters can indicate problem resolution.",
-        },
-      });
-      return;
-    }
-
-    try {
-      const ticket = await prisma.ticket.findUnique({
-        where: { id: ticketId },
-      });
-
-      if (!ticket || ticket.requesterId !== currentUserId) {
-        res.status(404).json({
-          error: {
-            code: "NOT_FOUND",
-            message: "Ticket not found.",
-          },
-        });
-        return;
-      }
-
-      const resolved = typeof req.body?.resolved === "boolean" ? req.body.resolved : true;
-      const updated = await prisma.ticket.update({
-        where: { id: ticketId },
-        data: {
-          problemAppearsResolved: resolved,
-        },
-        select: {
-          id: true,
-          problemAppearsResolved: true,
-          updatedAt: true,
-        },
-      });
-
-      res.status(200).json(updated);
-    } catch (error) {
-      res.status(500).json({
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update problem resolution indicator.",
-        },
-      });
-    }
+  if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid ticket ID parameter.",
+      },
+    });
+    return;
   }
+
+  if (req.user && req.user.role !== "REQUESTER") {
+    res.status(403).json({
+      error: {
+        code: "FORBIDDEN",
+        message: "Only ticket requesters can indicate problem resolution.",
+      },
+    });
+    return;
+  }
+
+  try {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket || ticket.requesterId !== currentUserId) {
+      res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Ticket not found.",
+        },
+      });
+      return;
+    }
+
+    const resolved =
+      typeof req.body?.resolved === "boolean"
+        ? req.body.resolved
+        : typeof req.body?.indicated === "boolean"
+        ? req.body.indicated
+        : true;
+
+    const updated = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        problemAppearsResolved: resolved,
+      },
+      select: {
+        id: true,
+        ticketNumber: true,
+        currentStatus: true,
+        problemAppearsResolved: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      id: updated.id,
+      ticketId: updated.id,
+      ticketNumber: updated.ticketNumber,
+      problemAppearsResolved: updated.problemAppearsResolved,
+      requesterIndicatedResolved: updated.problemAppearsResolved,
+      currentStatus: updated.currentStatus,
+      status: updated.currentStatus,
+      updatedAt: updated.updatedAt.toISOString(),
+      ticket: {
+        id: updated.id,
+        currentStatus: updated.currentStatus,
+        status: updated.currentStatus,
+        problemAppearsResolved: updated.problemAppearsResolved,
+        requesterIndicatedResolved: updated.problemAppearsResolved,
+        updatedAt: updated.updatedAt.toISOString(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update problem resolution indicator.",
+      },
+    });
+  }
+};
+
+app.post(
+  ["/api/tickets/:id/resolve-indication", "/api/tickets/:id/indicate-resolved"],
+  authenticateSessionOrDev,
+  handleResolveIndication
+);
+app.patch(
+  ["/api/tickets/:id/resolve-indication", "/api/tickets/:id/indicate-resolved"],
+  authenticateSessionOrDev,
+  handleResolveIndication
 );
 
 // GET /api/tickets/:id/comments (AC-09, BR-16, COM-01)
@@ -1691,9 +1725,9 @@ app.patch(
   }
 );
 
-// PATCH /api/staff/tickets/:id/status (AC-15, BR-15, STF-07, STF-08)
+// PATCH /api/staff/tickets/:id/status & /api/tickets/:id/status (AC-06, AC-07, AC-12, BR-11, BR-13, BR-15, BR-19, WF-01..05)
 app.patch(
-  "/api/staff/tickets/:id/status",
+  ["/api/staff/tickets/:id/status", "/api/tickets/:id/status"],
   requireAuth,
   requireRole("IT_STAFF", "ADMINISTRATOR"),
   async (req: RequesterRequest, res: Response) => {
@@ -1707,7 +1741,7 @@ app.patch(
       return;
     }
 
-    const { status } = req.body || {};
+    const { status, clientUpdatedAt, expectedUpdatedAt } = req.body || {};
     const allowedStatuses = [
       "NEW",
       "OPEN",
@@ -1729,7 +1763,7 @@ app.patch(
     try {
       const ticket = await prisma.ticket.findUnique({
         where: { id: ticketId },
-        select: { id: true, currentStatus: true },
+        select: { id: true, ticketNumber: true, currentStatus: true, updatedAt: true },
       });
 
       if (!ticket) {
@@ -1739,20 +1773,25 @@ app.patch(
         return;
       }
 
-      const STATUS_TRANSITIONS: Record<string, string[]> = {
-        NEW: ["OPEN", "IN_PROGRESS", "CANCELLED"],
-        OPEN: ["IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
-        IN_PROGRESS: ["WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"],
-        WAITING_FOR_REQUESTER: ["IN_PROGRESS", "RESOLVED", "CANCELLED"],
-        RESOLVED: ["CLOSED", "REOPENED"],
-        CLOSED: ["REOPENED"],
-        REOPENED: ["OPEN", "IN_PROGRESS", "RESOLVED", "CANCELLED"],
-        CANCELLED: ["REOPENED"],
-      };
+      // Optimistic concurrency control (BR-12, BR-19, AC-08, AC-12)
+      const clientVersion = clientUpdatedAt || expectedUpdatedAt;
+      if (clientVersion) {
+        const clientTime = new Date(clientVersion).getTime();
+        const serverTime = ticket.updatedAt.getTime();
+        if (isNaN(clientTime) || Math.abs(clientTime - serverTime) > 1000) {
+          res.status(409).json({
+            error: {
+              code: "CONFLICT",
+              message: "Ticket has been modified by another user. Please refresh and retry.",
+              currentUpdatedAt: ticket.updatedAt.toISOString(),
+            },
+          });
+          return;
+        }
+      }
 
-      const permitted = STATUS_TRANSITIONS[ticket.currentStatus] || [];
-
-      if (!permitted.includes(status)) {
+      // State machine validation
+      if (!isPermittedStatusTransition(ticket.currentStatus as TicketStatus, status as TicketStatus)) {
         res.status(400).json({
           error: {
             code: "ILLEGAL_STATUS_TRANSITION",
@@ -1762,6 +1801,22 @@ app.patch(
         return;
       }
 
+      // Resolution Gate Enforcement (BR-13, AC-06, AC-07, WF-01, WF-02)
+      if (status === "RESOLVED") {
+        const actionsCount = await prisma.actionTaken.count({
+          where: { ticketId },
+        });
+        if (actionsCount === 0) {
+          res.status(400).json({
+            error: {
+              code: "RESOLUTION_GATE_FAILED",
+              message: "At least one Action Taken must be logged before resolving this ticket.",
+            },
+          });
+          return;
+        }
+      }
+
       const updated = await prisma.ticket.update({
         where: { id: ticketId },
         data: { currentStatus: status as any },
@@ -1769,8 +1824,17 @@ app.patch(
 
       res.status(200).json({
         id: updated.id,
+        ticketNumber: updated.ticketNumber,
         currentStatus: updated.currentStatus,
+        status: updated.currentStatus,
         updatedAt: updated.updatedAt.toISOString(),
+        ticket: {
+          id: updated.id,
+          ticketNumber: updated.ticketNumber,
+          currentStatus: updated.currentStatus,
+          status: updated.currentStatus,
+          updatedAt: updated.updatedAt.toISOString(),
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -2202,6 +2266,792 @@ app.post(
     } catch (error) {
       res.status(500).json({
         error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to reset password." },
+      });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Lab 4: Actions Taken REST APIs (FR-01..05, BR-01..12, AC-01..05, AC-12)
+// ---------------------------------------------------------------------------
+
+// 1. POST /api/tickets/:id/actions-taken — Create Action Taken
+app.post(
+  ["/api/tickets/:id/actions-taken", "/api/tickets/:id/actions"],
+  requireAuth,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const ticketId = parseInt(req.params.id, 10);
+
+      if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Invalid ticket ID parameter." },
+        });
+        return;
+      }
+
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+        select: { id: true, currentStatus: true },
+      });
+
+      if (!ticket) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "Ticket not found." },
+        });
+        return;
+      }
+
+      const {
+        description,
+        result,
+        actionDateTime,
+        followUpRequired = false,
+        followUpNote,
+        attachmentNotes,
+      } = req.body || {};
+
+      // BR-04, ACT-02: Description length validation (5..2000)
+      if (typeof description !== "string" || description.trim().length < 5 || description.trim().length > 2000) {
+        res.status(400).json({
+          error: {
+            code: "VALIDATION_FAILED",
+            message: "Description must be between 5 and 2000 characters.",
+          },
+        });
+        return;
+      }
+
+      // BR-04, ACT-02: Result length validation (2..2000)
+      if (typeof result !== "string" || result.trim().length < 2 || result.trim().length > 2000) {
+        res.status(400).json({
+          error: {
+            code: "VALIDATION_FAILED",
+            message: "Result must be between 2 and 2000 characters.",
+          },
+        });
+        return;
+      }
+
+      // BR-07, AC-02, ACT-03: followUpNote mandatory when followUpRequired is true
+      const isFollowUp = Boolean(followUpRequired);
+      if (isFollowUp) {
+        if (!followUpNote || typeof followUpNote !== "string" || followUpNote.trim().length < 1) {
+          res.status(400).json({
+            error: {
+              code: "FOLLOW_UP_NOTE_REQUIRED",
+              message: "followUpNote is mandatory when followUpRequired is true.",
+            },
+          });
+          return;
+        }
+      }
+
+      // BR-05: actionDateTime parsing and validation
+      let parsedDateTime = new Date();
+      if (actionDateTime !== undefined && actionDateTime !== null && actionDateTime !== "") {
+        parsedDateTime = new Date(actionDateTime);
+        if (isNaN(parsedDateTime.getTime())) {
+          res.status(400).json({
+            error: { code: "BAD_REQUEST", message: "Invalid actionDateTime format." },
+          });
+          return;
+        }
+        // Future date sanity check (allow 10 min clock drift)
+        if (parsedDateTime.getTime() > Date.now() + 10 * 60 * 1000) {
+          res.status(400).json({
+            error: { code: "BAD_REQUEST", message: "actionDateTime cannot be set in the future." },
+          });
+          return;
+        }
+      }
+
+      // BR-06: performedById is securely auto-populated from authenticated session
+      const performedById = req.user!.id;
+
+      const createdAction = await prisma.actionTaken.create({
+        data: {
+          ticketId,
+          performedById,
+          actionDateTime: parsedDateTime,
+          description: description.trim(),
+          result: result.trim(),
+          followUpRequired: isFollowUp,
+          followUpNote: isFollowUp ? followUpNote.trim() : null,
+          attachmentNotes: typeof attachmentNotes === "string" && attachmentNotes.trim() ? attachmentNotes.trim() : null,
+        },
+        include: {
+          performedBy: {
+            select: { id: true, fullName: true, email: true, role: true },
+          },
+        },
+      });
+
+      res.status(201).json({
+        action: createdAction,
+        ...createdAction,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to create Action Taken." },
+      });
+    }
+  }
+);
+
+// 2. GET /api/tickets/:id/actions-taken — List Actions Taken for a Ticket
+app.get(
+  ["/api/tickets/:id/actions-taken", "/api/tickets/:id/actions"],
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const ticketId = parseInt(req.params.id, 10);
+
+      if (isNaN(ticketId) || ticketId <= 0 || String(ticketId) !== req.params.id.trim()) {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Invalid ticket ID parameter." },
+        });
+        return;
+      }
+
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+        select: { id: true, requesterId: true },
+      });
+
+      if (!ticket) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "Ticket not found or access denied." },
+        });
+        return;
+      }
+
+      // AC-04, ACT-REQ-02, BR-10: Requester can only view actions on owned tickets (Zero leakage)
+      const isStaffOrAdmin = req.user!.role === "IT_STAFF" || req.user!.role === "ADMINISTRATOR";
+      if (!isStaffOrAdmin && ticket.requesterId !== req.user!.id) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "Ticket not found or access denied." },
+        });
+        return;
+      }
+
+      const actions = await prisma.actionTaken.findMany({
+        where: { ticketId },
+        orderBy: [{ actionDateTime: "asc" }, { id: "asc" }],
+        include: {
+          performedBy: {
+            select: { id: true, fullName: true, email: true, role: true },
+          },
+        },
+      });
+
+      res.status(200).json({
+        actions,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch Actions Taken." },
+      });
+    }
+  }
+);
+
+// 3. GET /api/actions-taken/:id & /api/tickets/:ticketId/actions-taken/:id — Retrieve single Action Taken
+app.get(
+  ["/api/actions-taken/:id", "/api/tickets/:ticketId/actions-taken/:id"],
+  requireAuth,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const actionId = parseInt(req.params.id, 10);
+
+      if (isNaN(actionId) || actionId <= 0) {
+        res.status(400).json({
+          error: { code: "BAD_REQUEST", message: "Invalid Action Taken ID." },
+        });
+        return;
+      }
+
+      const action = await prisma.actionTaken.findUnique({
+        where: { id: actionId },
+        include: {
+          ticket: { select: { id: true, requesterId: true } },
+          performedBy: {
+            select: { id: true, fullName: true, email: true, role: true },
+          },
+        },
+      });
+
+      if (!action) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "Action Taken not found." },
+        });
+        return;
+      }
+
+      // Check ownership isolation for Requesters
+      const isStaffOrAdmin = req.user!.role === "IT_STAFF" || req.user!.role === "ADMINISTRATOR";
+      if (!isStaffOrAdmin && action.ticket.requesterId !== req.user!.id) {
+        res.status(404).json({
+          error: { code: "NOT_FOUND", message: "Action Taken not found or access denied." },
+        });
+        return;
+      }
+
+      res.status(200).json({
+        action,
+        ...action,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve Action Taken." },
+      });
+    }
+  }
+);
+
+// 4. PATCH & PUT /api/actions-taken/:id & /api/tickets/:ticketId/actions-taken/:id — Update Action Taken (with concurrency control)
+const handleUpdateActionTaken = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const prisma = getPrisma();
+    const actionId = parseInt(req.params.id, 10);
+
+    if (isNaN(actionId) || actionId <= 0) {
+      res.status(400).json({
+        error: { code: "BAD_REQUEST", message: "Invalid Action Taken ID." },
+      });
+      return;
+    }
+
+    const existingAction = await prisma.actionTaken.findUnique({
+      where: { id: actionId },
+      include: {
+        ticket: { select: { id: true, requesterId: true } },
+      },
+    });
+
+    if (!existingAction) {
+      res.status(404).json({
+        error: { code: "NOT_FOUND", message: "Action Taken not found." },
+      });
+      return;
+    }
+
+    // BR-19, AC-12, ACT-04: Optimistic Concurrency Control
+    const expectedUpdatedAt = req.body?.expectedUpdatedAt || req.body?.updatedAt;
+    if (expectedUpdatedAt) {
+      const clientTimestamp = new Date(expectedUpdatedAt).getTime();
+      const serverTimestamp = new Date(existingAction.updatedAt).getTime();
+      if (!isNaN(clientTimestamp) && Math.abs(clientTimestamp - serverTimestamp) > 1000) {
+        res.status(409).json({
+          error: {
+            code: "CONFLICT",
+            message: "Action Taken has been modified concurrently by another user.",
+            currentUpdatedAt: existingAction.updatedAt.toISOString(),
+          },
+        });
+        return;
+      }
+    }
+
+    const updateData: any = {};
+    const { description, result, followUpRequired, followUpNote, attachmentNotes } = req.body || {};
+
+    if (description !== undefined) {
+      if (typeof description !== "string" || description.trim().length < 5 || description.trim().length > 2000) {
+        res.status(400).json({
+          error: {
+            code: "VALIDATION_FAILED",
+            message: "Description must be between 5 and 2000 characters.",
+          },
+        });
+        return;
+      }
+      updateData.description = description.trim();
+    }
+
+    if (result !== undefined) {
+      if (typeof result !== "string" || result.trim().length < 2 || result.trim().length > 2000) {
+        res.status(400).json({
+          error: {
+            code: "VALIDATION_FAILED",
+            message: "Result must be between 2 and 2000 characters.",
+          },
+        });
+        return;
+      }
+      updateData.result = result.trim();
+    }
+
+    if (followUpRequired !== undefined) {
+      const isFollowUp = Boolean(followUpRequired);
+      updateData.followUpRequired = isFollowUp;
+      if (isFollowUp) {
+        const note = followUpNote !== undefined ? followUpNote : existingAction.followUpNote;
+        if (!note || typeof note !== "string" || note.trim().length < 1) {
+          res.status(400).json({
+            error: {
+              code: "FOLLOW_UP_NOTE_REQUIRED",
+              message: "followUpNote is mandatory when followUpRequired is true.",
+            },
+          });
+          return;
+        }
+        updateData.followUpNote = note.trim();
+      } else {
+        updateData.followUpNote = null;
+      }
+    } else if (followUpNote !== undefined) {
+      if (existingAction.followUpRequired) {
+        if (!followUpNote || typeof followUpNote !== "string" || followUpNote.trim().length < 1) {
+          res.status(400).json({
+            error: {
+              code: "FOLLOW_UP_NOTE_REQUIRED",
+              message: "followUpNote is mandatory when followUpRequired is true.",
+            },
+          });
+          return;
+        }
+        updateData.followUpNote = followUpNote.trim();
+      }
+    }
+
+    if (attachmentNotes !== undefined) {
+      updateData.attachmentNotes = typeof attachmentNotes === "string" && attachmentNotes.trim() ? attachmentNotes.trim() : null;
+    }
+
+    const updated = await prisma.actionTaken.update({
+      where: { id: actionId },
+      data: updateData,
+      include: {
+        performedBy: {
+          select: { id: true, fullName: true, email: true, role: true },
+        },
+      },
+    });
+
+    res.status(200).json({
+      action: updated,
+      ...updated,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to update Action Taken." },
+    });
+  }
+};
+
+app.patch("/api/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
+app.patch("/api/tickets/:ticketId/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
+app.put("/api/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
+app.put("/api/tickets/:ticketId/actions-taken/:id", requireAuth, requireRole("IT_STAFF", "ADMINISTRATOR"), handleUpdateActionTaken);
+
+// ---------------------------------------------------------------------------
+// Lab 4: Role Operational Dashboards (FR-07..10, BR-16..18, AC-09..11, DASH-STF-01..02, DASH-SEC-01)
+// ---------------------------------------------------------------------------
+
+// 1. GET /api/dashboard/staff — IT Staff Operational Queue Dashboard
+app.get(
+  "/api/dashboard/staff",
+  requireAuth,
+  requireRole("IT_STAFF", "ADMINISTRATOR"),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const currentUserId = req.user!.id;
+      const terminalStatuses: TicketStatus[] = ["RESOLVED", "CLOSED", "CANCELLED"];
+
+      // 1. Operational Counts
+      const [
+        unassignedCount,
+        myTicketsCount,
+        criticalHighCount,
+        myActionsCount,
+        allStatusCounts,
+        allPriorityCounts,
+        recentUpdated24hCount,
+      ] = await Promise.all([
+        // Unassigned active tickets
+        prisma.ticket.count({
+          where: {
+            primaryOwnerId: null,
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // Tickets assigned to current authenticated user
+        prisma.ticket.count({
+          where: {
+            primaryOwnerId: currentUserId,
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // High priority active tickets
+        prisma.ticket.count({
+          where: {
+            itPriority: "HIGH",
+            currentStatus: { notIn: terminalStatuses },
+          },
+        }),
+        // Actions performed by current user
+        prisma.actionTaken.count({
+          where: {
+            performedById: currentUserId,
+          },
+        }),
+        // Status counts breakdown
+        prisma.ticket.groupBy({
+          by: ["currentStatus"],
+          _count: { _all: true },
+        }),
+        // Priority counts breakdown
+        prisma.ticket.groupBy({
+          by: ["itPriority"],
+          _count: { _all: true },
+        }),
+        // Recently updated in past 24 hours
+        prisma.ticket.count({
+          where: {
+            updatedAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+          },
+        }),
+      ]);
+
+      // Map status breakdown object
+      const allStatuses: TicketStatus[] = [
+        "NEW",
+        "OPEN",
+        "IN_PROGRESS",
+        "WAITING_FOR_REQUESTER",
+        "RESOLVED",
+        "CLOSED",
+        "REOPENED",
+        "CANCELLED",
+      ];
+      const statusBreakdown: Record<string, number> = {};
+      allStatuses.forEach((st) => {
+        statusBreakdown[st] = 0;
+      });
+      allStatusCounts.forEach((sc) => {
+        statusBreakdown[sc.currentStatus] = sc._count._all;
+      });
+
+      // Map priority breakdown object
+      const priorityBreakdown: Record<string, number> = {
+        LOW: 0,
+        MEDIUM: 0,
+        HIGH: 0,
+        CRITICAL: 0,
+      };
+      allPriorityCounts.forEach((pc) => {
+        if (pc.itPriority) {
+          priorityBreakdown[pc.itPriority] = pc._count._all;
+        }
+      });
+
+      // 2. Recent Tickets (top 10 ordered by updatedAt desc)
+      const recentTickets = await prisma.ticket.findMany({
+        take: 10,
+        orderBy: { updatedAt: "desc" },
+        select: {
+          id: true,
+          ticketNumber: true,
+          summary: true,
+          currentStatus: true,
+          itPriority: true,
+          updatedAt: true,
+          primaryOwner: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
+        },
+      });
+
+      // 3. Current User's Recent Actions (top 5 ordered by actionDateTime desc)
+      const myRecentActions = await prisma.actionTaken.findMany({
+        where: { performedById: currentUserId },
+        take: 5,
+        orderBy: [{ actionDateTime: "desc" }, { id: "desc" }],
+        select: {
+          id: true,
+          ticketId: true,
+          actionDateTime: true,
+          description: true,
+          result: true,
+          ticket: {
+            select: {
+              ticketNumber: true,
+            },
+          },
+        },
+      });
+
+      // Formatted response satisfying Section 3.2 & Section 4.2 of API specification
+      res.status(200).json({
+        metrics: {
+          unassignedCount,
+          myTicketsCount,
+          criticalHighCount,
+          myActionsCount,
+          // Aliases for section 4.2 spec compatibility:
+          unassigned: unassignedCount,
+          myAssigned: myTicketsCount,
+          new: statusBreakdown["NEW"] || 0,
+          open: statusBreakdown["OPEN"] || 0,
+          inProgress: statusBreakdown["IN_PROGRESS"] || 0,
+          waitingForRequester: statusBreakdown["WAITING_FOR_REQUESTER"] || 0,
+          recentlyUpdated: recentUpdated24hCount,
+          priorityCounts: {
+            high: priorityBreakdown["HIGH"] || 0,
+            medium: priorityBreakdown["MEDIUM"] || 0,
+            low: priorityBreakdown["LOW"] || 0,
+          },
+        },
+        statusBreakdown,
+        priorityBreakdown,
+        recentTickets: recentTickets.map((t) => ({
+          id: t.id,
+          ticketNumber: t.ticketNumber,
+          summary: t.summary,
+          currentStatus: t.currentStatus,
+          status: t.currentStatus,
+          itPriority: t.itPriority,
+          primaryOwner: t.primaryOwner
+            ? { id: t.primaryOwner.id, fullName: t.primaryOwner.fullName }
+            : null,
+          owner: t.primaryOwner
+            ? { id: t.primaryOwner.id, name: t.primaryOwner.fullName }
+            : null,
+          updatedAt: t.updatedAt.toISOString(),
+        })),
+        myRecentActions: myRecentActions.map((a) => ({
+          id: a.id,
+          ticketId: a.ticketId,
+          ticketNumber: a.ticket.ticketNumber,
+          actionDateTime: a.actionDateTime.toISOString(),
+          description: a.description,
+          result: a.result,
+        })),
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve IT Staff dashboard metrics." },
+      });
+    }
+  }
+);
+
+// 2. GET /api/dashboard/admin — Admin Dashboard (operational + user accounts summary)
+app.get(
+  "/api/dashboard/admin",
+  requireAuth,
+  requireRole("ADMINISTRATOR"),
+  async (_req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const [totalUsers, activeUsers, inactiveUsers, requestersCount, staffCount, adminCount] = await Promise.all([
+        prisma.user.count(),
+        prisma.user.count({ where: { isActive: true } }),
+        prisma.user.count({ where: { isActive: false } }),
+        prisma.user.count({ where: { role: "REQUESTER" } }),
+        prisma.user.count({ where: { role: "IT_STAFF" } }),
+        prisma.user.count({ where: { role: "ADMINISTRATOR" } }),
+      ]);
+
+      res.status(200).json({
+        userAccounts: {
+          totalUsers,
+          activeUsers,
+          inactiveUsers,
+          roles: {
+            requesters: requestersCount,
+            itStaff: staffCount,
+            administrators: adminCount,
+          },
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve Admin dashboard metrics." },
+      });
+    }
+  }
+);
+
+// 3. GET /api/dashboard/requester — Requester Dashboard (operational summary & attention-required tickets)
+app.get(
+  "/api/dashboard/requester",
+  requireAuth,
+  requireRole("REQUESTER", "ADMINISTRATOR"),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const prisma = getPrisma();
+      const currentUserId = req.user!.id;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const openStatuses: TicketStatus[] = [
+        "NEW",
+        "OPEN",
+        "IN_PROGRESS",
+        "WAITING_FOR_REQUESTER",
+        "REOPENED",
+      ];
+
+      const [
+        totalOpenTickets,
+        waitingForRequesterCount,
+        inProgressCount,
+        recentlyResolvedCount,
+        recentlyUpdatedCount,
+        closedCount,
+        resolvedCount,
+        attentionTickets,
+        recentTickets,
+        recentlyResolvedTickets,
+      ] = await Promise.all([
+        // 1. Total Open Tickets
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: openStatuses },
+          },
+        }),
+        // 2. Waiting for Requester Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "WAITING_FOR_REQUESTER",
+          },
+        }),
+        // 3. In Progress Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "IN_PROGRESS",
+          },
+        }),
+        // 4. Recently Resolved (RESOLVED or CLOSED updated within last 7 days)
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: ["RESOLVED", "CLOSED"] },
+            updatedAt: { gte: sevenDaysAgo },
+          },
+        }),
+        // 5. Recently Updated (any status updated within last 7 days)
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            updatedAt: { gte: sevenDaysAgo },
+          },
+        }),
+        // 6. Closed Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "CLOSED",
+          },
+        }),
+        // 7. Resolved Count
+        prisma.ticket.count({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "RESOLVED",
+          },
+        }),
+        // 8. Attention Required Tickets (WAITING_FOR_REQUESTER)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: "WAITING_FOR_REQUESTER",
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+        // 9. Recent Tickets (top 5 by updatedAt)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+        // 10. Recently Resolved Tickets (top 5 by updatedAt)
+        prisma.ticket.findMany({
+          where: {
+            requesterId: currentUserId,
+            currentStatus: { in: ["RESOLVED", "CLOSED"] },
+          },
+          take: 5,
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            ticketNumber: true,
+            summary: true,
+            currentStatus: true,
+            itPriority: true,
+            requestedPriority: true,
+            updatedAt: true,
+          },
+        }),
+      ]);
+
+      const mapTicket = (t: any) => ({
+        id: t.id,
+        ticketNumber: t.ticketNumber,
+        summary: t.summary,
+        currentStatus: t.currentStatus,
+        status: t.currentStatus,
+        itPriority: t.itPriority,
+        requestedPriority: t.requestedPriority,
+        updatedAt: t.updatedAt.toISOString(),
+      });
+
+      res.status(200).json({
+        metrics: {
+          totalOpenTickets,
+          totalOpen: totalOpenTickets,
+          waitingForRequesterCount,
+          waitingForRequester: waitingForRequesterCount,
+          inProgress: inProgressCount,
+          recentlyUpdatedCount,
+          recentlyUpdated: recentlyUpdatedCount,
+          recentlyResolvedCount,
+          recentlyResolved: recentlyResolvedCount,
+          closed: closedCount,
+          resolved: resolvedCount,
+        },
+        attentionTickets: attentionTickets.map(mapTicket),
+        recentTickets: recentTickets.map(mapTicket),
+        recentlyResolvedTickets: recentlyResolvedTickets.map(mapTicket),
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to retrieve Requester dashboard metrics." },
       });
     }
   }

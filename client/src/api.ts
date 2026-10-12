@@ -654,7 +654,8 @@ export async function updateTicketStatus(
     let errorMsg = `Failed to update ticket status (${res.status})`;
     try {
       const data = await res.json();
-      if (data.error?.message) errorMsg = data.error.message;
+      if (typeof data.error === "string") errorMsg = data.error;
+      else if (data.error?.message) errorMsg = data.error.message;
       else if (data.message) errorMsg = data.message;
     } catch {}
     throw new Error(errorMsg);
@@ -887,5 +888,260 @@ export async function resetUserPassword(
   return res.json();
 }
 
+// ==========================================
+// Lab 4: Actions Taken Interfaces & APIs
+// ==========================================
 
+export interface ActionTakenPerformer {
+  id: number;
+  fullName: string;
+  email: string;
+  role: string;
+}
 
+export interface ActionTaken {
+  id: number;
+  ticketId: number;
+  actionDateTime: string;
+  description: string;
+  result: string;
+  performedById: number;
+  performedBy?: ActionTakenPerformer;
+  followUpRequired: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateActionTakenInput {
+  actionDateTime?: string;
+  description: string;
+  result: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+}
+
+export interface UpdateActionTakenInput {
+  actionDateTime?: string;
+  description?: string;
+  result?: string;
+  followUpRequired?: boolean;
+  followUpNote?: string | null;
+  attachmentNotes?: string | null;
+  expectedUpdatedAt?: string;
+}
+
+export async function fetchActionsTaken(ticketId: number): Promise<ActionTaken[]> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions-taken`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch actions taken (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+
+  const data = await res.json();
+  return data.actions || [];
+}
+
+export async function createActionTaken(
+  ticketId: number,
+  input: CreateActionTakenInput
+): Promise<ActionTaken> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/actions-taken`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to create action taken (${res.status})`;
+    let errorCode: string | undefined;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+      errorCode = data.error?.code;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.code = errorCode;
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  return data.action || data;
+}
+
+export async function updateActionTaken(
+  actionId: number,
+  input: UpdateActionTakenInput,
+  ticketId?: number
+): Promise<ActionTaken> {
+  const url = ticketId
+    ? `${API_URL}/api/tickets/${ticketId}/actions-taken/${actionId}`
+    : `${API_URL}/api/actions-taken/${actionId}`;
+
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to update action taken (${res.status})`;
+    let errorCode: string | undefined;
+    let currentUpdatedAt: string | undefined;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+      errorCode = data.error?.code;
+      currentUpdatedAt = data.error?.currentUpdatedAt;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.code = errorCode;
+    err.status = res.status;
+    err.currentUpdatedAt = currentUpdatedAt;
+    throw err;
+  }
+
+  const data = await res.json();
+  return data.action || data;
+}
+
+// ---------------------------------------------------------------------------
+// Lab 4: Staff Dashboard Types and API (Issue #61)
+// ---------------------------------------------------------------------------
+export interface StaffDashboardMetrics {
+  unassignedCount: number;
+  myTicketsCount: number;
+  criticalHighCount: number;
+  myActionsCount: number;
+  unassigned?: number;
+  myAssigned?: number;
+  new?: number;
+  open?: number;
+  inProgress?: number;
+  waitingForRequester?: number;
+  recentlyUpdated?: number;
+  priorityCounts?: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
+
+export interface StaffDashboardTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  status?: TicketStatus;
+  itPriority: Priority;
+  primaryOwner?: { id: number; fullName: string } | null;
+  owner?: { id: number; name: string } | null;
+  updatedAt: string;
+}
+
+export interface StaffDashboardAction {
+  id: number;
+  ticketId: number;
+  ticketNumber: string;
+  actionDateTime: string;
+  description: string;
+  result: string;
+}
+
+export interface StaffDashboardData {
+  metrics: StaffDashboardMetrics;
+  statusBreakdown: Record<string, number>;
+  priorityBreakdown: Record<string, number>;
+  recentTickets: StaffDashboardTicket[];
+  myRecentActions: StaffDashboardAction[];
+}
+
+export async function fetchStaffDashboard(): Promise<StaffDashboardData> {
+  const res = await fetch(`${API_URL}/api/dashboard/staff`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch staff dashboard (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.status = res.status;
+    throw err;
+  }
+
+  return await res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Lab 4: Requester Dashboard Types and API (Issue #62 / FR-10, BR-16, AC-09)
+// ---------------------------------------------------------------------------
+export interface RequesterDashboardMetrics {
+  totalOpenTickets: number;
+  totalOpen: number;
+  waitingForRequesterCount: number;
+  waitingForRequester: number;
+  recentlyUpdatedCount: number;
+  recentlyUpdated: number;
+  recentlyResolvedCount: number;
+  recentlyResolved: number;
+  inProgress?: number;
+  closed?: number;
+  resolved?: number;
+}
+
+export interface RequesterDashboardTicket {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: TicketStatus;
+  status?: TicketStatus;
+  itPriority?: Priority;
+  requestedPriority?: Priority;
+  updatedAt: string;
+}
+
+export interface RequesterDashboardData {
+  metrics: RequesterDashboardMetrics;
+  attentionTickets: RequesterDashboardTicket[];
+  recentTickets: RequesterDashboardTicket[];
+  recentlyResolvedTickets?: RequesterDashboardTicket[];
+}
+
+export async function fetchRequesterDashboard(): Promise<RequesterDashboardData> {
+  const res = await fetch(`${API_URL}/api/dashboard/requester`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Failed to fetch requester dashboard (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data.error?.message) errorMsg = data.error.message;
+      else if (data.message) errorMsg = data.message;
+    } catch {}
+    const err: any = new Error(errorMsg);
+    err.status = res.status;
+    throw err;
+  }
+
+  return await res.json();
+}
