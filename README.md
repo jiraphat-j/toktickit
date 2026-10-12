@@ -12,6 +12,10 @@ TokTickIT is an enterprise full-stack web application designed for IT service de
 * **IT Staff Operations & Queue:** Operational queue with substring search, multi-field filtering (category, status, IT priority, primary owner: unassigned/me/specific), sorting whitelist, pagination, and responsive dual layouts (desktop table >= 768px, mobile cards < 768px). Includes ticket claiming/reassignment, operational priority overrides, context-sensitive status transitions governed by a Finite State Machine, public comments, and private internal notes with Amber Warning styling.
 * **Administrator User Governance:** User management directory with search and role filtering, modal user creation with duplicate email rejection (`409 Conflict`), account activation/deactivation toggle, password reset modal, and critical security guards: Admin Self-Deactivation Guard and Last Active Admin Lockout Guard.
 
+* **Actions Taken by IT Staff (Parent-Child Work Logging):** Detailed operational work log under each ticket with automatic performer attribution from active session (`performedBy` read-only), description and result validation, conditional follow-up note enforcement when follow-up is required, attachment reference notes, and optimistic concurrency control (`409 Conflict`).
+* **Ticket Resolution Workflow & Resolution Gate:** Strict server-enforced resolution gate blocking ticket transition to `RESOLVED` if zero Actions Taken have been logged (`400 Bad Request / RESOLUTION_GATE_FAILED`). Requester "Problem Appears Resolved" indicator is advisory only and does not bypass formal IT Staff verification.
+* **Role-Appropriate Operational Dashboards:** Authoritative backend-computed metrics: IT Staff Dashboard (Unassigned queue count, My Assigned tickets, High Priority active, My Actions logged, status/priority distributions, and interactive drill-downs) and Requester Dashboard (Open tickets, Action Needed banner for `WAITING_FOR_REQUESTER`, recently updated, recently resolved, zero-leakage data isolation, and drill-downs to My Tickets).
+
 ---
 
 ## 🛠️ Tech Stack
@@ -65,7 +69,7 @@ cd ../server && npm install
 
 ### 2. Database Migration & Seed
 
-Run Prisma migrations and seed reference data and initial users across all roles:
+Run Prisma migrations and idempotent seed populating tickets with 0, 1, and 3+ Actions Taken across all roles:
 
 ```bash
 # Run from repository root:
@@ -85,33 +89,33 @@ npm run dev:client
 
 ---
 
-## 🧪 Automated Testing (100% Passing — 284/284 Tests)
+## 🧪 Automated Testing (100% Passing — 377 / 377 Tests)
 
 All automated test suites can be executed directly from the repository root:
 
-* **Full Regression Test Suite (284 tests passed):**
+* **Grand Total Regression Suite (377 tests passed, 0 failures):**
   ```bash
   npm run test:all
   ```
 
-* **Server API, Security & Integration Suite (173 tests passed):**
+* **Server API, Security & Workflow Suite (223 tests passed across 20 files):**
   ```bash
   npm run test:server
   ```
 
-* **Client Component & Unit Suite (83 tests passed):**
+* **Client Component, UI Style & Responsive Suite (116 tests passed across 19 files):**
   ```bash
   npm run test:client
   ```
 
-* **Playwright Browser End-to-End Suite (28 tests passed):**
+* **Playwright Browser End-to-End Suite (38 tests passed across 8 files):**
   ```bash
   npm run test:e2e
   ```
 
-* **Automated Visual QA Screenshot Suite (24 figures across viewports):**
+* **Automated Visual QA Screenshot Suite (32 figures across viewports):**
   ```bash
-  npx playwright test e2e/lab-03/visual-qa-screenshots.spec.ts
+  node scripts/capture-lab4-screenshots.mjs
   ```
 
 ---
@@ -121,32 +125,35 @@ All automated test suites can be executed directly from the repository root:
 ```text
 toktickit/
 ├── artifacts/
-│   └── lab-03/screenshots/     # Automated responsive visual QA screenshots (24 figures)
+│   ├── lab-02/screenshots/     # Lab 2 visual evidence
+│   ├── lab-03/screenshots/     # Lab 3 visual evidence
+│   └── lab-04/screenshots/     # Lab 4 visual QA screenshots (32 figures: Staff Dashboard, Actions Taken, Requester Dashboard, Responsive)
 ├── client/                      # React + TypeScript frontend application
 │   ├── src/
-│   │   ├── components/          # UI components (Login, StaffTicketQueue, StaffTicketDetail, UserManagement, etc.)
+│   │   ├── components/          # ActionsTaken, StaffDashboard, RequesterDashboard, StaffTicketDetail, MyTickets, etc.
 │   │   ├── styles/              # Zen Green design system tokens & responsive CSS
 │   │   ├── api.ts               # API client and TypeScript contract interfaces
 │   │   └── App.tsx              # Main application shell & role-based routing
-│   └── tests/                   # Client component & unit test suites (83 tests passed)
+│   └── tests/                   # Client component & unit test suites (116 tests passed)
+│       └── lab-04/              # ActionsTaken.test.tsx, StaffDashboard.test.tsx, RequesterDashboard.test.tsx, TicketWorkflow.test.tsx, ResponsiveVisualQA.test.tsx
 ├── docs/
-│   └── lab-03/                  # Specifications, test plan, reviewer records & AI usage logs
+│   └── lab-04/                  # Specifications, test plan, reviewer records & AI usage logs
 │       ├── specification.md     # Functional requirements, business rules & acceptance criteria
 │       ├── api-spec.md          # REST API contracts & error catalog
 │       ├── ui-spec.md           # Zen Green UI specification & responsive checklist
-│       ├── tests.md             # Test plan & 100% traceability matrix
-│       ├── reviewer.md          # Peer review records & verification log
+│       ├── tests.md             # Test plan & 100% traceability matrix (all PASS)
+│       ├── reviewer.md          # Verbatim peer review records & verification log
 │       └── ai-use.md            # AI prompts & reflections
 ├── e2e/
-│   └── lab-03/                  # Playwright browser end-to-end test suites (28 tests passed)
-│       ├── authentication.spec.ts         # Authentication, session lifecycle & back-nav guard
-│       ├── staff-ticket-flow.spec.ts      # Queue, claim, priority, status workflow & notes
-│       ├── user-administration.spec.ts    # Admin CRUD, duplicate email & security safeguards
-│       └── visual-qa-screenshots.spec.ts  # Multi-viewport responsive screenshot capture
+│   └── lab-04/                  # Playwright browser end-to-end test suites (10 tests passed)
+│       ├── actions-taken-flow.spec.ts   # Actions Taken lifecycle, validation & RBAC boundary
+│       ├── ticket-resolution.spec.ts    # Resolution Gate enforcement & advisory flag
+│       └── dashboards.spec.ts           # Role dashboards, metrics, drill-down & responsive audits
 ├── server/                      # Express + TypeScript backend application
-│   ├── prisma/                  # Database schema, migrations & seed scripts
+│   ├── prisma/                  # Database schema, non-destructive migrations & idempotent seed
 │   ├── src/                     # Controllers, routes, RBAC middleware, state machine
-│   └── tests/                   # Server API, security & integration test suites (173 tests passed)
+│   └── tests/                   # Server API, security & integration test suites (223 tests passed)
+│       └── lab-04/              # actions-taken.api.test.ts, ticket-workflow.api.test.ts, staff-dashboard.api.test.ts, requester-dashboard.api.test.ts, migration-seed.test.ts
 ├── package.json                 # Root npm scripts & workspace configuration
 ├── playwright.config.ts         # Playwright multi-browser/viewport configuration
 ├── PROJECT_STRUCTURE.md         # Comprehensive architectural file guide
